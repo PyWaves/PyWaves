@@ -30,12 +30,7 @@ myAddress.sendAsset(otherAddress, myToken, 50)
 ```
 
 ###Address Class
-`pywaves.Address(address, publicKey, privateKey, seed)` create Address object
-#####parameters:
-- _address_
-- _publicKey_
-- _privateKey_
-- _seed_
+__pywaves.Address(address, publicKey, privateKey, seed)__ _create Address object_
 
 ####attributes:
 - _address_
@@ -46,64 +41,26 @@ myAddress.sendAsset(otherAddress, myToken, 50)
 ####methods:
 
 `balance(assetId='', confirmations=0)` returns balance of Waves or other assets
-#####parameters:
-- _assetId_
-- _confirmations_
 
 `assets()` returns a list of assets owned by the address
 
 `issueAsset(name, description, quantity, decimals=0, reissuable=False, txfee=100000000)` issue a new asset
-#####parameters:
-- _name_
-- _description_
-- _quantity_
-- _reissuable_
-- _txfee_
 
 `reissueAsset(Asset, quantity, reissuable=False, txfee=100000000)` reissue an asset
-#####parameters:
-- _Asset_
-- _quantity_
-- _reissuable_
-- _txfee_
 
 `burnAsset(Asset, quantity, txfee=100000000)` burn the specified quantity of an asset
-#####parameters:
-- _Asset_
-- _quantity_
-- _txfee_
 
 `sendWaves(recipient, amount, attachment='', txfee=100000)` send specified amount of Waves to recipient
-#####parameters:
-- _recipient_
-- _amount_
-- _attachment_
-- _txfee_
 
 `sendAsset(recipient, asset, amount, attachment='', txfee=100000)` send specified amount of an asset to recipient
-#####parameters:
-- _recipient_
-- _asset_
-- _amount_
-- _attachment_
-- _txfee_
 
 `buy(assetPair, price, amount)` post a buy order
-#####parameters:
-- _assetPair_
-- _price_
-- _amount_
 
 `sell(assetPair, price, amount)` post a sell order
-#####parameters:
-- _assetPair_
-- _price_
-- _amount_
+
 
 ###Asset Class
-`Asset(assetId)` create Asset object
-#####parameters:
-- _assetId_
+__pywaves.Asset(assetId)__ _create Asset object_
 
 ####attributes:
 - _status_: 	either 'PENDING' or 'ISSUED'
@@ -116,39 +73,28 @@ myAddress.sendAsset(otherAddress, myToken, 50)
 - _reissuable = False_
 
 ####methods:
-- _issued()_ returns True if the asset is issued
+`issued()` returns True if the asset is issued
 
 
 ###AssetPair Class
-`AssetPair(asset1, asset2)` create AssetPair object with 2 Asset objects
-#####parameters:
-- _asset1_
-- _asset2_
+__pywaves.AssetPair(asset1, asset2)__ _create AssetPair object with 2 Asset objects_
 
 ####attributes:
 - _asset1_
 - _asset2_
 
 
-##Other functions: 
+##Other functions
 `pywaves.setMatcher(host, port, publicKey, fee)` set the Matcher's parameters
-#####parameters:
-- _host_: Matcher's IP address
-- _port_: Matcher's port number
-- _publicKey_: Matcher's public key
-- _fee_: Matcher's fee
 
 `pywaves.height()` returns blockchain height
 
 `pywaves.lastblock()` returns last block
 
 `pywaves.block(n)` returns block at specified height
-#####parameters:
-- _n_: block number
 
 `pywaves.tx(id)` returns transaction details
-#####parameters:
-- _id_: transaction ID
+
 
 ## More Examples
 
