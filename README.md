@@ -30,7 +30,7 @@ myAddress.sendAsset(otherAddress, myToken, 50)
 ```
 
 ###Address Class
-__pywaves.Address(address, publicKey, privateKey, seed)__ _create Address object_
+__pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address object_
 
 ####attributes:
 - _address_
@@ -60,7 +60,7 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _create Address object
 
 
 ###Asset Class
-__pywaves.Asset(assetId)__ _create Asset object_
+__pywaves.Asset(assetId)__ _Creates a new Asset object_
 
 ####attributes:
 - _status_: 	either 'PENDING' or 'ISSUED'
@@ -77,7 +77,7 @@ __pywaves.Asset(assetId)__ _create Asset object_
 
 
 ###AssetPair Class
-__pywaves.AssetPair(asset1, asset2)__ _create AssetPair object with 2 Asset objects_
+__pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Asset objects_
 
 ####attributes:
 - _asset1_
