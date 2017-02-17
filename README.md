@@ -85,7 +85,7 @@ __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Ass
 
 
 ##Other functions
-`pywaves.setMatcher(host, port, publicKey, fee)` set the Matcher's parameters
+`pywaves.setMatcher(host, port, publicKey, fee)`  Sets Matcher's parameters
 
 `pywaves.height()` returns blockchain height
 
