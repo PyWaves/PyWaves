@@ -172,7 +172,7 @@ recipients = ['3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg',
 myAddress = pw.Address(privateKey = "CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S")
 
 for address in recipients:
-	myAddress.sendWaves(address, 1000000)
+	myAddress.sendWaves(pw.Address(address), 1000000)
 ```
 
 ####Playing with Waves Matcher node (DEX):
