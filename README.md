@@ -175,6 +175,20 @@ for address in recipients:
 	myAddress.sendWaves(pw.Address(address), 1000000)
 ```
 
+####Token airdrop:
+```python
+import pywaves as pw
+
+myAddress = pw.Address(privateKey = 'CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
+myToken = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
+amount = 1000
+
+with open('recipients.txt') as f:
+	lines = f.readlines()
+for address in lines:
+	myAddress.sendAsset(pw.Address(address), myToken, amount)
+```
+
 ####Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw
