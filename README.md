@@ -280,5 +280,5 @@ pw.setNode(node = 'http://127.0.0.1:6869', chain = 'mainnet')
 
 
 ## License
-Code released under the [MIT License](https://github.com/PyWaves/pywaves/LICENSE).
+Code released under the [MIT License](https://github.com/PyWaves/PyWaves/blob/master/LICENSE).
 
