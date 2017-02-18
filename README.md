@@ -186,7 +186,7 @@ amount = 1000
 with open('recipients.txt') as f:
 	lines = f.readlines()
 for address in lines:
-	myAddress.sendAsset(pw.Address(address), myToken, amount)
+	myAddress.sendAsset(pw.Address(address.strip()), myToken, amount)
 ```
 
 ####Playing with Waves Matcher node (DEX):
