@@ -303,7 +303,7 @@ asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88
 asset2 = 49Aha2RR2eunR3KZFwedfdi7K9v5MLQbLYcmVdp2QkZT
 sender.address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
 sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
-matcher = http://52.51.92.182:6886
+matcher = http://127.0.0.1:6886
 status = ACCEPTED
 ```
 
@@ -316,7 +316,7 @@ asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88
 asset2 = 49Aha2RR2eunR3KZFwedfdi7K9v5MLQbLYcmVdp2QkZT
 sender.address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
 sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
-matcher = http://52.51.92.182:6886
+matcher = http://127.0.0.1:6886
 status = CANCELLED
 ```
 
