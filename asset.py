@@ -2,20 +2,25 @@ import pywaves
 
 class Asset(object):
     def __init__(self, assetId):
-        self.status = 'PENDING'
         self.assetId = assetId
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
-        self.issued()
+        self.status()
 
     def __str__(self):
-        self.issued()
-        return 'status = %s\nassetId = %s\nissuer = %s\nname = %s\ndescription = %s\nquantity = %d\ndecimals = %d\nreissuable = %s' % (self.status, self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
+        return 'status = %s\n' \
+               'assetId = %s\n' \
+               'issuer = %s\n' \
+               'name = %s\n' \
+               'description = %s\n' \
+               'quantity = %d\n' \
+               'ecimals = %d\n' \
+               'reissuable = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
 
     __repr__ = __str__
 
-    def issued(self):
+    def status(self):
         try:
             req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
             if req['type'] == 3:
@@ -25,11 +30,9 @@ class Asset(object):
                 self.reissuable = req['reissuable']
                 self.name = req['name']
                 self.description = req['description']
-                self.status = 'ISSUED'
-                return True
+                return 'Issued'
         except:
             pass
-        return False
 
 class AssetPair(object):
     def __init__(self, asset1, asset2):
@@ -40,7 +43,7 @@ class AssetPair(object):
         return 'asset1 = %s\nasset2 = %s' % (self.asset1.assetId, self.asset2.assetId)
 
     def refresh(self):
-        self.asset1.issued()
-        self.asset2.issued()
+        self.asset1.status()
+        self.asset2.status()
 
     __repr__ = __str__

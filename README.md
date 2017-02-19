@@ -24,7 +24,7 @@ myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S'
 otherAddress = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM')
 myAddress.sendWaves(otherAddress, 10000000)
 myToken = myAddress.issueAsset('Token1', 'My Token', 1000, 0)
-while not myToken.issued():
+while not myToken.status():
 	pass
 myAddress.sendAsset(otherAddress, myToken, 50)
 
@@ -66,7 +66,7 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
 ####attributes:
-- _status_: 	either 'PENDING' or 'ISSUED'
+- _status_
 - _assetId_	
 - _issuer_
 - _name_
@@ -76,7 +76,7 @@ __pywaves.Asset(assetId)__ _Creates a new Asset object_
 - _reissuable = False_
 
 ####methods:
-`issued()` returns True if the asset is issued
+`status()` returns 'Issued' if the asset exists
 
 
 ###AssetPair Class
@@ -98,7 +98,7 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 - _matcherPublicKey_
 
 ####methods:
-`checkStatus()` returns current order status
+`status()` returns current order status
 `cancel()` cancel the order
 
 
@@ -284,7 +284,7 @@ balances:
 ```
 >>> import pywaves as pw
 >>> pw.Asset('DHgwrRvVyqJsepd32YbBqUeDH4GJ1N984X8QoekjgH8J')
-status = ISSUED
+status = Issued
 assetId = DHgwrRvVyqJsepd32YbBqUeDH4GJ1N984X8QoekjgH8J
 issuer = 3PPKF2pH4KMYgsDixjrhnWrPycVHr1Ye37V
 name = WavesCommunity
@@ -298,26 +298,26 @@ reissuable = False
 ```
 >>> myOrder = myAddress.buy(pw.AssetPair(token1, token2), 1, 25)
 >>> myOrder
+status = Accepted
 id = ARZdYgfXz3ksRMvhnGeLLJnn3CQnz7RCa7U6dVw3zert
 asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88
 asset2 = 49Aha2RR2eunR3KZFwedfdi7K9v5MLQbLYcmVdp2QkZT
 sender.address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
 sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
 matcher = http://127.0.0.1:6886
-status = ACCEPTED
 ```
 
 #### Cancel the order
 ```
 >>> myOrder.cancel()
 >>> myOrder
+status = Cancelled
 id = ARZdYgfXz3ksRMvhnGeLLJnn3CQnz7RCa7U6dVw3zert
 asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88
 asset2 = 49Aha2RR2eunR3KZFwedfdi7K9v5MLQbLYcmVdp2QkZT
 sender.address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
 sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
 matcher = http://127.0.0.1:6886
-status = CANCELLED
 ```
 
 

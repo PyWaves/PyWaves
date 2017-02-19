@@ -373,7 +373,7 @@ class Address(object):
     def sendAsset(self, recipient, asset, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE):
         if not self.privateKey:
             logging.error('Private key required')
-        elif not asset.issued():
+        elif not asset.status():
             logging.error('Asset not issued')
         elif amount <= 0:
             logging.error('Amount must be > 0')
@@ -442,9 +442,9 @@ class Address(object):
         return id
 
     def cancelOrder(self, assetPair, order):
-        if order.checkStatus() == 'FILLED':
+        if order.status() == 'Filled':
             logging.error("Order already filled")
-        elif order.checkStatus() == '':
+        elif not order.status():
             logging.error("Order not found")
         sData = base58.b58decode(self.publicKey) + \
                 base58.b58decode(order.orderId)
@@ -463,12 +463,14 @@ class Address(object):
 
     def buy(self, assetPair, amount, price, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
+        normAmount = int(10. ** assetPair.asset1.decimals * amount)
         normPrice = int((10. ** assetPair.asset1.decimals / (10. ** assetPair.asset2.decimals * price)) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, amount, normPrice, matcherFee), assetPair, self)
+        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, normAmount, normPrice, matcherFee), assetPair, self)
 
     def sell(self, assetPair, amount, price, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
+        normAmount = int(10. ** assetPair.asset1.decimals * amount)
         normPrice = int((10. ** assetPair.asset1.decimals / (10. ** assetPair.asset2.decimals * price)) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, amount, normPrice, matcherFee), assetPair, self)
+        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, normAmount, normPrice, matcherFee), assetPair, self)
 
 

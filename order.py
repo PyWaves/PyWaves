@@ -7,30 +7,22 @@ class Order(object):
         self.address = address
         self.matcher = pywaves.MATCHER
         self.matcherPublicKey = pywaves.MATCHER_PUBLICKEY
-        self.checkStatus()
+        self.status()
 
     def __str__(self):
-        self.checkStatus()
-        return 'id = %s\n' \
+        return 'status = %s\n' \
+               'id = %s\n' \
                '%s\n' \
                'sender.address = %s\n' \
                'sender.publicKey = %s\n' \
-               'matcher = %s\n' \
-               'status = %s' % (self.orderId, self.assetPair, self.address.address, self.address.publicKey, self.matcher, self.status)
+               'matcher = %s' % (self.status(), self.orderId, self.assetPair, self.address.address, self.address.publicKey, self.matcher)
 
-    def checkStatus(self):
-        self.status = ''
+    def status(self):
         try:
             req = pywaves.wrapper('/matcher/orderbook/%s/%s/%s' % (self.assetPair.asset1.assetId, self.assetPair.asset2.assetId, self.orderId), host=self.matcher)
-            if req['status'] == 'Accepted':
-                self.status = 'ACCEPTED'
-            elif req['status'] == 'Filled':
-                self.status = 'FILLED'
-            elif req['status'] == 'Cancelled':
-                self.status = 'CANCELLED'
+            return req['status']
         except:
             pass
-        return self.status
 
     def cancel(self):
         if self.address:
