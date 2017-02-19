@@ -131,16 +131,16 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 ```python
 import pywaves as pw
 
-# generate a new address
+# to generate a new address
 myAddress = pw.Address()  
 
-# set an address with a public key
+# to set an address with a public key
 myAddress = pw.Address('3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh')
 
-# get an existing address from seed
+# to get an existing address from seed
 myAddress = pw.Address(seed='seven wrist bargain hope pattern banner plastic maple student chaos grit next space visa answer')
 
-# get an existing address from privateKey
+# to get an existing address from privateKey
 myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 ```
 
