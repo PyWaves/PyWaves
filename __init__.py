@@ -11,20 +11,24 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+DEFAULT_TX_FEE = 100000
+DEFAULT_ASSET_FEE = 100000000
+DEFAULT_MATCHER_FEE = 1000000
+
 import requests
 
 from .address import *
 from .asset import *
+from .order import *
+
 
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
 PYWAVES_DIR = os.path.expanduser("~") + "/.pywaves"
 
-MATCHER_HOST = 'dev.pywaves.org'
-MATCHER_PORT = 6886
-MATCHER_PUBLIC_KEY = 'Bz3T6C1TM1dT5cejqsHVFhw1xnNw3v6u9MT62wYQ2Lwa'
-MATCHER_FEE = 100000
+MATCHER = 'http://dev.pywaves.org:6886'
+MATCHER_PUBLICKEY = ''
 
 if not os.path.exists(PYWAVES_DIR):
     os.makedirs(PYWAVES_DIR)
@@ -39,9 +43,8 @@ formatter = logging.Formatter('[%(levelname)s] %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
-
-def setNode(node, chain='mainnet'):
-    global NODE, CHAIN, CHAIN_ID, DIR
+def setNode(node = NODE, chain = CHAIN):
+    global NODE, CHAIN, CHAIN_ID
     NODE = node
     if chain.lower()=='mainnet' or chain.lower()=='w':
         CHAIN = 'mainnet'
@@ -51,13 +54,14 @@ def setNode(node, chain='mainnet'):
         CHAIN_ID = 'T'
     logging.info('Connecting to %s node %s' % (CHAIN, NODE))
 
-def setMatcher(host, port, publicKey, fee):
-    global MATCHER_HOST, MATCHER_PORT, MATCHER_PUBLIC_KEY, MATCHER_FEE
-    MATCHER_HOST = host
-    MATCHER_PORT = port
-    MATCHER_PUBLIC_KEY = publicKey
-    MATCHER_FEE = fee
-    logging.info('Setting matcher %s:%d %s' % (MATCHER_HOST, MATCHER_PORT, MATCHER_PUBLIC_KEY))
+def setMatcher(node = MATCHER):
+    global MATCHER, MATCHER_PUBLICKEY
+    try:
+        MATCHER_PUBLICKEY = wrapper('/matcher', host = node)
+        MATCHER = node
+        logging.info('Setting matcher %s %s' % (MATCHER, MATCHER_PUBLICKEY))
+    except:
+        MATCHER_PUBLICKEY = ''
 
 def wrapper(api, postData='', host=''):
     if not host:
@@ -89,3 +93,6 @@ def getOrderBook(assetPair):
         bids = ''
         asks = ''
     return bids, asks
+
+setNode()
+setMatcher()

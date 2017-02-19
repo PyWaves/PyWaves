@@ -39,4 +39,8 @@ class AssetPair(object):
     def __str__(self):
         return 'asset1 = %s\nasset2 = %s' % (self.asset1.assetId, self.asset2.assetId)
 
+    def refresh(self):
+        self.asset1.issued()
+        self.asset2.issued()
+
     __repr__ = __str__

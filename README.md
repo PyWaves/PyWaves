@@ -14,7 +14,8 @@ The library utilizes classes to represent various Waves data structures:
 * pywaves.Address
 * pywaves.Asset
 * pywaves.AssetPair
-	
+* pywaves.Order
+
 ####Code Example
 ```python
 import pywaves as pw
@@ -44,19 +45,21 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `assets()` returns a list of assets owned by the address
 
-`issueAsset(name, description, quantity, decimals=0, reissuable=False, txfee=100000000)` issue a new asset
+`issueAsset(name, description, quantity, decimals=0, reissuable=False, txFee=DEFAULT_ASSET_FEE)` issue a new asset
 
-`reissueAsset(Asset, quantity, reissuable=False, txfee=100000000)` reissue an asset
+`reissueAsset(Asset, quantity, reissuable=False, txFee=DEFAULT_ASSET_FEE)` reissue an asset
 
-`burnAsset(Asset, quantity, txfee=100000000)` burn the specified quantity of an asset
+`burnAsset(Asset, quantity, txFee=DEFAULT_ASSET_FEE)` burn the specified quantity of an asset
 
-`sendWaves(recipient, amount, attachment='', txfee=100000)` send specified amount of Waves to recipient
+`sendWaves(recipient, amount, attachment='', txFee=DEFAULT_TX_FEE)` send specified amount of Waves to recipient
 
-`sendAsset(recipient, asset, amount, attachment='', txfee=100000)` send specified amount of an asset to recipient
+`sendAsset(recipient, asset, amount, attachment='', txFee=DEFAULT_TX_FEE)` send specified amount of an asset to recipient
 
-`buy(assetPair, price, amount)` post a buy order
+`cancelOrder(assetPair, order)` cancel an order
 
-`sell(assetPair, price, amount)` post a sell order
+`buy(assetPair, price, amount, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
+
+`sell(assetPair, price, amount, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
 
 
 ###Asset Class
@@ -80,12 +83,29 @@ __pywaves.Asset(assetId)__ _Creates a new Asset object_
 __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Asset objects_
 
 ####attributes:
+- _status_
+- _orderId_
+- _assetPair_
+- _address_
+- _matcher_
+- _matcherPublicKey_
+
+####methods:
+`checkStatus()` returns current order status
+`cancel()` cancel the order
+
+###Order Class
+__pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
+
+####attributes:
 - _asset1_
 - _asset2_
 
 
 ##Other functions
-`pywaves.setMatcher(host, port, publicKey, fee)`  Sets Matcher's parameters
+`pywaves.setNode(node, chain)`  sets node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
+
+`pywaves.setMatcher(node)`  set matcher URL ('http://ip-address:port')
 
 `pywaves.height()` returns blockchain height
 
@@ -94,6 +114,14 @@ __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Ass
 `pywaves.block(n)` returns block at specified height
 
 `pywaves.tx(id)` returns transaction details
+
+
+
+### Default Fees
+The fees for waves/asset transfers, asset issue/reissue/burn and matcher transactions are set by default as follows:
+* DEFAULT_TX_FEE = 100000
+* DEFAULT_ASSET_FEE = 100000000
+* DEFAULT_MATCHER_FEE = 1000000
 
 
 ## More Examples
@@ -194,22 +222,25 @@ for address in lines:
 import pywaves as pw
 
 # specify the Matcher node to use
-pw.setMatcher(host = '127.0.0.1',
-			  port = 6886,
-			  publicKey = 'FXaH5ZQW4dSdjgPTRwAXmJycLFWjaxYyZqiwVJ7cp64w',
-			  fee = 1000000)
+pw.setMatcher(node = 'http://127.0.0.1:6886')
 
 # post a buy order
 BTC = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 USD = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 BTC_USD = pw.AssetPair(BTC, USD)
-myAddress.buy(assetPair = BTC_USD, price = 950.75, amount = 15)
+myOrder = myAddress.buy(assetPair = BTC_USD, price = 950.75, amount = 15)
 
 # post a sell order
 WCT = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 Incent = pw.Asset('FLbGXzrpqkvucZqsHDcNxePTkh2ChmEi4GdBfDRRJVof')
 WCT_Incent = pw.AssetPair(WCT, Incent)
-myAddress.sell(assetPair = WCT_Incent, price = 2.50, amount = 100)
+myOrder = myAddress.sell(assetPair = WCT_Incent, price = 2.50, amount = 100)
+
+# cancel an order
+myOrder.cancel()
+# or
+myAddress.cancelOrder(assetPair, myOrder)
+
 ```
 
 ### Using PyWaves in a Python shell
@@ -262,6 +293,33 @@ quantity = 1000000000
 decimals = 2
 reissuable = False
 ```
+
+#### Post an order and check its status:
+```
+>>> myOrder = myAddress.buy(pw.AssetPair(token1, token2), 25, 1)
+>>> myOrder
+id = ARZdYgfXz3ksRMvhnGeLLJnn3CQnz7RCa7U6dVw3zert
+asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88
+asset2 = 49Aha2RR2eunR3KZFwedfdi7K9v5MLQbLYcmVdp2QkZT
+sender.address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
+sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
+matcher = http://52.51.92.182:6886
+status = ACCEPTED
+```
+
+#### Cancel the order
+```
+>>> myOrder.cancel()
+>>> myOrder
+id = ARZdYgfXz3ksRMvhnGeLLJnn3CQnz7RCa7U6dVw3zert
+asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88
+asset2 = 49Aha2RR2eunR3KZFwedfdi7K9v5MLQbLYcmVdp2QkZT
+sender.address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
+sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
+matcher = http://52.51.92.182:6886
+status = CANCELLED
+```
+
 
 ## Connecting to a different node or chain
 
