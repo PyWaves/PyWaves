@@ -57,9 +57,9 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `cancelOrder(assetPair, order)` cancel an order
 
-`buy(assetPair, price, amount, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
+`buy(assetPair, amount, price, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
 
-`sell(assetPair, price, amount, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
+`sell(assetPair, amount, price, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
 
 
 ###Asset Class
@@ -228,13 +228,13 @@ pw.setMatcher(node = 'http://127.0.0.1:6886')
 BTC = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 USD = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 BTC_USD = pw.AssetPair(BTC, USD)
-myOrder = myAddress.buy(assetPair = BTC_USD, price = 950.75, amount = 15)
+myOrder = myAddress.buy(assetPair = BTC_USD, amount = 15, price = 950.75)
 
 # post a sell order
 WCT = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 Incent = pw.Asset('FLbGXzrpqkvucZqsHDcNxePTkh2ChmEi4GdBfDRRJVof')
 WCT_Incent = pw.AssetPair(WCT, Incent)
-myOrder = myAddress.sell(assetPair = WCT_Incent, price = 2.50, amount = 100)
+myOrder = myAddress.sell(assetPair = WCT_Incent, amount = 100, price = 2.50)
 
 # cancel an order
 myOrder.cancel()
@@ -296,7 +296,7 @@ reissuable = False
 
 #### Post an order and check its status:
 ```
->>> myOrder = myAddress.buy(pw.AssetPair(token1, token2), 25, 1)
+>>> myOrder = myAddress.buy(pw.AssetPair(token1, token2), 1, 25)
 >>> myOrder
 id = ARZdYgfXz3ksRMvhnGeLLJnn3CQnz7RCa7U6dVw3zert
 asset1 = AFzL992FQbhcgSZGKDKAiRWcjtthM55yVCE99hwbHf88

@@ -407,7 +407,7 @@ class Address(object):
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def _postOrder(self, spendAsset, receiveAsset, price, amount, matcherFee):
+    def _postOrder(self, spendAsset, receiveAsset, amount, price, matcherFee):
         timestamp = int(time.time() * 1000) - 10
         expiration = timestamp + 10000000
         sData = base58.b58decode(self.publicKey) + \
@@ -461,14 +461,14 @@ class Address(object):
             logging.info('Order Cancelled - ID: %s' % id)
         return id
 
-    def buy(self, assetPair, price, amount, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
+    def buy(self, assetPair, amount, price, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
         normPrice = int((10. ** assetPair.asset1.decimals / (10. ** assetPair.asset2.decimals * price)) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, normPrice, amount, matcherFee), assetPair, self)
+        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, amount, normPrice, matcherFee), assetPair, self)
 
-    def sell(self, assetPair, price, amount, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
+    def sell(self, assetPair, amount, price, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
         normPrice = int((10. ** assetPair.asset1.decimals / (10. ** assetPair.asset2.decimals * price)) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, normPrice, amount, matcherFee), assetPair, self)
+        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, amount, normPrice, matcherFee), assetPair, self)
 
 
