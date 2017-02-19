@@ -83,6 +83,13 @@ __pywaves.Asset(assetId)__ _Creates a new Asset object_
 __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Asset objects_
 
 ####attributes:
+- _asset1_
+- _asset2_
+
+###Order Class
+__pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
+
+####attributes:
 - _status_
 - _orderId_
 - _assetPair_
@@ -93,13 +100,6 @@ __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Ass
 ####methods:
 `checkStatus()` returns current order status
 `cancel()` cancel the order
-
-###Order Class
-__pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
-
-####attributes:
-- _asset1_
-- _asset2_
 
 
 ##Other functions
