@@ -46,4 +46,21 @@ class AssetPair(object):
         self.asset1.status()
         self.asset2.status()
 
+
+    def first(self):
+        if len(self.asset1.assetId) < len(self.asset2.assetId):
+            return self.asset1
+        elif self.asset1.assetId < self.asset2.assetId:
+            return self.asset1
+        else:
+            return self.asset2
+
+    def second(self):
+        if len(self.asset1.assetId) < len(self.asset2.assetId):
+            return self.asset2
+        if self.asset1.assetId < self.asset2.assetId:
+            return self.asset2
+        else:
+            return self.asset1
+
     __repr__ = __str__

@@ -57,10 +57,13 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `cancelOrder(assetPair, order)` cancel an order
 
-`buy(assetPair, amount, price, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
+`buy(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
 
-`sell(assetPair, amount, price, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
+`sell(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
 
+`lease(recipient, amount, txFee=DEFAULT_LEASE_FEE)` post a lease transaction
+
+`leaseCancel(leaseId, txFee=DEFAULT_LEASE_FEE)` cancel a lease 
 
 ###Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
@@ -122,6 +125,7 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 * DEFAULT_TX_FEE = 100000
 * DEFAULT_ASSET_FEE = 100000000
 * DEFAULT_MATCHER_FEE = 1000000
+* DEFAULT_LEASE_FEE = 100000
 
 
 ## More Examples
@@ -242,6 +246,22 @@ myOrder.cancel()
 myAddress.cancelOrder(assetPair, myOrder)
 
 ```
+
+####LPOS
+```python
+import pywaves as pw
+
+myAddress = pw.Address(privateKey = 'CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
+minerAddress = pw.Asset('3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg')
+
+# lease 1000 Waves to minerAddress
+leaseId = myAddress.lease(minerAddress, 100000000000)
+
+# revoke the lease
+myAddress.leaseCancel(leaseId)
+
+```
+
 
 ### Using PyWaves in a Python shell
 

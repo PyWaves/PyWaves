@@ -407,9 +407,9 @@ class Address(object):
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def _postOrder(self, spendAsset, receiveAsset, amount, price, matcherFee):
-        timestamp = int(time.time() * 1000) - 10
-        expiration = timestamp + 10000000
+    def _postOrder(self, spendAsset, receiveAsset, price, amount, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
+        timestamp = int(time.time() * 1000)
+        expiration = timestamp + maxLifetime * 1000
         sData = base58.b58decode(self.publicKey) + \
                 base58.b58decode(pywaves.MATCHER_PUBLICKEY) + \
                 b'\1' + base58.b58decode(spendAsset.assetId) + \
@@ -461,16 +461,72 @@ class Address(object):
             logging.info('Order Cancelled - ID: %s' % id)
         return id
 
-    def buy(self, assetPair, amount, price, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
+    def buy(self, assetPair, price, amount, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
-        normAmount = int(10. ** assetPair.asset1.decimals * amount)
-        normPrice = int((10. ** assetPair.asset1.decimals / (10. ** assetPair.asset2.decimals * price)) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, normAmount, normPrice, matcherFee), assetPair, self)
+        if assetPair.first() == assetPair.asset1:
+            normAmount = int(10. ** assetPair.asset2.decimals * price * amount)
+            normPrice = int(round((10. ** assetPair.asset1.decimals) / (10. ** assetPair.asset2.decimals * price) * 10. ** 8))
+        else:
+            normAmount = int(10. ** assetPair.asset1.decimals * amount)
+            normPrice = int((10. ** assetPair.asset2.decimals * price) / (10. ** assetPair.asset1.decimals) * 10. ** 8)
+        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, normPrice, normAmount, maxLifetime, matcherFee), assetPair, self)
 
-    def sell(self, assetPair, amount, price, matcherFee = pywaves.DEFAULT_MATCHER_FEE):
+    def sell(self, assetPair, price, amount, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
-        normAmount = int(10. ** assetPair.asset1.decimals * amount)
-        normPrice = int((10. ** assetPair.asset1.decimals / (10. ** assetPair.asset2.decimals * price)) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, normAmount, normPrice, matcherFee), assetPair, self)
+        if assetPair.first() == assetPair.asset1:
+            normAmount = int(10. ** assetPair.asset2.decimals * price * amount)
+            normPrice = int(round((10. ** assetPair.asset1.decimals) / (10. ** assetPair.asset2.decimals * price) * 10. ** 8))
+        else:
+            normAmount = int(10. ** assetPair.asset1.decimals * amount)
+            normPrice = int((10. ** assetPair.asset2.decimals * price) / (10. ** assetPair.asset1.decimals) * 10. ** 8)
+        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, normPrice, normAmount, maxLifetime, matcherFee), assetPair, self)
 
+    def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE):
+        if not self.privateKey:
+            logging.error('Private key required')
+        elif amount <= 0:
+            logging.error('Amount must be > 0')
+        elif self.balance() < amount + txFee:
+            logging.error('Insufficient Waves balance')
+        else:
+            timestamp = int(time.time() * 1000)
+            sData = b'\x08' + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(recipient.address) + \
+                    struct.pack(">Q", amount) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp)
+            signature = crypto.sign(self.privateKey, sData)
+            data = json.dumps({
+                "senderPublicKey": self.publicKey,
+                "recipient": recipient.address,
+                "amount": amount,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "signature": signature
+            })
+            return pywaves.wrapper('/leasing/broadcast/lease', data)['id']
 
+    def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE):
+        if not self.privateKey:
+            logging.error('Private key required')
+        elif self.balance() < txFee:
+            logging.error('Insufficient Waves balance')
+        else:
+            timestamp = int(time.time() * 1000)
+            sData = b'\x09' + \
+                    base58.b58decode(self.publicKey) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp) + \
+                    base58.b58decode(leaseId)
+            signature = crypto.sign(self.privateKey, sData)
+            data = json.dumps({
+                "senderPublicKey": self.publicKey,
+                "txId": leaseId,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "signature": signature
+            })
+            req = pywaves.wrapper('/leasing/broadcast/cancel', data)
+            if 'leaseId' in req:
+                return req['leaseId']

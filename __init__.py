@@ -14,13 +14,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 DEFAULT_TX_FEE = 100000
 DEFAULT_ASSET_FEE = 100000000
 DEFAULT_MATCHER_FEE = 1000000
+DEFAULT_LEASE_FEE = 100000
 
 import requests
 
 from .address import *
 from .asset import *
 from .order import *
-
+from _pywaves.sql import *
 
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
@@ -67,7 +68,7 @@ def wrapper(api, postData='', host=''):
     if not host:
         host = NODE
     if postData:
-        req = requests.post('%s%s' % (host, api), data=postData).json()
+        req = requests.post('%s%s' % (host, api), data=postData, headers={'content-type': 'application/json'}).json()
     else:
         req = requests.get('%s%s' % (host, api)).json()
     return req
