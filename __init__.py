@@ -21,7 +21,6 @@ import requests
 from .address import *
 from .asset import *
 from .order import *
-from _pywaves.sql import *
 
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
