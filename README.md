@@ -254,8 +254,8 @@ import pywaves as pw
 # connect to a local testnet node
 pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
 
-myAddress = pw.Address(privateKey = 'CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
-minerAddress = pw.Address('3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg')
+myAddress = pw.Address(privateKey = 'CsBpQpNE3Z1THNMS9vJPaXqYwN9Hgmhd9AsAPrM3tiuJ')
+minerAddress = pw.Address('3NBThmVJmcexzJ9itP9KiiC2K6qnGQwpqMq')
 
 # lease 1000 Waves to minerAddress
 leaseId = myAddress.lease(minerAddress, 100000000000)
