@@ -135,16 +135,16 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 ```python
 import pywaves as pw
 
-# to generate a new address
+# generate a new address
 myAddress = pw.Address()  
 
-# to set an address with a public key
+# set an address with a public key
 myAddress = pw.Address('3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh')
 
-# to get an existing address from seed
+# get an existing address from seed
 myAddress = pw.Address(seed='seven wrist bargain hope pattern banner plastic maple student chaos grit next space visa answer')
 
-# to get an existing address from privateKey
+# get an existing address from privateKey
 myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 ```
 
@@ -225,7 +225,7 @@ for address in lines:
 ```python	
 import pywaves as pw
 
-# specify the Matcher node to use
+# set Matcher node to use
 pw.setMatcher(node = 'http://127.0.0.1:6886')
 
 # post a buy order
@@ -252,7 +252,7 @@ myAddress.cancelOrder(assetPair, myOrder)
 import pywaves as pw
 
 myAddress = pw.Address(privateKey = 'CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
-minerAddress = pw.Asset('3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg')
+minerAddress = pw.Address('3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg')
 
 # lease 1000 Waves to minerAddress
 leaseId = myAddress.lease(minerAddress, 100000000000)
