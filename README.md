@@ -251,6 +251,9 @@ myAddress.cancelOrder(assetPair, myOrder)
 ```python
 import pywaves as pw
 
+# connect to a local testnet node
+pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
+
 myAddress = pw.Address(privateKey = 'CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 minerAddress = pw.Address('3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg')
 
