@@ -7,7 +7,7 @@ You can install PyWaves using:
 
     pip install pywaves
 
-## Documentaion
+## Documentation
 
 The library utilizes classes to represent various Waves data structures:
 
