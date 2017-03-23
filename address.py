@@ -407,24 +407,29 @@ class Address(object):
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def _postOrder(self, spendAsset, receiveAsset, price, amount, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
-        timestamp = int(time.time() * 1000)
+    def _postOrder(self, amountAsset, priceAsset, orderType, price, amount, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
+        timestamp = int(time.time() * 1000) -1000
         expiration = timestamp + maxLifetime * 1000
         sData = base58.b58decode(self.publicKey) + \
                 base58.b58decode(pywaves.MATCHER_PUBLICKEY) + \
-                b'\1' + base58.b58decode(spendAsset.assetId) + \
-                b'\1' + base58.b58decode(receiveAsset.assetId) + \
+                b'\1' + base58.b58decode(amountAsset.assetId) + \
+                b'\1' + base58.b58decode(priceAsset.assetId) + \
+                orderType + \
                 struct.pack(">Q", price) + \
                 struct.pack(">Q", amount) + \
                 struct.pack(">Q", timestamp) + \
                 struct.pack(">Q", expiration) + \
                 struct.pack(">Q", matcherFee)
         signature = crypto.sign(self.privateKey, sData)
+        otype = "buy" if orderType==b'\0' else "sell"
         data = json.dumps({
             "senderPublicKey": self.publicKey,
             "matcherPublicKey": pywaves.MATCHER_PUBLICKEY,
-            "spendAssetId": spendAsset.assetId,
-            "receiveAssetId": receiveAsset.assetId,
+            "assetPair": {
+                "amountAsset": amountAsset.assetId,
+                "priceAsset": priceAsset.assetId,
+                },
+            "orderType": otype,
             "price": price,
             "amount": amount,
             "timestamp": timestamp,
@@ -434,11 +439,14 @@ class Address(object):
         })
         req = pywaves.wrapper('/matcher/orderbook', data, host=pywaves.MATCHER)
         id = -1
-        if req['status'] == 'OrderRejected':
-            logging.error('Order Rejected - %s' % req['message'])
-        elif req['status'] == 'OrderAccepted':
-            id = req['message']['id']
-            logging.info('Order Accepted - ID: %s' % id)
+        if 'status' in req:
+            if req['status'] == 'OrderRejected':
+                logging.error('Order Rejected - %s' % req['message'])
+            elif req['status'] == 'OrderAccepted':
+                id = req['message']['id']
+                logging.info('Order Accepted - ID: %s' % id)
+        else:
+            logging.error(req)
         return id
 
     def cancelOrder(self, assetPair, order):
@@ -463,23 +471,19 @@ class Address(object):
 
     def buy(self, assetPair, price, amount, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
-        if assetPair.first() == assetPair.asset1:
-            normAmount = int(10. ** assetPair.asset2.decimals * price * amount)
-            normPrice = int(round((10. ** assetPair.asset1.decimals) / (10. ** assetPair.asset2.decimals * price) * 10. ** 8))
-        else:
-            normAmount = int(10. ** assetPair.asset1.decimals * amount)
-            normPrice = int((10. ** assetPair.asset2.decimals * price) / (10. ** assetPair.asset1.decimals) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset2, assetPair.asset1, normPrice, normAmount, maxLifetime, matcherFee), assetPair, self)
+        normPrice = int(10. ** assetPair.asset2.decimals * price)
+        normAmount = int(10. ** assetPair.asset1.decimals * amount)
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', normPrice, normAmount, maxLifetime, matcherFee)
+        if id != -1:
+            return pywaves.Order(id, assetPair, self)
 
     def sell(self, assetPair, price, amount, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
         assetPair.refresh()
-        if assetPair.first() == assetPair.asset1:
-            normAmount = int(10. ** assetPair.asset2.decimals * price * amount)
-            normPrice = int(round((10. ** assetPair.asset1.decimals) / (10. ** assetPair.asset2.decimals * price) * 10. ** 8))
-        else:
-            normAmount = int(10. ** assetPair.asset1.decimals * amount)
-            normPrice = int((10. ** assetPair.asset2.decimals * price) / (10. ** assetPair.asset1.decimals) * 10. ** 8)
-        return pywaves.Order(self._postOrder(assetPair.asset1, assetPair.asset2, normPrice, normAmount, maxLifetime, matcherFee), assetPair, self)
+        normPrice = int(10. ** assetPair.asset2.decimals * price)
+        normAmount = int(10. ** assetPair.asset1.decimals * amount)
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', normPrice, normAmount, maxLifetime, matcherFee)
+        if id!=-1:
+            return pywaves.Order(id, assetPair, self)
 
     def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE):
         if not self.privateKey:
@@ -530,3 +534,5 @@ class Address(object):
             req = pywaves.wrapper('/leasing/broadcast/cancel', data)
             if 'leaseId' in req:
                 return req['leaseId']
+
+

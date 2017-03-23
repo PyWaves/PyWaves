@@ -15,7 +15,7 @@ class Order(object):
                '%s\n' \
                'sender.address = %s\n' \
                'sender.publicKey = %s\n' \
-               'matcher = %s' % (self.status(), self.orderId, self.assetPair, self.address.address, self.address.publicKey, self.matcher)
+               'matcher = %s' % (self.status(), self.orderId, self.assetPair, self.address.address, self.address.publicKey, self.matcherPublicKey)
 
     def status(self):
         try:

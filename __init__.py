@@ -95,4 +95,3 @@ def getOrderBook(assetPair):
     return bids, asks
 
 setNode()
-setMatcher()
