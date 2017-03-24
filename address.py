@@ -410,10 +410,12 @@ class Address(object):
     def _postOrder(self, amountAsset, priceAsset, orderType, price, amount, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
         timestamp = int(time.time() * 1000) -1000
         expiration = timestamp + maxLifetime * 1000
+        asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
+        asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
         sData = base58.b58decode(self.publicKey) + \
                 base58.b58decode(pywaves.MATCHER_PUBLICKEY) + \
-                b'\1' + base58.b58decode(amountAsset.assetId) + \
-                b'\1' + base58.b58decode(priceAsset.assetId) + \
+                asset1 + \
+                asset2 + \
                 orderType + \
                 struct.pack(">Q", price) + \
                 struct.pack(">Q", amount) + \
@@ -534,5 +536,31 @@ class Address(object):
             req = pywaves.wrapper('/leasing/broadcast/cancel', data)
             if 'leaseId' in req:
                 return req['leaseId']
+
+    def createAlias(self, alias, txFee=pywaves.DEFAULT_LEASE_FEE):
+        if not self.privateKey:
+            logging.error('Private key required')
+        elif self.balance() < txFee:
+            logging.error('Insufficient Waves balance')
+        else:
+            timestamp = int(time.time() * 1000)
+            sData = b'\x0A' + \
+                    base58.b58decode(self.publicKey) + \
+                    struct.pack(">H", len(alias)) + \
+                    crypto.str2bytes(alias) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp) + \
+                    base58.b58decode(leaseId)
+            signature = crypto.sign(self.privateKey, sData)
+            data = json.dumps({
+                "senderPublicKey": self.publicKey,
+                "alias": alias,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "signature": signature
+            })
+            print data
+            req = pywaves.wrapper('/alias/broadcast/create', data)
+            print req
 
 

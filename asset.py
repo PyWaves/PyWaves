@@ -2,11 +2,15 @@ import pywaves
 
 class Asset(object):
     def __init__(self, assetId):
-        self.assetId = assetId
+        self.assetId='' if assetId == 'WAVES' else assetId
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
-        self.status()
+        if self.assetId=='':
+            self.quantity=100000000e8
+            self.decimals=8
+        else:
+            self.status()
 
     def __str__(self):
         return 'status = %s\n' \
@@ -21,18 +25,19 @@ class Asset(object):
     __repr__ = __str__
 
     def status(self):
-        try:
-            req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
-            if req['type'] == 3:
-                self.issuer = req['sender']
-                self.quantity = req['quantity']
-                self.decimals = req['decimals']
-                self.reissuable = req['reissuable']
-                self.name = req['name']
-                self.description = req['description']
-                return 'Issued'
-        except:
-            pass
+        if self.assetId!='WAVES':
+            try:
+                req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
+                if req['type'] == 3:
+                    self.issuer = req['sender']
+                    self.quantity = req['quantity']
+                    self.decimals = req['decimals']
+                    self.reissuable = req['reissuable']
+                    self.name = req['name']
+                    self.description = req['description']
+                    return 'Issued'
+            except:
+                pass
 
 class AssetPair(object):
     def __init__(self, asset1, asset2):
@@ -64,3 +69,5 @@ class AssetPair(object):
             return self.asset1
 
     __repr__ = __str__
+
+WAVES = Asset('')
