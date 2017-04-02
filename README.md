@@ -172,34 +172,34 @@ myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S'
 
 # send Waves to another address
 myAddress.sendWaves(recipient = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM'),
-					amount = 100000000)
+                    amount = 100000000)
 
 # send asset to another address
 myToken = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 myAddress.sendAsset(recipient = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM'),
-					asset = myToken,
-					amount = 1000)
+                    asset = myToken,
+                    amount = 1000)
 ```
 
 ####Issuing an asset:
 ```python
 import pywaves as pw
 
-myToken = myAddress.issueToken(name = "MyToken",
-					 		   description = "This is my first token",
-					 		   quantity = 1000000,
-					 		   decimals = 2)
+myToken = myAddress.issueToken( name = "MyToken",
+                                description = "This is my first token",
+                                quantity = 1000000,
+                                decimals = 2 )
 ```
 
 ####Mass payment:
 ```python
 import pywaves as pw
 
-recipients = ['3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg',
-			  '3P4A27aCd3skNja46pcgrLYEnK36TkSzgUp',
-			  '3P81U3ujotNUwZMWALdcJQLzBVbrAuUQMfs',
-			  '3PGcKEMwQcEbmeL8Jhe9nZQRBNCNdcHCoZP',
-			  '3PKjtzZ4FhKrJUikbQ1hRk5xbwVKDyTyvkn']
+recipients =   ['3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg',
+                '3P4A27aCd3skNja46pcgrLYEnK36TkSzgUp',
+                '3P81U3ujotNUwZMWALdcJQLzBVbrAuUQMfs',
+                '3PGcKEMwQcEbmeL8Jhe9nZQRBNCNdcHCoZP',
+                '3PKjtzZ4FhKrJUikbQ1hRk5xbwVKDyTyvkn']
 
 myAddress = pw.Address(privateKey = "CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S")
 
