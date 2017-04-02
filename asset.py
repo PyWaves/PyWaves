@@ -19,7 +19,7 @@ class Asset(object):
                'name = %s\n' \
                'description = %s\n' \
                'quantity = %d\n' \
-               'ecimals = %d\n' \
+               'decimals = %d\n' \
                'reissuable = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
 
     __repr__ = __str__
