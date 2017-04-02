@@ -537,29 +537,3 @@ class Address(object):
             if 'leaseId' in req:
                 return req['leaseId']
 
-    def createAlias(self, alias, txFee=pywaves.DEFAULT_LEASE_FEE):
-        if not self.privateKey:
-            logging.error('Private key required')
-        elif self.balance() < txFee:
-            logging.error('Insufficient Waves balance')
-        else:
-            timestamp = int(time.time() * 1000)
-            sData = b'\x0A' + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">H", len(alias)) + \
-                    crypto.str2bytes(alias) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "senderPublicKey": self.publicKey,
-                "alias": alias,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "signature": signature
-            })
-            print data
-            req = pywaves.wrapper('/alias/broadcast/create', data)
-            print req
-
-
