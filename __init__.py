@@ -13,8 +13,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 DEFAULT_TX_FEE = 100000
 DEFAULT_ASSET_FEE = 100000000
-DEFAULT_MATCHER_FEE = 1000000
+DEFAULT_MATCHER_FEE = 100000
 DEFAULT_LEASE_FEE = 100000
+VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
+MAX_WDF_REQUEST = 100
 
 import requests
 
@@ -29,6 +31,8 @@ PYWAVES_DIR = os.path.expanduser("~") + "/.pywaves"
 
 MATCHER = 'http://dev.pywaves.org:6886'
 MATCHER_PUBLICKEY = ''
+
+DATAFEED = 'http://marketdata.wavesplatform.com'
 
 if not os.path.exists(PYWAVES_DIR):
     os.makedirs(PYWAVES_DIR)
@@ -63,6 +67,11 @@ def setMatcher(node = MATCHER):
     except:
         MATCHER_PUBLICKEY = ''
 
+def setDatafeed(wdf = DATAFEED):
+    global DATAFEED
+    DATAFEED = wdf
+    logging.info('Setting datafeed %s ' % (DATAFEED))
+
 def wrapper(api, postData='', host=''):
     if not host:
         host = NODE
@@ -94,4 +103,15 @@ def getOrderBook(assetPair):
         asks = ''
     return bids, asks
 
+def symbols():
+    return wrapper('/api/symbols', host=DATAFEED)
+
+def markets():
+    return wrapper('/api/markets', host = DATAFEED)
+
+def matchers():
+    return wrapper('/api/matchers', host = DATAFEED)
+
 setNode()
+for s in symbols():
+    setattr(pywaves,s['symbol'],Asset(s['assetID']))

@@ -103,21 +103,43 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 ####methods:
 `status()` returns current order status
 `cancel()` cancel the order
+`ticker()` get ticker with 24h ohlcv data
+`last()` get traded price
+`open()` get 24h open price
+`high()` get 24h high price
+`low()` get 24h low price
+`close()` get 24h close price (same as last())
+`vwap()` get 24h vwap price
+`volume()` get 24h volume
+`priceVolume()` get 24h price volume
+`trades(n)` get the last n trades
+`trades(from, to)` get the trades in from/to interval
+`candles(timeframe, n)` get the last n candles in the specified timeframe
+`candles(timeframe, from, to)` get the candles in from/to interval in the specified timeframe
 
 
 ##Other functions
-`pywaves.setNode(node, chain)`  sets node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
+`pywaves.setNode(node, chain)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
 
 `pywaves.setMatcher(node)`  set matcher URL ('http://ip-address:port')
 
-`pywaves.height()` returns blockchain height
+`pywaves.setDatafeed(node)`  set datafeed URL ('http://ip-address:port')
 
-`pywaves.lastblock()` returns last block
+`pywaves.height()` get blockchain height
 
-`pywaves.block(n)` returns block at specified height
+`pywaves.lastblock()` get last block
 
-`pywaves.tx(id)` returns transaction details
+`pywaves.block(n)` get block at specified height
 
+`pywaves.tx(id)` get transaction details
+
+`pywaves.symbols()` get list of symbol-asset mapping
+
+`pywaves.markets()` get all traded markets with tickers and matchers info
+
+`pywaves.matchers()` get list of matchers with traded markets
+
+`pywaves.{SYMBOL_NAME}` get predefined asset for the specified symbol (pywaves.WAVES, pywaves.BTC, pywaves.USD,...)
 
 
 ### Default Fees
@@ -250,6 +272,32 @@ myOrder.cancel()
 # or
 myAddress.cancelOrder(assetPair, myOrder)
 
+```
+
+####Getting Market Data from Waves Data Feed (WDF):
+```python	
+import pywaves as pw
+
+# set the asset pair
+WAVES_BTC = pw.AssetPair(pw.WAVES, pw.BTC)
+
+# get last price and volume
+print("%s %s" % (WAVES_BTC.last(), WAVES_BTC.volume())
+
+# get ticker
+ticker = WAVES_BTC.ticker()
+print(ticker['24h_open'])
+print(ticker['24h_vwap'])
+
+# get last 10 trades
+trades = WAVES_BTC.trades(10)
+for t in trades:
+	print("%s %s %s %s" % (t['buyer'], t['seller'], t['price'], t['amount']))
+	
+# get last 10 daily OHLCV candles
+ohlcv = WAVES_BTC.candles(1440, 10)
+for t in ohlcv:
+	print("%s %s %s %s %s" % (t['open'], t['high'], t['low'], t['close'], t['volume']))
 ```
 
 ####LPOS
