@@ -282,7 +282,7 @@ import pywaves as pw
 WAVES_BTC = pw.AssetPair(pw.WAVES, pw.BTC)
 
 # get last price and volume
-print("%s %s" % (WAVES_BTC.last(), WAVES_BTC.volume())
+print("%s %s" % (WAVES_BTC.last(), WAVES_BTC.volume()))
 
 # get ticker
 ticker = WAVES_BTC.ticker()
