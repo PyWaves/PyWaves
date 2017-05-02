@@ -19,6 +19,7 @@ VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
 MAX_WDF_REQUEST = 100
 
 import requests
+import threading
 
 from .address import *
 from .asset import *
@@ -112,6 +113,17 @@ def markets():
 def matchers():
     return wrapper('/api/matchers', host = DATAFEED)
 
+def loadSymbols():
+    try:
+        for s in symbols():
+            setattr(pywaves, s['symbol'], Asset(s['assetID']))
+    except:
+        pass
+
 setNode()
-for s in symbols():
-    setattr(pywaves,s['symbol'],Asset(s['assetID']))
+WAVES = Asset('')
+t = threading.Thread(target=loadSymbols)
+t.daemon = True
+t.start()
+
+
