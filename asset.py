@@ -34,8 +34,8 @@ class Asset(object):
                     self.quantity = req['quantity']
                     self.decimals = req['decimals']
                     self.reissuable = req['reissuable']
-                    self.name = req['name']
-                    self.description = req['description']
+                    self.name = req['name'].encode('ascii', 'ignore')
+                    self.description = req['description'].encode('ascii', 'ignore')
                     return 'Issued'
             except:
                 pass
