@@ -28,19 +28,12 @@ from .order import *
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
-PYWAVES_DIR = os.path.expanduser("~") + "/.pywaves"
 
 MATCHER = 'http://dev.pywaves.org:6886'
 MATCHER_PUBLICKEY = ''
 
 DATAFEED = 'http://marketdata.wavesplatform.com'
 
-if not os.path.exists(PYWAVES_DIR):
-    os.makedirs(PYWAVES_DIR)
-
-logging.basicConfig(filename=('%s/pywaves.log' % PYWAVES_DIR),
-                        format='%(asctime)-15s [%(levelname)s] %(message)s',
-                        level=logging.INFO)
 logging.getLogger("requests").setLevel(logging.WARNING)
 console = logging.StreamHandler()
 console.setLevel(logging.ERROR)
