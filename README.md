@@ -75,10 +75,10 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `uniqueAsset(Asset, txFee=DEFAULT_UNIQUE_FEE)` make asset name unique
 
-###Asset Class
+### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
-####attributes:
+#### attributes:
 - _status_
 - _assetId_	
 - _issuer_
@@ -88,18 +88,18 @@ __pywaves.Asset(assetId)__ _Creates a new Asset object_
 - _decimals_ = 0
 - _reissuable = False_
 
-####methods:
+#### methods:
 `status()` returns 'Issued' if the asset exists
 
 
-###AssetPair Class
+### AssetPair Class
 __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Asset objects_
 
-####attributes:
+#### attributes:
 - _asset1_
 - _asset2_
 
-####methods:
+#### methods:
 `orderbook()` get order book
 `ticker()` get ticker with 24h ohlcv data
 `last()` get traded price
@@ -115,10 +115,10 @@ __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Ass
 `candles(timeframe, n)` get the last n candles in the specified timeframe
 `candles(timeframe, from, to)` get the candles in from/to interval in the specified timeframe
 
-###Order Class
+### Order Class
 __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
-####attributes:
+#### attributes:
 - _status_
 - _orderId_
 - _assetPair_
@@ -126,12 +126,12 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 - _matcher_
 - _matcherPublicKey_
 
-####methods:
+#### methods:
 `status()` returns current order status
 `cancel()` cancel the order
 
 
-##Other functions
+## Other functions
 `pywaves.setNode(node, chain)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
 
 `pywaves.setMatcher(node)`  set matcher URL ('http://ip-address:port')
@@ -166,7 +166,7 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 
 ## More Examples
 
-####Playing with addresses:
+#### Playing with addresses:
 
 ```python
 import pywaves as pw
@@ -184,7 +184,7 @@ myAddress = pw.Address(seed='seven wrist bargain hope pattern banner plastic map
 myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 ```
 
-####Balances:
+#### Balances:
 ```python
 import pywaves as pw
 
@@ -200,7 +200,7 @@ print("Your balance is %18d" % myAddress.balance(confirmations = 20))
 print("Your asset balance is %18d" % myAddress.balance('DHgwrRvVyqJsepd32YbBqUeDH4GJ1N984X8QoekjgH8J'))
 ```
 
-####Waves and asset transfers:
+#### Waves and asset transfers:
 ```python
 import pywaves as pw
 
@@ -217,7 +217,7 @@ myAddress.sendAsset(recipient = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM'
                     amount = 1000)
 ```
 
-####Issuing an asset:
+#### Issuing an asset:
 ```python
 import pywaves as pw
 
@@ -227,7 +227,7 @@ myToken = myAddress.issueToken( name = "MyToken",
                                 decimals = 2 )
 ```
 
-####Making asset name unique:
+#### Making asset name unique:
 ```python
 import pywaves as pw
 
@@ -235,7 +235,7 @@ myToken = pw.Asset("8dzLYRNtYR6ASG2W4h3FqeeY49paRxNheQwRW6CpP1HT")
 myAddress.uniqueAsset(myToken)
 ```
 
-####Create an alias:
+#### Create an alias:
 ```python
 import pywaves as pw
 
@@ -243,7 +243,7 @@ myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S'
 myAddress.createAlias("MYALIAS1")
 ```
 
-####Mass payment:
+#### Mass payment:
 ```python
 import pywaves as pw
 
@@ -259,7 +259,7 @@ for address in recipients:
 	myAddress.sendWaves(pw.Address(address), 1000000)
 ```
 
-####Token airdrop:
+#### Token airdrop:
 ```python
 import pywaves as pw
 
@@ -273,7 +273,7 @@ for address in lines:
 	myAddress.sendAsset(pw.Address(address.strip()), myToken, amount)
 ```
 
-####Playing with Waves Matcher node (DEX):
+#### Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw
 
@@ -304,7 +304,7 @@ myAddress.cancelOrder(assetPair, myOrder)
 
 ```
 
-####Getting Market Data from Waves Data Feed (WDF):
+#### Getting Market Data from Waves Data Feed (WDF):
 ```python	
 import pywaves as pw
 
@@ -330,7 +330,7 @@ for t in ohlcv:
 	print("%s %s %s %s %s" % (t['open'], t['high'], t['low'], t['close'], t['volume']))
 ```
 
-####LPOS
+#### LPOS
 ```python
 import pywaves as pw
 
