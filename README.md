@@ -11,12 +11,12 @@ You can install PyWaves using:
 
 The library utilizes classes to represent various Waves data structures:
 
-* pywaves.Address
-* pywaves.Asset
-* pywaves.AssetPair
-* pywaves.Order
+- pywaves.Address
+- pywaves.Asset
+- pywaves.AssetPair
+- pywaves.Order
 
-####Code Example
+#### Code Example
 ```python
 import pywaves as pw
 
@@ -30,16 +30,16 @@ myAddress.sendAsset(otherAddress, myToken, 50)
 
 ```
 
-###Address Class
+### Address Class
 __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address object_
 
-####attributes:
+#### attributes:
 - _address_
 - _publicKey_
 - _privateKey_
 - _seed_
 
-####methods:
+#### methods:
 
 `balance(assetId='', confirmations=0)` returns balance of Waves or other assets
 
@@ -65,6 +65,16 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `leaseCancel(leaseId, txFee=DEFAULT_LEASE_FEE)` cancel a lease 
 
+`getOrderHistory(assetPair)` get order history for the specified asset pair
+
+`cancelOpenOrders(assetPair)` cancel all open orders for the specified asset pair
+
+`deleteOrderHistory(assetPair)` delete order history for the specified asset pair
+
+`createAlias(alias, txFee=DEFAULT_ALIAS_FEE)` create alias
+
+`uniqueAsset(Asset, txFee=DEFAULT_UNIQUE_FEE)` make asset name unique
+
 ###Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
@@ -89,6 +99,22 @@ __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Ass
 - _asset1_
 - _asset2_
 
+####methods:
+`orderbook()` get order book
+`ticker()` get ticker with 24h ohlcv data
+`last()` get traded price
+`open()` get 24h open price
+`high()` get 24h high price
+`low()` get 24h low price
+`close()` get 24h close price (same as last())
+`vwap()` get 24h vwap price
+`volume()` get 24h volume
+`priceVolume()` get 24h price volume
+`trades(n)` get the last n trades
+`trades(from, to)` get the trades in from/to interval
+`candles(timeframe, n)` get the last n candles in the specified timeframe
+`candles(timeframe, from, to)` get the candles in from/to interval in the specified timeframe
+
 ###Order Class
 __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
@@ -103,19 +129,6 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 ####methods:
 `status()` returns current order status
 `cancel()` cancel the order
-`ticker()` get ticker with 24h ohlcv data
-`last()` get traded price
-`open()` get 24h open price
-`high()` get 24h high price
-`low()` get 24h low price
-`close()` get 24h close price (same as last())
-`vwap()` get 24h vwap price
-`volume()` get 24h volume
-`priceVolume()` get 24h price volume
-`trades(n)` get the last n trades
-`trades(from, to)` get the trades in from/to interval
-`candles(timeframe, n)` get the last n candles in the specified timeframe
-`candles(timeframe, from, to)` get the candles in from/to interval in the specified timeframe
 
 
 ##Other functions
@@ -148,7 +161,8 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 * DEFAULT_ASSET_FEE = 100000000
 * DEFAULT_MATCHER_FEE = 1000000
 * DEFAULT_LEASE_FEE = 100000
-
+* DEFAULT_ALIAS_FEE = 100000
+* DEFAULT_UNIQUE_FEE = 100000
 
 ## More Examples
 
@@ -213,6 +227,22 @@ myToken = myAddress.issueToken( name = "MyToken",
                                 decimals = 2 )
 ```
 
+####Making asset name unique:
+```python
+import pywaves as pw
+
+myToken = pw.Asset("8dzLYRNtYR6ASG2W4h3FqeeY49paRxNheQwRW6CpP1HT")
+myAddress.uniqueAsset(myToken)
+```
+
+####Create an alias:
+```python
+import pywaves as pw
+
+myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
+myAddress.createAlias("MYALIAS1")
+```
+
 ####Mass payment:
 ```python
 import pywaves as pw
@@ -254,18 +284,18 @@ pw.setMatcher(node = 'http://127.0.0.1:6886')
 BTC = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 USD = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 BTC_USD = pw.AssetPair(BTC, USD)
-myOrder = myAddress.buy(assetPair = BTC_USD, amount = 15, price = 950.75)
+myOrder = myAddress.buy(assetPair = BTC_USD, amount = 15e8, price = 95075)
 
 # post a sell order
 WCT = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 Incent = pw.Asset('FLbGXzrpqkvucZqsHDcNxePTkh2ChmEi4GdBfDRRJVof')
 WCT_Incent = pw.AssetPair(WCT, Incent)
-myOrder = myAddress.sell(assetPair = WCT_Incent, amount = 100, price = 2.50)
+myOrder = myAddress.sell(assetPair = WCT_Incent, amount = 100e8, price = 25e8)
 
 # post a buy order using Waves as price asset
 BTC = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 BTC_WAVES = pw.AssetPair(BTC, pw.WAVES)
-myOrder = myAddress.buy(assetPair = BTC_WAVES, amount = 1, price = 5000)
+myOrder = myAddress.buy(assetPair = BTC_WAVES, amount = 1e8, price = 50e8)
 
 # cancel an order
 myOrder.cancel()
