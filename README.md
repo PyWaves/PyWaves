@@ -231,6 +231,8 @@ myToken = myAddress.issueToken( name = "MyToken",
 ```python
 import pywaves as pw
 
+pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
+
 myToken = pw.Asset("8dzLYRNtYR6ASG2W4h3FqeeY49paRxNheQwRW6CpP1HT")
 myAddress.uniqueAsset(myToken)
 ```
@@ -238,6 +240,8 @@ myAddress.uniqueAsset(myToken)
 #### Create an alias:
 ```python
 import pywaves as pw
+
+pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
 
 myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 myAddress.createAlias("MYALIAS1")
