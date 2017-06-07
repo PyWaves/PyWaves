@@ -15,11 +15,12 @@ DEFAULT_TX_FEE = 100000
 DEFAULT_ASSET_FEE = 100000000
 DEFAULT_MATCHER_FEE = 100000
 DEFAULT_LEASE_FEE = 100000
+DEFAULT_ALIAS_FEE = 100000
+DEFAULT_UNIQUE_FEE = 100000
 VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
 MAX_WDF_REQUEST = 100
 
 import requests
-import threading
 
 from .address import *
 from .asset import *
@@ -28,7 +29,7 @@ from .order import *
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
-
+PYWAVES_DIR='/Users/paolo/.pywaves'
 MATCHER = 'http://dev.pywaves.org:6886'
 MATCHER_PUBLICKEY = ''
 
@@ -66,13 +67,13 @@ def setDatafeed(wdf = DATAFEED):
     DATAFEED = wdf
     logging.info('Setting datafeed %s ' % (DATAFEED))
 
-def wrapper(api, postData='', host=''):
+def wrapper(api, postData='', host='', headers=''):
     if not host:
         host = NODE
     if postData:
         req = requests.post('%s%s' % (host, api), data=postData, headers={'content-type': 'application/json'}).json()
     else:
-        req = requests.get('%s%s' % (host, api)).json()
+        req = requests.get('%s%s' % (host, api), headers=headers).json()
     return req
 
 def height():

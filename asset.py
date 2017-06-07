@@ -69,6 +69,12 @@ class AssetPair(object):
         else:
             return self.asset1
 
+    def orderbook(self):
+        req = pywaves.wrapper('/matcher/orderbook/%s/%s' % (
+        'WAVES' if self.asset1.assetId == '' else self.asset1.assetId,
+        'WAVES' if self.asset2.assetId == '' else self.asset2.assetId), host=pywaves.MATCHER)
+        return req
+
     def ticker(self):
         a1 = 'WAVES' if self.asset1.assetId == '' else self.asset1.assetId
         a2 = 'WAVES' if self.asset2.assetId == '' else self.asset2.assetId
