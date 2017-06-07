@@ -21,6 +21,7 @@ VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
 MAX_WDF_REQUEST = 100
 
 import requests
+import threading
 
 from .address import *
 from .asset import *
