@@ -348,7 +348,7 @@ class Address(object):
         elif self.balance() < amount + txFee:
             logging.error('Insufficient Waves balance')
         else:
-            timestamp = int(time.time() * 1000) + 3600000L
+            timestamp = int(time.time() * 1000)
             sData = b'\4' + \
                     base58.b58decode(self.publicKey) + \
                     b'\0\0' + \
@@ -599,7 +599,7 @@ class Address(object):
         if not self.privateKey:
             logging.error('Private key required')
         else:
-            timestamp = int(time.time() * 1000)  - 3600000L
+            timestamp = int(time.time() * 1000)
             sData = b'\x0a' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">H", len(aliasWithNetwork)) + \
