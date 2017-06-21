@@ -59,6 +59,8 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
 
+`tradableBalance(assetPair)` get tradable balance for the specified asset pair
+
 `sell(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
 
 `lease(recipient, amount, txFee=DEFAULT_LEASE_FEE)` post a lease transaction

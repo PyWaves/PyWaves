@@ -31,7 +31,7 @@ NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
 PYWAVES_DIR='/Users/paolo/.pywaves'
-MATCHER = 'http://dev.pywaves.org:6886'
+MATCHER = 'https://nodes.wavesnodes.com'
 MATCHER_PUBLICKEY = ''
 
 DATAFEED = 'http://marketdata.wavesplatform.com'

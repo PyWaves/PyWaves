@@ -501,6 +501,16 @@ class Address(object):
         if id!=-1:
             return pywaves.Order(id, assetPair, self)
 
+    def tradableBalance(self, assetPair):
+        try:
+            balances = pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=pywaves.MATCHER)
+            amountBalance = balances['WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
+            priceBalance = balances['WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
+        except:
+            amountBalance = 0
+            priceBalance = 0
+        return amountBalance, priceBalance
+
     def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE):
         if not self.privateKey:
             logging.error('Private key required')
