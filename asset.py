@@ -44,6 +44,8 @@ class AssetPair(object):
     def __init__(self, asset1, asset2):
         self.asset1 = asset1
         self.asset2 = asset2
+        self.a1 = 'WAVES' if self.asset1.assetId == '' else self.asset1.assetId
+        self.a2 = 'WAVES' if self.asset2.assetId == '' else self.asset2.assetId
 
     def __str__(self):
         return 'asset1 = %s\nasset2 = %s' % (self.asset1.assetId, self.asset2.assetId)
@@ -70,15 +72,11 @@ class AssetPair(object):
             return self.asset1
 
     def orderbook(self):
-        req = pywaves.wrapper('/matcher/orderbook/%s/%s' % (
-        'WAVES' if self.asset1.assetId == '' else self.asset1.assetId,
-        'WAVES' if self.asset2.assetId == '' else self.asset2.assetId), host=pywaves.MATCHER)
+        req = pywaves.wrapper('/matcher/orderbook/%s/%s' % (self.a1, self.a2), host=pywaves.MATCHER)
         return req
 
     def ticker(self):
-        a1 = 'WAVES' if self.asset1.assetId == '' else self.asset1.assetId
-        a2 = 'WAVES' if self.asset2.assetId == '' else self.asset2.assetId
-        return pywaves.wrapper('/api/ticker/%s/%s' % (a1, a2), host=pywaves.DATAFEED)
+        return pywaves.wrapper('/api/ticker/%s/%s' % (self.a1, self.a2), host=pywaves.DATAFEED)
 
     def last(self):
         return str(self.ticker()['24h_close'])
@@ -105,15 +103,13 @@ class AssetPair(object):
         return str(self.ticker()['24h_priceVolume'])
 
     def _getMarketData(self, method, params):
-        a1 = 'WAVES' if self.asset1.assetId == '' else self.asset1.assetId
-        a2 = 'WAVES' if self.asset2.assetId == '' else self.asset2.assetId
-        return pywaves.wrapper('%s/%s/%s/%s' % (method, a1, a2, params), host=pywaves.DATAFEED)
+        return pywaves.wrapper('%s/%s/%s/%s' % (method, self.a1, self.a2, params), host=pywaves.DATAFEED)
 
     def trades(self, *args):
         if len(args)==1:
             limit = args[0]
             if limit > 0 and limit <= pywaves.MAX_WDF_REQUEST:
-                return self._getMarketData('/api/trades/%s/%s/%d' % (a1, a2, limit))
+                return self._getMarketData('/api/trades/', '%d' % limit)
             else:
                 return logging.error('Invalid request. Limit must be >0 and <= 100')
         elif len(args)==2:
