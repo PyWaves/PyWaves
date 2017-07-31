@@ -625,21 +625,3 @@ class Address(object):
                 "signature": signature
             })
             return pywaves.wrapper('/alias/broadcast/create', data)
-
-    def uniqueAsset(self, Asset, txFee=pywaves.DEFAULT_UNIQUE_FEE):
-        timestamp = int(time.time() * 1000)
-        sData = b'\x0b' + str(pywaves.CHAIN_ID) + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(Asset.assetId) + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp)
-        signature = crypto.sign(self.privateKey, sData)
-        data = json.dumps({
-            "senderPublicKey": self.publicKey,
-            "assetId": Asset.assetId,
-            "timestamp": timestamp,
-            "networkByte": ord(pywaves.CHAIN_ID),
-            "fee": txFee,
-            "signature": signature
-        })
-        return pywaves.wrapper('/assets/broadcast/make-asset-name-unique', data)

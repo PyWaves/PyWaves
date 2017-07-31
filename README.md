@@ -75,8 +75,6 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `createAlias(alias, txFee=DEFAULT_ALIAS_FEE)` create alias
 
-`uniqueAsset(Asset, txFee=DEFAULT_UNIQUE_FEE)` make asset name unique
-
 ### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
@@ -164,7 +162,6 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 * DEFAULT_MATCHER_FEE = 1000000
 * DEFAULT_LEASE_FEE = 100000
 * DEFAULT_ALIAS_FEE = 100000
-* DEFAULT_UNIQUE_FEE = 100000
 
 ## More Examples
 
@@ -227,16 +224,6 @@ myToken = myAddress.issueToken( name = "MyToken",
                                 description = "This is my first token",
                                 quantity = 1000000,
                                 decimals = 2 )
-```
-
-#### Making asset name unique:
-```python
-import pywaves as pw
-
-pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
-
-myToken = pw.Asset("8dzLYRNtYR6ASG2W4h3FqeeY49paRxNheQwRW6CpP1HT")
-myAddress.uniqueAsset(myToken)
 ```
 
 #### Create an alias:
