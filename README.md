@@ -148,9 +148,7 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
 `pywaves.symbols()` get list of symbol-asset mapping
 
-`pywaves.markets()` get all traded markets with tickers and matchers info
-
-`pywaves.matchers()` get list of matchers with traded markets
+`pywaves.markets()` get all traded markets with tickers
 
 `pywaves.{SYMBOL_NAME}` get predefined asset for the specified symbol (pywaves.WAVES, pywaves.BTC, pywaves.USD,...)
 

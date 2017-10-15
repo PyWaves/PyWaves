@@ -195,7 +195,7 @@ wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 
             'zoo']
 
 class Address(object):
-    def __init__(self, address='', publicKey='', privateKey='', seed=''):
+    def __init__(self, address='', publicKey='', privateKey='', seed='', alias=''):
         if seed:
             self._generate(seed=seed)
         elif privateKey:
@@ -209,8 +209,14 @@ class Address(object):
                 self.publicKey = publicKey
                 self.privateKey = privateKey
                 self.seed = seed
+        elif alias:
+            self.address = pywaves.wrapper('/alias/by-alias/%s' % alias).get("address", "")
+            self.publicKey = ''
+            self.privateKey = ''
+            self.seed = ''
         else:
             self._generate()
+        self.aliases = self.aliases()
 
     def __str__(self):
         if self.address:
@@ -240,6 +246,13 @@ class Address(object):
         req = pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
         return [r['assetId'] for r in req]
 
+    def aliases(self):
+        a = pywaves.wrapper('/alias/by-address/%s' % self.address)
+        if type(a)==list:
+            for i in range(len(a)):
+                a[i] = a[i][8:]
+        return a
+
     def _generate(self, privateKey='', seed=''):
         self.seed = seed
         if not privateKey and not seed:
@@ -255,6 +268,7 @@ class Address(object):
                 words.append(wordList[w2])
                 words.append(wordList[w3])
             self.seed = ' '.join(words)
+
         seedHash = crypto.hashChain(('\0\0\0\0' + self.seed).encode('utf-8'))
         accountSeedHash = crypto.sha256(seedHash)
         if not privateKey:
@@ -300,7 +314,7 @@ class Address(object):
             })
             return pywaves.Asset(pywaves.wrapper('/assets/broadcast/issue', data)['assetId'])
 
-    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
+    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
         sData = b'\5' + \
                 base58.b58decode(self.publicKey) + \
@@ -319,9 +333,9 @@ class Address(object):
             "fee": txFee,
             "signature": signature
         })
-        return pywaves.Asset(pywaves.wrapper('/assets/broadcast/reissue', data)['assetId'])
+        return pywaves.wrapper('/assets/broadcast/reissue', data).get('id', 'ERROR')
 
-    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_ASSET_FEE):
+    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
         sData = '\6' + \
                 base58.b58decode(self.publicKey) + \
@@ -338,7 +352,7 @@ class Address(object):
             "fee": txFee,
             "signature": signature
         })
-        return pywaves.wrapper('/assets/broadcast/burn', data)
+        return pywaves.wrapper('/assets/broadcast/burn', data).get('id', 'ERROR')
 
     def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE):
         if not self.privateKey:

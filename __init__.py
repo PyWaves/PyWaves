@@ -29,7 +29,6 @@ from .order import *
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
-PYWAVES_DIR='/Users/paolo/.pywaves'
 MATCHER = 'https://nodes.wavesnodes.com'
 MATCHER_PUBLICKEY = ''
 
@@ -102,22 +101,10 @@ def symbols():
     return wrapper('/api/symbols', host=DATAFEED)
 
 def markets():
-    return wrapper('/api/markets', host = DATAFEED)
-
-def matchers():
-    return wrapper('/api/matchers', host = DATAFEED)
-
-def loadSymbols():
-    try:
-        for s in symbols():
-            setattr(pywaves, s['symbol'], Asset(s['assetID']))
-    except:
-        pass
+    return wrapper('/api/markets', host=DATAFEED)
 
 setNode()
+setMatcher()
 WAVES = Asset('')
-t = threading.Thread(target=loadSymbols)
-t.daemon = True
-t.start()
 
 
