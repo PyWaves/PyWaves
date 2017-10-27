@@ -201,7 +201,10 @@ class Address(object):
         elif privateKey:
             self._generate(privateKey=privateKey)
         elif address:
-            valid = pywaves.wrapper('/addresses/validate/%s' % address)['valid']
+            if pywaves.OFFLINE:
+                valid = True
+            else:
+                valid = pywaves.wrapper('/addresses/validate/%s' % address)['valid']
             if not valid:
                 raise ValueError("Invalid address")
             else:
@@ -209,14 +212,15 @@ class Address(object):
                 self.publicKey = publicKey
                 self.privateKey = privateKey
                 self.seed = seed
-        elif alias:
+        elif alias and not pywaves.OFFLINE:
             self.address = pywaves.wrapper('/alias/by-alias/%s' % alias).get("address", "")
             self.publicKey = ''
             self.privateKey = ''
             self.seed = ''
         else:
             self._generate()
-        self.aliases = self.aliases()
+        if not pywaves.OFFLINE:
+            self.aliases = self.aliases()
 
     def __str__(self):
         if self.address:
@@ -228,8 +232,7 @@ class Address(object):
                         ab.append("  %s (%s) = %d" % (a['assetId'], a['issueTransaction']['name'].encode('ascii', 'ignore'), a['balance']))
             except:
                 pass
-            return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nbalances:\n  Waves = %d%s' % (
-            self.address, self.publicKey, self.privateKey, self.seed, self.balance(), '\n'+'\n'.join(ab) if ab else '')
+            return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nbalances:\n  Waves = %d%s' % (self.address, self.publicKey, self.privateKey, self.seed, self.balance(), '\n'+'\n'.join(ab) if ab else '')
 
     __repr__ = __str__
 
@@ -312,7 +315,11 @@ class Address(object):
                 "fee": txFee,
                 "signature": signature
             })
-            return pywaves.Asset(pywaves.wrapper('/assets/broadcast/issue', data)['assetId'])
+            req = pywaves.wrapper('/assets/broadcast/issue', data)
+            if pywaves.OFFLINE:
+                return req
+            else:
+                return pywaves.Asset(req['assetId'])
 
     def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
@@ -333,7 +340,11 @@ class Address(object):
             "fee": txFee,
             "signature": signature
         })
-        return pywaves.wrapper('/assets/broadcast/reissue', data).get('id', 'ERROR')
+        req = pywaves.wrapper('/assets/broadcast/reissue', data)
+        if pywaves.OFFLINE:
+            return req
+        else:
+            return req.get('id', 'ERROR')
 
     def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
@@ -352,17 +363,22 @@ class Address(object):
             "fee": txFee,
             "signature": signature
         })
-        return pywaves.wrapper('/assets/broadcast/burn', data).get('id', 'ERROR')
+        req = pywaves.wrapper('/assets/broadcast/burn', data)
+        if pywaves.OFFLINE:
+            return req
+        else:
+            return req.get('id', 'ERROR')
 
-    def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE):
+    def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if not self.privateKey:
             logging.error('Private key required')
         elif amount <= 0:
             logging.error('Amount must be > 0')
-        elif self.balance() < amount + txFee:
+        elif not pywaves.OFFLINE and self.balance() < amount + txFee:
             logging.error('Insufficient Waves balance')
         else:
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\4' + \
                     base58.b58decode(self.publicKey) + \
                     b'\0\0' + \
@@ -384,19 +400,20 @@ class Address(object):
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def sendAsset(self, recipient, asset, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE):
+    def sendAsset(self, recipient, asset, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if not self.privateKey:
             logging.error('Private key required')
-        elif not asset.status():
+        elif not pywaves.OFFLINE and not asset.status():
             logging.error('Asset not issued')
         elif amount <= 0:
             logging.error('Amount must be > 0')
-        elif self.balance(asset.assetId) < amount:
+        elif not pywaves.OFFLINE and self.balance(asset.assetId) < amount:
             logging.error('Insufficient asset balance')
-        elif self.balance() < txFee:
+        elif not pywaves.OFFLINE and self.balance() < txFee:
             logging.error('Insufficient Waves balance')
         else:
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\4' + \
                     base58.b58decode(self.publicKey) + \
                     b'\1' + \
@@ -421,8 +438,9 @@ class Address(object):
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
-        timestamp = int(time.time() * 1000)+1
+    def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
@@ -461,15 +479,18 @@ class Address(object):
             elif req['status'] == 'OrderAccepted':
                 id = req['message']['id']
                 logging.info('Order Accepted - ID: %s' % id)
-        else:
+        elif not pywaves.OFFLINE:
             logging.error(req)
+        else:
+            return req
         return id
 
     def cancelOrder(self, assetPair, order):
-        if order.status() == 'Filled':
-            logging.error("Order already filled")
-        elif not order.status():
-            logging.error("Order not found")
+        if not pywaves.OFFLINE:
+            if order.status() == 'Filled':
+                logging.error("Order already filled")
+            elif not order.status():
+                logging.error("Order not found")
         sData = base58.b58decode(self.publicKey) + \
                 base58.b58decode(order.orderId)
         signature = crypto.sign(self.privateKey, sData)
@@ -479,11 +500,14 @@ class Address(object):
             "signature": signature
         })
         req = pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
-        id = -1
-        if req['status'] == 'OrderCanceled':
-            id = req['orderId']
-            logging.info('Order Cancelled - ID: %s' % id)
-        return id
+        if pywaves.OFFLINE:
+            return req
+        else:
+            id = -1
+            if req['status'] == 'OrderCanceled':
+                id = req['orderId']
+                logging.info('Order Cancelled - ID: %s' % id)
+            return id
 
     def cancelOrderByID(self, assetPair, orderId):
         sData = base58.b58decode(self.publicKey) + \
@@ -495,45 +519,56 @@ class Address(object):
             "signature": signature
         })
         req = pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
-        id = -1
-        if req['status'] == 'OrderCanceled':
-            id = req['orderId']
-            logging.info('Order Cancelled - ID: %s' % id)
-        return id
+        if pywaves.OFFLINE:
+            return req
+        else:
+            id = -1
+            if req['status'] == 'OrderCanceled':
+                id = req['orderId']
+                logging.info('Order Cancelled - ID: %s' % id)
+            return id
 
-    def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
+    def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
         normPrice = int(pow(10, 8 - assetPair.asset1.decimals) * price)
-        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee)
-        if id != -1:
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp)
+        if pywaves.OFFLINE:
+            return id
+        elif id != -1:
             return pywaves.Order(id, assetPair, self)
 
-    def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE):
+    def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
         normPrice = int(pow(10, 8 - assetPair.asset1.decimals) * price)
-        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee)
-        if id!=-1:
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
+        if pywaves.OFFLINE:
+            return id
+        elif id!=-1:
             return pywaves.Order(id, assetPair, self)
 
     def tradableBalance(self, assetPair):
         try:
-            balances = pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=pywaves.MATCHER)
-            amountBalance = balances['WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
-            priceBalance = balances['WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
+            req = pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=pywaves.MATCHER)
+            if pywaves.OFFLINE:
+                    return req
+            amountBalance = req['WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
+            priceBalance = req['WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
         except:
             amountBalance = 0
             priceBalance = 0
-        return amountBalance, priceBalance
+        if not pywaves.OFFLINE:
+            return amountBalance, priceBalance
 
-    def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE):
+    def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
             logging.error('Private key required')
         elif amount <= 0:
             logging.error('Amount must be > 0')
-        elif self.balance() < amount + txFee:
+        elif not pywaves.OFFLINE and self.balance() < amount + txFee:
             logging.error('Insufficient Waves balance')
         else:
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\x08' + \
                     base58.b58decode(self.publicKey) + \
                     base58.b58decode(recipient.address) + \
@@ -549,15 +584,20 @@ class Address(object):
                 "timestamp": timestamp,
                 "signature": signature
             })
-            return pywaves.wrapper('/leasing/broadcast/lease', data)['id']
+            req = pywaves.wrapper('/leasing/broadcast/lease', data)
+            if pywaves.OFFLINE:
+                return req
+            else:
+                return req['id']
 
-    def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE):
+    def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
             logging.error('Private key required')
-        elif self.balance() < txFee:
+        elif not pywaves.OFFLINE and self.balance() < txFee:
             logging.error('Insufficient Waves balance')
         else:
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\x09' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">Q", txFee) + \
@@ -572,11 +612,14 @@ class Address(object):
                 "signature": signature
             })
             req = pywaves.wrapper('/leasing/broadcast/cancel', data)
-            if 'leaseId' in req:
+            if pywaves.OFFLINE:
+                return req
+            elif 'leaseId' in req:
                 return req['leaseId']
 
-    def getOrderHistory(self, assetPair):
-        timestamp = int(time.time() * 1000)
+    def getOrderHistory(self, assetPair, timestamp=0):
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
         sData = base58.b58decode(self.publicKey) + \
                 struct.pack(">Q", timestamp)
         signature = crypto.sign(self.privateKey, sData)
@@ -618,12 +661,13 @@ class Address(object):
             })
             pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
 
-    def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE):
+    def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE, timestamp=0):
         aliasWithNetwork = b'\x02' + str(pywaves.CHAIN_ID) + struct.pack(">H", len(alias)) + crypto.str2bytes(alias)
         if not self.privateKey:
             logging.error('Private key required')
         else:
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\x0a' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">H", len(aliasWithNetwork)) + \

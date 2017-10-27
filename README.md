@@ -45,27 +45,27 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `assets()` returns a list of assets owned by the address
 
-`issueAsset(name, description, quantity, decimals=0, reissuable=False, txFee=DEFAULT_ASSET_FEE)` issue a new asset
+`issueAsset(name, description, quantity, decimals=0, reissuable=False, txFee=DEFAULT_ASSET_FEE, timestamp)` issue a new asset
 
-`reissueAsset(Asset, quantity, reissuable=False, txFee=DEFAULT_ASSET_FEE)` reissue an asset
+`reissueAsset(Asset, quantity, reissuable=False, txFee=DEFAULT_ASSET_FEE, timestamp)` reissue an asset
 
-`burnAsset(Asset, quantity, txFee=DEFAULT_ASSET_FEE)` burn the specified quantity of an asset
+`burnAsset(Asset, quantity, txFee=DEFAULT_ASSET_FEE, timestamp)` burn the specified quantity of an asset
 
-`sendWaves(recipient, amount, attachment='', txFee=DEFAULT_TX_FEE)` send specified amount of Waves to recipient
+`sendWaves(recipient, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp)` send specified amount of Waves to recipient
 
-`sendAsset(recipient, asset, amount, attachment='', txFee=DEFAULT_TX_FEE)` send specified amount of an asset to recipient
+`sendAsset(recipient, asset, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp)` send specified amount of an asset to recipient
 
 `cancelOrder(assetPair, order)` cancel an order
 
-`buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE)` post a buy order
+`buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp)` post a buy order
 
 `tradableBalance(assetPair)` get tradable balance for the specified asset pair
 
-`sell(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE)` post a sell order
+`sell(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp)` post a sell order
 
-`lease(recipient, amount, txFee=DEFAULT_LEASE_FEE)` post a lease transaction
+`lease(recipient, amount, txFee=DEFAULT_LEASE_FEE, timestamp)` post a lease transaction
 
-`leaseCancel(leaseId, txFee=DEFAULT_LEASE_FEE)` cancel a lease 
+`leaseCancel(leaseId, txFee=DEFAULT_LEASE_FEE, timestamp)` cancel a lease
 
 `getOrderHistory(assetPair)` get order history for the specified asset pair
 
@@ -73,7 +73,7 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `deleteOrderHistory(assetPair)` delete order history for the specified asset pair
 
-`createAlias(alias, txFee=DEFAULT_ALIAS_FEE)` create alias
+`createAlias(alias, txFee=DEFAULT_ALIAS_FEE, timestamp)` create alias
 
 ### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
@@ -133,6 +133,12 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
 ## Other functions
 `pywaves.setNode(node, chain)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
+
+`pywaves.setChain(chain)`  set chain (either 'mainnet' or 'testnet')
+
+`pywaves.setOffline()`  switch to offline mode; sign tx locally without broadcasting to network
+
+`pywaves.setOnline()`  switch to online mode; sign tx locally a broadcast to network
 
 `pywaves.setMatcher(node)`  set matcher URL ('http://ip-address:port')
 
@@ -417,6 +423,60 @@ sender.publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
 matcher = http://127.0.0.1:6886
 ```
 
+### Offline signing and custom timestamps
+
+#### Offline signing a future transaction:
+```
+>>> import pywaves as pw
+>>> pw.setOffline()
+>>> myAddress=pw.Address(privateKey="F2jVbjrKzjUsZ1AQRdnd8MmxFc85NQz5jwvZX4BXswXv")
+>>> recipient=pw.Address("3P8Ya6Ary5gzwnzbBXDp3xjeNG97JEiPcdA")
+# sign a future tx to transfer 100 WAVES to recipient
+# the tx is valid on Jan 1st, 2020 12:00pm
+>>> myAddress.sendWaves(recipient, amount=100e8, timestamp=1577880000000)
+{'api-endpoint': '/assets/broadcast/transfer',
+ 'api-type': 'POST',
+ 'api-data': '{"fee": 100000,
+			   "timestamp": 1577880000000,
+			   "senderPublicKey": "27zdzBa1q46RCMamZ8gw2xrTGypZnbzXs5J1Y2HbUmEv",
+			   "amount": 10000000000,
+			   "attachment": "",
+			   "recipient": "3P8Ya6Ary5gzwnzbBXDp3xjeNG97JEiPcdA"
+			   "signature": "YetPopTJWC4WBPXbneWv9g6YEp6J9g9rquZWjewjdQnFbmaxtXjrRsUu69NZzHebVzUGLrhQiFFoguXJwdUn8BH"}'}
+```
+
+#### Offline signing time lock/unlock transactions:
+```
+>>> import pywaves as pw
+>>> pw.setOffline()
+>>> myAddress=pw.Address(privateKey="F2jVbjrKzjUsZ1AQRdnd8MmxFc85NQz5jwvZX4BXswXv")
+# generate a lockbox address
+>>> lockAddress=pw.Address()
+# sign the 'lock' tx to send 100e8 to the lockbox (valid on Nov 1st, 2017)
+>>> myAddress.sendWaves(lockAddress, 100e8, timestamp=1509537600000)
+{'api-endpoint': '/assets/broadcast/transfer',
+ 'api-type': 'POST',
+ 'api-data': '{"fee": 100000,
+               "timestamp": 1509537600000,
+               "senderPublicKey": "27zdzBa1q46RCMamZ8gw2xrTGypZnbzXs5J1Y2HbUmEv",
+               "amount": 10000000000,
+               "attachment": "",
+               "recipient": "3P3UbyQM9W7WzTgjYkLuBrPZZeWsiUtCcpv",
+               "signature": "5VgT6qWxJwxEyrxFNfsi67QqbyUiGq9Ka7HVzgovRTTDT8nLRyuQv2wBAJQhRiXDkTTV6zsQmHnBkh8keCaFPoNT"}'}
+# sign the 'unlock' tx to send funds back to myAddress (valid on Jan 1st, 2020)
+>>> lockAddress.sendWaves(myAddress, 100e8-200000, txFee=200000, timestamp=1577880000000)
+{'api-endpoint': '/assets/broadcast/transfer',
+ 'api-type': 'POST',
+ 'api-data': '{"fee": 200000,
+               "timestamp": 1577880000000,
+			   "senderPublicKey": "52XnBGnAVZmw1CHo9aJPiMsVMiTWeNGSNN9aYJ7cDtx4",
+			   "amount": 9999800000,
+			   "attachment": "",
+			   "recipient": "3P7tfdCaTyYCfg5ojxNahEJDSS4MZ7ybXBY",
+			   "signature": "3beyz1sqKefP96LaXWT3CxdPRW86DAxcj6wgWPyyKq3SgdotVqnKyWXDyeHnBzCq1nC7JA9CChTmo1c1iVAv6C4T"}'}
+# delete lockbox address and private key
+>>> del lockAddress
+```
 
 ## Connecting to a different node or chain
 

@@ -20,12 +20,12 @@ VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
 MAX_WDF_REQUEST = 100
 
 import requests
-import threading
 
 from .address import *
 from .asset import *
 from .order import *
 
+OFFLINE = False
 NODE = 'https://nodes.wavesnodes.com'
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
@@ -41,16 +41,28 @@ formatter = logging.Formatter('[%(levelname)s] %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
-def setNode(node = NODE, chain = CHAIN):
-    global NODE, CHAIN, CHAIN_ID
-    NODE = node
+
+def setOffline():
+    global OFFLINE
+    OFFLINE = True
+
+def setOnline():
+    global OFFLINE
+    OFFLINE = False
+
+def setChain(chain = CHAIN):
+    global CHAIN, CHAIN_ID
     if chain.lower()=='mainnet' or chain.lower()=='w':
         CHAIN = 'mainnet'
         CHAIN_ID = 'W'
     else:
         CHAIN = 'testnet'
         CHAIN_ID = 'T'
-    logging.info('Connecting to %s node %s' % (CHAIN, NODE))
+
+def setNode(node = NODE, chain = CHAIN):
+    global NODE, CHAIN, CHAIN_ID
+    NODE = node
+    setChain(chain)
 
 def setMatcher(node = MATCHER):
     global MATCHER, MATCHER_PUBLICKEY
@@ -67,6 +79,13 @@ def setDatafeed(wdf = DATAFEED):
     logging.info('Setting datafeed %s ' % (DATAFEED))
 
 def wrapper(api, postData='', host='', headers=''):
+    global OFFLINE
+    if OFFLINE:
+        offlineTx = {}
+        offlineTx['api-type'] = 'POST' if postData else 'GET'
+        offlineTx['api-endpoint'] = api
+        offlineTx['api-data'] = postData
+        return offlineTx
     if not host:
         host = NODE
     if postData:
@@ -103,8 +122,6 @@ def symbols():
 def markets():
     return wrapper('/api/markets', host=DATAFEED)
 
-setNode()
-setMatcher()
 WAVES = Asset('')
 
 
