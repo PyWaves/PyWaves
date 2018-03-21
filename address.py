@@ -195,30 +195,32 @@ wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 
             'zoo']
 
 class Address(object):
-    def __init__(self, address='', publicKey='', privateKey='', seed='', alias=''):
+    def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
+        if nonce<0 or nonce>4294967295:
+            raise ValueError('Nonce must be between 0 and 4294967295')
         if seed:
-            self._generate(seed=seed)
+            self._generate(seed=seed, nonce=nonce)
         elif privateKey:
             self._generate(privateKey=privateKey)
+        elif publicKey:
+            self._generate(publicKey=publicKey)
         elif address:
-            if pywaves.OFFLINE:
-                valid = True
-            else:
-                valid = pywaves.wrapper('/addresses/validate/%s' % address)['valid']
-            if not valid:
+            if not pywaves.validateAddress(address):
                 raise ValueError("Invalid address")
             else:
                 self.address = address
                 self.publicKey = publicKey
                 self.privateKey = privateKey
                 self.seed = seed
+                self.nonce = nonce
         elif alias and not pywaves.OFFLINE:
             self.address = pywaves.wrapper('/alias/by-alias/%s' % alias).get("address", "")
             self.publicKey = ''
             self.privateKey = ''
             self.seed = ''
+            self.nonce = 0
         else:
-            self._generate()
+            self._generate(nonce=nonce)
         if not pywaves.OFFLINE:
             self.aliases = self.aliases()
 
@@ -232,7 +234,7 @@ class Address(object):
                         ab.append("  %s (%s) = %d" % (a['assetId'], a['issueTransaction']['name'].encode('ascii', 'ignore'), a['balance']))
             except:
                 pass
-            return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nbalances:\n  Waves = %d%s' % (self.address, self.publicKey, self.privateKey, self.seed, self.balance(), '\n'+'\n'.join(ab) if ab else '')
+            return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nnonce = %d\nbalances:\n  Waves = %d%s' % (self.address, self.publicKey, self.privateKey, self.seed, self.nonce, self.balance(), '\n'+'\n'.join(ab) if ab else '')
 
     __repr__ = __str__
 
@@ -256,9 +258,10 @@ class Address(object):
                 a[i] = a[i][8:]
         return a
 
-    def _generate(self, privateKey='', seed=''):
+    def _generate(self, publicKey='', privateKey='', seed='', nonce=0):
         self.seed = seed
-        if not privateKey and not seed:
+        self.nonce = nonce
+        if not publicKey and not privateKey and not seed:
             wordCount = 2048
             words = []
             for i in range(5):
@@ -271,14 +274,17 @@ class Address(object):
                 words.append(wordList[w2])
                 words.append(wordList[w3])
             self.seed = ' '.join(words)
-
-        seedHash = crypto.hashChain(('\0\0\0\0' + self.seed).encode('utf-8'))
-        accountSeedHash = crypto.sha256(seedHash)
-        if not privateKey:
-            privKey = curve.generatePrivateKey(accountSeedHash)
+        if publicKey:
+            pubKey = base58.b58decode(publicKey)
+            privKey = ""
         else:
-            privKey = base58.b58decode(privateKey)
-        pubKey = curve.generatePublicKey(privKey)
+            seedHash = crypto.hashChain(struct.pack(">L", nonce) + crypto.str2bytes(self.seed))
+            accountSeedHash = crypto.sha256(seedHash)
+            if not privateKey:
+                privKey = curve.generatePrivateKey(accountSeedHash)
+            else:
+                privKey = base58.b58decode(privateKey)
+            pubKey = curve.generatePublicKey(privKey)
         unhashedAddress = chr(1) + str(pywaves.CHAIN_ID) + crypto.hashChain(pubKey)[0:20]
         addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
         self.address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
@@ -445,25 +451,28 @@ class Address(object):
 
             return pywaves.wrapper('/transactions/broadcast', data)
 
-    def sendAsset(self, recipient, asset, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+    def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if not self.privateKey:
             logging.error('Private key required')
-        elif not pywaves.OFFLINE and not asset.status():
+        elif not pywaves.OFFLINE and asset and not asset.status():
             logging.error('Asset not issued')
         elif amount <= 0:
             logging.error('Amount must be > 0')
-        elif not pywaves.OFFLINE and self.balance(asset.assetId) < amount:
+        elif not pywaves.OFFLINE and asset and self.balance(asset.assetId) < amount:
             logging.error('Insufficient asset balance')
-        elif not pywaves.OFFLINE and self.balance() < txFee:
+        elif not pywaves.OFFLINE and not asset and self.balance() < amount:
             logging.error('Insufficient Waves balance')
+        elif not pywaves.OFFLINE and not feeAsset and self.balance() < txFee:
+            logging.error('Insufficient Waves balance')
+        elif not pywaves.OFFLINE and feeAsset and self.balance(feeAsset.assetId) < txFee:
+            logging.error('Insufficient asset balance')
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\4' + \
                     base58.b58decode(self.publicKey) + \
-                    b'\1' + \
-                    base58.b58decode(asset.assetId) + \
-                    b'\0' + \
+                    (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
+                    (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
                     struct.pack(">Q", timestamp) + \
                     struct.pack(">Q", amount) + \
                     struct.pack(">Q", txFee) + \
@@ -472,7 +481,8 @@ class Address(object):
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
-                "assetId": asset.assetId,
+                "assetId": (asset.assetId if asset else ""),
+                "feeAssetId": (feeAsset.assetId if feeAsset else ""),
                 "senderPublicKey": self.publicKey,
                 "recipient": recipient.address,
                 "amount": amount,
