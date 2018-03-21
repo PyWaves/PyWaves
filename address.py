@@ -400,6 +400,51 @@ class Address(object):
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
+    def massTransferWaves(self, transfers, attachment='', timestamp=0):
+        txFee = 100000 + len(transfers) * 50000
+        totalAmount = 0
+
+        for i in range(0, len(transfers)):
+            totalAmount += transfers[i]['amount']
+
+        if not self.privateKey:
+            logging.error('Private key required')
+        elif len(transfers) > 100:
+            logging.error('Too many recipients')
+        elif not pywaves.OFFLINE and self.balance() < totalAmount + txFee:
+            logging.error('Insufficient Waves balance')
+        else:
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            transfersData = b''
+            for i in range(0, len(transfers)):
+                transfersData += base58.b58decode(transfers[i]['recipient']) + struct.pack(">Q", transfers[i]['amount'])
+            sData = b'\x0b' + \
+                    b'\1' + \
+                    base58.b58decode(self.publicKey) + \
+                    b'\0' + \
+                    struct.pack(">H", len(transfers)) + \
+                    transfersData + \
+                    struct.pack(">Q", timestamp) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">H", len(attachment)) + \
+                    crypto.str2bytes(attachment)
+
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 11,
+                "assetId": "",
+                "senderPublicKey": self.publicKey,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "transfers": transfers,
+                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
+                "signature": signature
+            })
+
+            return pywaves.wrapper('/transactions/broadcast', data)
+
     def sendAsset(self, recipient, asset, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if not self.privateKey:
             logging.error('Private key required')
@@ -437,6 +482,52 @@ class Address(object):
                 "signature": signature
             })
             return pywaves.wrapper('/assets/broadcast/transfer', data)
+
+    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
+        txFee = 100000 + len(transfers) * 50000
+        totalAmount = 0
+
+        for i in range(0, len(transfers)):
+            totalAmount += transfers[i]['amount']
+
+        if not self.privateKey:
+            logging.error('Private key required')
+        elif len(transfers) > 100:
+            logging.error('Too many recipients')
+        elif not pywaves.OFFLINE and self.balance() < totalAmount + txFee:
+            logging.error('Insufficient Waves balance')
+        else:
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            transfersData = b''
+            for i in range(0, len(transfers)):
+                transfersData += base58.b58decode(transfers[i]['recipient']) + struct.pack(">Q", transfers[i]['amount'])
+            sData = b'\x0b' + \
+                    b'\1' + \
+                    base58.b58decode(self.publicKey) + \
+                    b'\1' + \
+                    base58.b58decode(asset.assetId) + \
+                    struct.pack(">H", len(transfers)) + \
+                    transfersData + \
+                    struct.pack(">Q", timestamp) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">H", len(attachment)) + \
+                    crypto.str2bytes(attachment)
+
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 11,
+                "assetId": asset.assetId,
+                "senderPublicKey": self.publicKey,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "transfers": transfers,
+                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
+                "signature": signature
+            })
+
+            return pywaves.wrapper('/transactions/broadcast', data)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         if timestamp == 0:
