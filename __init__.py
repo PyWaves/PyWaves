@@ -13,7 +13,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 DEFAULT_TX_FEE = 100000
 DEFAULT_ASSET_FEE = 100000000
-DEFAULT_MATCHER_FEE = 100000
+DEFAULT_MATCHER_FEE = 300000
 DEFAULT_LEASE_FEE = 100000
 DEFAULT_ALIAS_FEE = 100000
 VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
@@ -27,6 +27,12 @@ from .order import *
 
 OFFLINE = False
 NODE = 'https://nodes.wavesnodes.com'
+
+ADDRESS_VERSION = 1
+ADDRESS_CHECKSUM_LENGTH = 4
+ADDRESS_HASH_LENGTH = 20
+ADDRESS_LENGTH = 1 + 1 + ADDRESS_CHECKSUM_LENGTH + ADDRESS_HASH_LENGTH
+
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
 MATCHER = 'https://nodes.wavesnodes.com'
@@ -121,6 +127,20 @@ def symbols():
 
 def markets():
     return wrapper('/api/markets', host=DATAFEED)
+
+def validateAddress(address):
+    addr = crypto.bytes2str(base58.b58decode(address))
+    if addr[0] != chr(ADDRESS_VERSION):
+        logging.error("Wrong address version")
+    elif addr[1] != CHAIN_ID:
+        logging.error("Wrong chain id")
+    elif len(addr) != ADDRESS_LENGTH:
+        logging.error("Wrong address length")
+    elif addr[-ADDRESS_CHECKSUM_LENGTH:] != crypto.hashChain(crypto.str2bytes(addr[:-ADDRESS_CHECKSUM_LENGTH]))[:ADDRESS_CHECKSUM_LENGTH]:
+        logging.error("Wrong address checksum")
+    else:
+        return True
+    return False
 
 WAVES = Asset('')
 
