@@ -140,7 +140,7 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
 `pywaves.setOnline()`  switch to online mode; sign tx locally a broadcast to network
 
-`pywaves.validateAddress(address)`  checks if the provided address is valid or not
+`pywaves.validateAddress(address)`  checks if the provided address is a valid Waves address
 
 `pywaves.setMatcher(node)`  set matcher URL ('http://ip-address:port')
 
