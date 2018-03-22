@@ -58,6 +58,7 @@ def setOnline():
 
 def setChain(chain = CHAIN):
     global CHAIN, CHAIN_ID
+
     if chain.lower()=='mainnet' or chain.lower()=='w':
         CHAIN = 'mainnet'
         CHAIN_ID = 'W'
