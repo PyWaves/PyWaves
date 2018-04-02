@@ -114,10 +114,10 @@ def tx(id):
     return wrapper('/transactions/info/%s' % id)
 
 def getOrderBook(assetPair):
-    req = wrapper('/matcher/orderBook?asset1=%s&asset2=%s' % (assetPair.asset1, assetPair.asset2), '', host = 'http://%s:%s' % (pywaves.MATCHER_HOST, pywaves.MATCHER_PORT))
+    orderBook = assetPair.orderbook()
     try:
-        bids = req['bids']
-        asks = req['asks']
+        bids = orderBook['bids']
+        asks = orderBook['asks']
     except:
         bids = ''
         asks = ''
