@@ -62,6 +62,9 @@ def setChain(chain = CHAIN):
     if chain.lower()=='mainnet' or chain.lower()=='w':
         CHAIN = 'mainnet'
         CHAIN_ID = 'W'
+    elif chain.lower()=='hacknet' or chain.lower()=='u':
+        CHAIN = 'hacknet'
+        CHAIN_ID = 'U'
     else:
         CHAIN = 'testnet'
         CHAIN_ID = 'T'
