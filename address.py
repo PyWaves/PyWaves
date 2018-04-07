@@ -576,16 +576,22 @@ class Address(object):
                 dataBinary += struct.pack(">H", len(keyBytes))
                 dataBinary += keyBytes
                 if d['type'] == 'binary':
-                    dataBinary += b'\2' + struct.pack(">H", len(value))
+                    print(dataBinary)
+                    dataBinary += b'\2'
+                    dataBinary += struct.pack(">H", len(d['value']))
+                    print(dataBinary)
                     dataBinary += crypto.str2bytes(d['value'])
-                else:
-                    if d['type'] == 'boolean':
-                        if value:
-                            dataBinary += b'\1\1'
-                        else:
-                            dataBinary += b'\1\0'
+                elif d['type'] == 'boolean':
+                    if value:
+                        dataBinary += b'\1\1'
                     else:
-                        dataBinary += b'\0' + struct.pack(">H", value)
+                        dataBinary += b'\1\0'
+                elif d['type'] == 'integer':
+                    print(value)
+                    print(dataBinary)
+                    dataBinary += b'\0'
+                    print(dataBinary)
+                    dataBinary += struct.pack(">L", value)
                 print(dataBinary)
 
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
