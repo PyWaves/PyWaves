@@ -565,38 +565,28 @@ class Address(object):
                 "timestamp": timestamp,
                 "proofs": ['']
             }
+            dataBinary = b''
             for i in range(0, len(data)):
                 d = data[i]
                 type = 0
                 value = d['value']
-                if isinstance(value, bool):
-                    type = 1
-                    d['type'] = 'boolean'
-                    if value:
-                        d['valueForSignature'] = 1
-                    else:
-                        d['valueForSignature'] = 0
-                elif isinstance(value, int):
-                    d['type'] = 'integer'
-                    type = 0
-                elif isinstance(value, str):
-                    d['type'] = 'binary'
+                if d['type'] == 'binary':
                     d['value'] = base58.b58encode(crypto.str2bytes(d['value']))
-                    type = 2
-                else:
-                    logging.error('Wrong data type')
                 keyBytes = crypto.str2bytes(d['key'])
-                dataBinary = b'' + struct.pack(">H", len(keyBytes))
+                dataBinary += struct.pack(">H", len(keyBytes))
                 dataBinary += keyBytes
-                dataBinary += struct.pack(">H", type)
-                if isinstance(value, str):
-                    dataBinary += struct.pack(">H", len(value))
-                    dataBinary += crypto.str2bytes(value)
+                if d['type'] == 'binary':
+                    dataBinary += b'\2' + struct.pack(">H", len(value))
+                    dataBinary += crypto.str2bytes(d['value'])
                 else:
-                    if isinstance(value, bool):
-                        dataBinary += struct.pack(">H", d['valueForSignature'])
+                    if d['type'] == 'boolean':
+                        if value:
+                            dataBinary += b'\1\1'
+                        else:
+                            dataBinary += b'\1\0'
                     else:
-                        dataBinary += struct.pack(">H", value)
+                        dataBinary += b'\0' + struct.pack(">H", value)
+                print(dataBinary)
 
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
             #txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
@@ -613,6 +603,7 @@ class Address(object):
             dataObject['proofs'] = [ crypto.sign(self.privateKey, sData) ]
             dataObjectJSON = json.dumps(dataObject)
 
+            print(sData)
             print(dataObjectJSON)
             return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
