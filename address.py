@@ -568,35 +568,29 @@ class Address(object):
             dataBinary = b''
             for i in range(0, len(data)):
                 d = data[i]
-                type = 0
-                value = d['value']
-                if d['type'] == 'binary':
-                    d['value'] = base58.b58encode(crypto.str2bytes(d['value']))
                 keyBytes = crypto.str2bytes(d['key'])
                 dataBinary += struct.pack(">H", len(keyBytes))
                 dataBinary += keyBytes
                 if d['type'] == 'binary':
                     print(dataBinary)
                     dataBinary += b'\2'
-                    dataBinary += struct.pack(">H", len(d['value']))
                     print(dataBinary)
-                    dataBinary += crypto.str2bytes(d['value'])
+                    valueAsBytes = crypto.str2bytes(d['value'])
+                    dataBinary += struct.pack(">H", len(valueAsBytes))
+                    print(dataBinary)
+                    dataBinary += valueAsBytes
                 elif d['type'] == 'boolean':
-                    if value:
+                    if d['value']:
                         dataBinary += b'\1\1'
                     else:
                         dataBinary += b'\1\0'
                 elif d['type'] == 'integer':
-                    print(value)
-                    print(dataBinary)
                     dataBinary += b'\0'
-                    print(dataBinary)
-                    dataBinary += struct.pack(">L", value)
+                    dataBinary += struct.pack(">Q", d['value'])
                 print(dataBinary)
 
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
-            #txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
-            txFee = 100000
+            txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
             dataObject['fee'] = txFee
             sData = b'\x0c' + \
                     b'\1' + \
