@@ -7,6 +7,7 @@ import struct
 import json
 import base58
 import logging
+import math
 
 wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
             'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action',
@@ -404,6 +405,7 @@ class Address(object):
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature
             })
+
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
     def massTransferWaves(self, transfers, attachment='', timestamp=0):
@@ -440,13 +442,17 @@ class Address(object):
 
             data = json.dumps({
                 "type": 11,
+                "version": 1,
                 "assetId": "",
                 "senderPublicKey": self.publicKey,
                 "fee": txFee,
                 "timestamp": timestamp,
                 "transfers": transfers,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature
+                "signature": signature,
+                "proofs": [
+                    signature
+                ]
             })
 
             return pywaves.wrapper('/transactions/broadcast', data)
@@ -491,6 +497,7 @@ class Address(object):
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature
             })
+
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
     def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
@@ -528,16 +535,77 @@ class Address(object):
 
             data = json.dumps({
                 "type": 11,
+                "version": 1,
                 "assetId": asset.assetId,
                 "senderPublicKey": self.publicKey,
                 "fee": txFee,
                 "timestamp": timestamp,
                 "transfers": transfers,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature
+                "signature": signature,
+                "proofs": [
+                    signature
+                ]
             })
 
             return pywaves.wrapper('/transactions/broadcast', data)
+
+    def dataTransaction(self, data, timestamp=0):
+        if not self.privateKey:
+            logging.error('Private key required')
+        else:
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            dataObject = {
+                "type": 12,
+                "version": 1,
+                "senderPublicKey": self.publicKey,
+                "data": data,
+                "fee": 0,
+                "timestamp": timestamp,
+                "proofs": ['']
+            }
+            dataBinary = b''
+            for i in range(0, len(data)):
+                d = data[i]
+                keyBytes = crypto.str2bytes(d['key'])
+                dataBinary += struct.pack(">H", len(keyBytes))
+                dataBinary += keyBytes
+                if d['type'] == 'binary':
+                    print(dataBinary)
+                    dataBinary += b'\2'
+                    print(dataBinary)
+                    valueAsBytes = base58.b58decode(d['value'])
+                    dataBinary += struct.pack(">H", len(valueAsBytes))
+                    print(dataBinary)
+                    dataBinary += valueAsBytes
+                elif d['type'] == 'boolean':
+                    if d['value']:
+                        dataBinary += b'\1\1'
+                    else:
+                        dataBinary += b'\1\0'
+                elif d['type'] == 'integer':
+                    dataBinary += b'\0'
+                    dataBinary += struct.pack(">Q", d['value'])
+                print(dataBinary)
+
+            # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
+            txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
+            dataObject['fee'] = txFee
+            sData = b'\x0c' + \
+                    b'\1' + \
+                    base58.b58decode(self.publicKey) + \
+                    struct.pack(">H", len(data)) + \
+                    dataBinary + \
+                    struct.pack(">Q", timestamp) + \
+                    struct.pack(">Q", txFee)
+
+            dataObject['proofs'] = [ crypto.sign(self.privateKey, sData) ]
+            dataObjectJSON = json.dumps(dataObject)
+
+            print(sData)
+            print(dataObjectJSON)
+            return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         if timestamp == 0:
