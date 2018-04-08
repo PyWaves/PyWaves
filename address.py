@@ -575,7 +575,7 @@ class Address(object):
                     print(dataBinary)
                     dataBinary += b'\2'
                     print(dataBinary)
-                    valueAsBytes = crypto.str2bytes(d['value'])
+                    valueAsBytes = base58.b58decode(d['value'])
                     dataBinary += struct.pack(">H", len(valueAsBytes))
                     print(dataBinary)
                     dataBinary += valueAsBytes
