@@ -511,8 +511,11 @@ class Address(object):
             logging.error('Private key required')
         elif len(transfers) > 100:
             logging.error('Too many recipients')
-        elif not pywaves.OFFLINE and self.balance() < totalAmount + txFee:
-            logging.error('Insufficient Waves balance')
+        elif not pywaves.OFFLINE:
+            if self.balance() < txFee:
+                logging.error('Insufficient Waves balance')
+            if self.balance(assetId=asset.assetId) < totalAmount:
+                logging.error('Insufficient %s balance' % asset.name)
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
