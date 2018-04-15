@@ -69,10 +69,16 @@ def setChain(chain = CHAIN):
         CHAIN = 'testnet'
         CHAIN_ID = 'T'
 
+def getChain():
+    return CHAIN
+
 def setNode(node = NODE, chain = CHAIN):
     global NODE, CHAIN, CHAIN_ID
     NODE = node
     setChain(chain)
+
+def getNode():
+    return NODE
 
 def setMatcher(node = MATCHER):
     global MATCHER, MATCHER_PUBLICKEY
