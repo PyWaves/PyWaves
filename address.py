@@ -355,6 +355,7 @@ class Address(object):
 
     def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
+
         sData = '\6' + \
                 base58.b58decode(self.publicKey) + \
                 base58.b58decode(Asset.assetId) + \
@@ -504,15 +505,10 @@ class Address(object):
         txFee = 100000 + len(transfers) * 50000
         totalAmount = 0
 
-        for i in range(0, len(transfers)):
-            totalAmount += transfers[i]['amount']
-
         if not self.privateKey:
             logging.error('Private key required')
         elif len(transfers) > 100:
             logging.error('Too many recipients')
-        elif not pywaves.OFFLINE and self.balance() < totalAmount + txFee:
-            logging.error('Insufficient Waves balance')
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
@@ -572,12 +568,9 @@ class Address(object):
                 dataBinary += struct.pack(">H", len(keyBytes))
                 dataBinary += keyBytes
                 if d['type'] == 'binary':
-                    print(dataBinary)
                     dataBinary += b'\2'
-                    print(dataBinary)
                     valueAsBytes = base58.b58decode(d['value'])
                     dataBinary += struct.pack(">H", len(valueAsBytes))
-                    print(dataBinary)
                     dataBinary += valueAsBytes
                 elif d['type'] == 'boolean':
                     if d['value']:
@@ -587,7 +580,6 @@ class Address(object):
                 elif d['type'] == 'integer':
                     dataBinary += b'\0'
                     dataBinary += struct.pack(">Q", d['value'])
-                print(dataBinary)
 
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
             txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
@@ -603,8 +595,6 @@ class Address(object):
             dataObject['proofs'] = [ crypto.sign(self.privateKey, sData) ]
             dataObjectJSON = json.dumps(dataObject)
 
-            print(sData)
-            print(dataObjectJSON)
             return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
