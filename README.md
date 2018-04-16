@@ -57,6 +57,8 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `cancelOrder(assetPair, order)` cancel an order
 
+ cancelOrderByID(self, assetPair, orderId) cancel an order by order ID
+
 `buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp)` post a buy order
 
 `tradableBalance(assetPair)` get tradable balance for the specified asset pair
