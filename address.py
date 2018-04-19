@@ -290,7 +290,8 @@ class Address(object):
         addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
         self.address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
         self.publicKey = base58.b58encode(pubKey)
-        self.privateKey = base58.b58encode(privKey)
+        if privKey != "":
+            self.privateKey = base58.b58encode(privKey)
 
     def issueAsset(self, name, description, quantity, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
         if not self.privateKey:
@@ -357,12 +358,12 @@ class Address(object):
         timestamp = int(time.time() * 1000)
 
         sData = '\6' + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(Asset.assetId) + \
-                struct.pack(">Q", quantity) + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp)
-        signature = crypto.sign(self.privateKey, sData)
+                crypto.bytes2str(base58.b58decode(self.publicKey)) + \
+                crypto.bytes2str(base58.b58decode(Asset.assetId)) + \
+                crypto.bytes2str(struct.pack(">Q", quantity)) + \
+                crypto.bytes2str(struct.pack(">Q", txFee)) + \
+                crypto.bytes2str(struct.pack(">Q", timestamp))
+        signature = crypto.sign(self.privateKey, crypto.str2bytes(sData))
         data = json.dumps({
             "senderPublicKey": self.publicKey,
             "assetId": Asset.assetId,
