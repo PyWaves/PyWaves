@@ -132,9 +132,9 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
 
 ## Other functions
-`pywaves.setNode(node, chain)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
+`pywaves.setNode(node, chain, chain_id)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet', or any other chain, if you also define the chain id)
 
-`pywaves.setChain(chain)`  set chain (either 'mainnet' or 'testnet')
+`pywaves.setChain(chain, chain_id)`  set chain (either 'mainnet' or 'testnet', or any other chain if you also supply the chain id)
 
 `pywaves.setOffline()`  switch to offline mode; sign tx locally without broadcasting to network
 
