@@ -352,7 +352,7 @@ class Address(object):
         else:
             return req.get('id', 'ERROR')
 
-    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_ASSET_FEE):
+    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
         sData = b'\6' + \
                 base58.b58decode(self.publicKey) + \
