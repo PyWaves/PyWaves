@@ -327,7 +327,7 @@ class Address(object):
             else:
                 return pywaves.Asset(req['assetId'])
 
-    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
+    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
         sData = b'\5' + \
                 base58.b58decode(self.publicKey) + \
