@@ -327,7 +327,7 @@ class Address(object):
             else:
                 return pywaves.Asset(req['assetId'])
 
-    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
+    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
         timestamp = int(time.time() * 1000)
         sData = b'\5' + \
                 base58.b58decode(self.publicKey) + \
@@ -352,9 +352,9 @@ class Address(object):
         else:
             return req.get('id', 'ERROR')
 
-    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
+    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_ASSET_FEE):
         timestamp = int(time.time() * 1000)
-        sData = '\6' + \
+        sData = b'\6' + \
                 base58.b58decode(self.publicKey) + \
                 base58.b58decode(Asset.assetId) + \
                 struct.pack(">Q", quantity) + \
