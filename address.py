@@ -290,7 +290,8 @@ class Address(object):
         addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
         self.address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
         self.publicKey = base58.b58encode(pubKey)
-        self.privateKey = base58.b58encode(privKey)
+        if privKey != "":
+            self.privateKey = base58.b58encode(privKey)
 
     def issueAsset(self, name, description, quantity, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
         if not self.privateKey:
@@ -355,13 +356,14 @@ class Address(object):
 
     def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
+
         sData = '\6' + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(Asset.assetId) + \
-                struct.pack(">Q", quantity) + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp)
-        signature = crypto.sign(self.privateKey, sData)
+                crypto.bytes2str(base58.b58decode(self.publicKey)) + \
+                crypto.bytes2str(base58.b58decode(Asset.assetId)) + \
+                crypto.bytes2str(struct.pack(">Q", quantity)) + \
+                crypto.bytes2str(struct.pack(">Q", txFee)) + \
+                crypto.bytes2str(struct.pack(">Q", timestamp))
+        signature = crypto.sign(self.privateKey, crypto.str2bytes(sData))
         data = json.dumps({
             "senderPublicKey": self.publicKey,
             "assetId": Asset.assetId,
@@ -504,9 +506,6 @@ class Address(object):
         txFee = 100000 + len(transfers) * 50000
         totalAmount = 0
 
-        for i in range(0, len(transfers)):
-            totalAmount += transfers[i]['amount']
-
         if not self.privateKey:
             logging.error('Private key required')
         elif len(transfers) > 100:
@@ -575,12 +574,9 @@ class Address(object):
                 dataBinary += struct.pack(">H", len(keyBytes))
                 dataBinary += keyBytes
                 if d['type'] == 'binary':
-                    print(dataBinary)
                     dataBinary += b'\2'
-                    print(dataBinary)
                     valueAsBytes = base58.b58decode(d['value'])
                     dataBinary += struct.pack(">H", len(valueAsBytes))
-                    print(dataBinary)
                     dataBinary += valueAsBytes
                 elif d['type'] == 'boolean':
                     if d['value']:
@@ -590,7 +586,6 @@ class Address(object):
                 elif d['type'] == 'integer':
                     dataBinary += b'\0'
                     dataBinary += struct.pack(">Q", d['value'])
-                print(dataBinary)
 
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
             txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
@@ -606,8 +601,6 @@ class Address(object):
             dataObject['proofs'] = [ crypto.sign(self.privateKey, sData) ]
             dataObjectJSON = json.dumps(dataObject)
 
-            print(sData)
-            print(dataObjectJSON)
             return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):

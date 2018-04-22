@@ -57,6 +57,8 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `cancelOrder(assetPair, order)` cancel an order
 
+ cancelOrderByID(self, assetPair, orderId) cancel an order by order ID
+
 `buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp)` post a buy order
 
 `tradableBalance(assetPair)` get tradable balance for the specified asset pair
@@ -132,9 +134,9 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
 
 ## Other functions
-`pywaves.setNode(node, chain)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet')
+`pywaves.setNode(node, chain, chain_id)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet', or any other chain, if you also define the chain id)
 
-`pywaves.setChain(chain)`  set chain (either 'mainnet' or 'testnet')
+`pywaves.setChain(chain, chain_id)`  set chain (either 'mainnet' or 'testnet', or any other chain if you also supply the chain id)
 
 `pywaves.setOffline()`  switch to offline mode; sign tx locally without broadcasting to network
 
