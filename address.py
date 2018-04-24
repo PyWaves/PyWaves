@@ -404,13 +404,24 @@ class Address(object):
                     struct.pack(">H", len(attachment)) + \
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
+            attachmentDec = base58.b58encode(crypto.str2bytes(attachment))
+            senderPublicKeyDec = self.publicKey
+            recAddress = recipient.address
+            if hasattr(signature, 'decode'):
+                signature = signature.decode()
+            if hasattr(attachmentDec, 'decode'):
+                attachmentDec = attachmentDec.decode()
+            if hasattr(senderPublicKeyDec, 'decode'):
+                senderPublicKeyDec = senderPublicKeyDec.decode()
+            if hasattr(recAddress, 'decode'):
+                recAddress = recAddress.decode()
             data = json.dumps({
-                "senderPublicKey": self.publicKey,
-                "recipient": recipient.address,
+                "senderPublicKey": senderPublicKeyDec,
+                "recipient": recAddress,
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
+                "attachment": attachmentDec,
                 "signature": signature
             })
 
@@ -473,8 +484,6 @@ class Address(object):
         elif amount <= 0:
             logging.error('Amount must be > 0')
         elif not pywaves.OFFLINE and asset and self.balance(asset.assetId) < amount:
-            print(self.balance(asset.assetId))
-            print(amount)
             logging.error('Insufficient asset balance')
         elif not pywaves.OFFLINE and not asset and self.balance() < amount:
             logging.error('Insufficient Waves balance')
@@ -498,17 +507,21 @@ class Address(object):
             signature = crypto.sign(self.privateKey, sData)
             attachmentDec = base58.b58encode(crypto.str2bytes(attachment))
             senderPublicKeyDec = self.publicKey
+            recAddress = recipient.address
             if hasattr(signature, 'decode'):
                 signature = signature.decode()
             if hasattr(attachmentDec, 'decode'):
                 attachmentDec = attachmentDec.decode()
             if hasattr(senderPublicKeyDec, 'decode'):
                 senderPublicKeyDec = senderPublicKeyDec.decode()
+            if hasattr(recAddress, 'decode'):
+                print('converting recipient address')
+                recAddress = recAddress.decode()
             data = json.dumps({
                 "assetId": (asset.assetId if asset else ""),
                 "feeAssetId": (feeAsset.assetId if feeAsset else ""),
                 "senderPublicKey": senderPublicKeyDec,
-                "recipient": recipient.address,
+                "recipient": recAddress,
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
