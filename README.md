@@ -45,29 +45,31 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `assets()` returns a list of assets owned by the address
 
-`issueAsset(name, description, quantity, decimals=0, reissuable=False, txFee=DEFAULT_ASSET_FEE, timestamp)` issue a new asset
+`issueAsset(name, description, quantity, decimals=0, reissuable=False, txFee=DEFAULT_ASSET_FEE, timestamp=0)` issue a new asset
 
-`reissueAsset(Asset, quantity, reissuable=False, txFee=DEFAULT_ASSET_FEE, timestamp)` reissue an asset
+`reissueAsset(Asset, quantity, reissuable=False, txFee=DEFAULT_ASSET_FEE, timestamp=0)` reissue an asset
 
-`burnAsset(Asset, quantity, txFee=DEFAULT_ASSET_FEE, timestamp)` burn the specified quantity of an asset
+`burnAsset(Asset, quantity, txFee=DEFAULT_ASSET_FEE, timestamp=0)` burn the specified quantity of an asset
 
-`sendWaves(recipient, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp)` send specified amount of Waves to recipient
+`sendWaves(recipient, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp=0)` send specified amount of Waves to recipient
 
-`sendAsset(recipient, asset, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp)` send specified amount of an asset to recipient
+`massTransferWaves(transfers, attachment='', timestamp=0)` sending Waves tokens via a mass transfer
+
+`sendAsset(recipient, asset, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp=0)` send specified amount of an asset to recipient
+
+`massTransferWaves(self, transfers, attachment='', timestamp=0)` sending an asset via mass transfer
 
 `cancelOrder(assetPair, order)` cancel an order
 
- cancelOrderByID(self, assetPair, orderId) cancel an order by order ID
-
-`buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp)` post a buy order
+`buy(assetPair, amount price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp=0)` post a buy order
 
 `tradableBalance(assetPair)` get tradable balance for the specified asset pair
 
-`sell(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp)` post a sell order
+`sell(assetPair, amount, price, maxLifetime=30*86400, matcherFee=DEFAULT_MATCHER_FEE, timestamp=0)` post a sell order
 
-`lease(recipient, amount, txFee=DEFAULT_LEASE_FEE, timestamp)` post a lease transaction
+`lease(recipient, amount, txFee=DEFAULT_LEASE_FEE, timestamp=0)` post a lease transaction
 
-`leaseCancel(leaseId, txFee=DEFAULT_LEASE_FEE, timestamp)` cancel a lease
+`leaseCancel(leaseId, txFee=DEFAULT_LEASE_FEE, timestamp=0)` cancel a lease
 
 `getOrderHistory(assetPair)` get order history for the specified asset pair
 
@@ -75,7 +77,11 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `deleteOrderHistory(assetPair)` delete order history for the specified asset pair
 
-`createAlias(alias, txFee=DEFAULT_ALIAS_FEE, timestamp)` create alias
+`createAlias(alias, txFee=DEFAULT_ALIAS_FEE, timestamp=0)` create alias
+
+`sponsorAsset(assetId, minimalFeeInAssets, txFee=pywaves.DEFAULT_SPONSOR_FEE, timestamp=0)` sponsoring assets
+
+`setScript(script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0)` sets a script for this address
 
 ### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
@@ -170,6 +176,8 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 * DEFAULT_MATCHER_FEE = 1000000
 * DEFAULT_LEASE_FEE = 100000
 * DEFAULT_ALIAS_FEE = 100000
+* DEFAULT_SPONSOR_FEE = 100000000
+* DEFAULT_SCRIPT_FEE = 100000
 
 ## More Examples
 
