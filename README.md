@@ -53,7 +53,7 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `sendWaves(recipient, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp=0)` send specified amount of Waves to recipient
 
-massTransferWaves(transfers, attachment='', timestamp=0)` sending Waves tokens via a mass transfer
+`massTransferWaves(transfers, attachment='', timestamp=0)` sending Waves tokens via a mass transfer
 
 `sendAsset(recipient, asset, amount, attachment='', txFee=DEFAULT_TX_FEE, timestamp=0)` send specified amount of an asset to recipient
 
