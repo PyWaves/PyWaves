@@ -242,15 +242,9 @@ class Address(object):
     def balance(self, assetId='', confirmations=0):
         try:
             if assetId:
-                if hasattr(self.address, 'decode'):
-                    return pywaves.wrapper('/assets/balance/%s/%s' % (self.address.decode(), assetId))['balance']
-                else:
-                    return pywaves.wrapper('/assets/balance/%s/%s' % (self.address, assetId))['balance']
+                return pywaves.wrapper('/assets/balance/%s/%s' % (self.address, assetId))['balance']
             else:
-                if hasattr(self.address, 'decode'):
-                    return pywaves.wrapper('/addresses/balance/%s%s' % (self.address.decode(), '' if confirmations==0 else '/%d' % confirmations))['balance']
-                else:
-                    return pywaves.wrapper('/addresses/balance/%s%s' % (self.address, '' if confirmations == 0 else '/%d' % confirmations))['balance']
+                return pywaves.wrapper('/addresses/balance/%s%s' % (self.address, '' if confirmations==0 else '/%d' % confirmations))['balance']
         except:
             return 0
 
@@ -404,24 +398,13 @@ class Address(object):
                     struct.pack(">H", len(attachment)) + \
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
-            attachmentDec = base58.b58encode(crypto.str2bytes(attachment))
-            senderPublicKeyDec = self.publicKey
-            recAddress = recipient.address
-            if hasattr(signature, 'decode'):
-                signature = signature.decode()
-            if hasattr(attachmentDec, 'decode'):
-                attachmentDec = attachmentDec.decode()
-            if hasattr(senderPublicKeyDec, 'decode'):
-                senderPublicKeyDec = senderPublicKeyDec.decode()
-            if hasattr(recAddress, 'decode'):
-                recAddress = recAddress.decode()
             data = json.dumps({
-                "senderPublicKey": senderPublicKeyDec,
-                "recipient": recAddress,
+                "senderPublicKey": self.publicKey,
+                "recipient": recipient.address,
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "attachment": attachmentDec,
+                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature
             })
 
@@ -505,33 +488,21 @@ class Address(object):
                     struct.pack(">H", len(attachment)) + \
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
-            attachmentDec = base58.b58encode(crypto.str2bytes(attachment))
-            senderPublicKeyDec = self.publicKey
-            recAddress = recipient.address
-            if hasattr(signature, 'decode'):
-                signature = signature.decode()
-            if hasattr(attachmentDec, 'decode'):
-                attachmentDec = attachmentDec.decode()
-            if hasattr(senderPublicKeyDec, 'decode'):
-                senderPublicKeyDec = senderPublicKeyDec.decode()
-            if hasattr(recAddress, 'decode'):
-                print('converting recipient address')
-                recAddress = recAddress.decode()
             data = json.dumps({
                 "assetId": (asset.assetId if asset else ""),
                 "feeAssetId": (feeAsset.assetId if feeAsset else ""),
-                "senderPublicKey": senderPublicKeyDec,
-                "recipient": recAddress,
+                "senderPublicKey": self.publicKey,
+                "recipient": recipient.address,
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "attachment": attachmentDec,
+                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature
             })
 
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
+    def `
         txFee = 100000 + len(transfers) * 50000
         totalAmount = 0
 
@@ -851,7 +822,7 @@ class Address(object):
             pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
 
     def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE, timestamp=0):
-        aliasWithNetwork = b'\x02' + str(pywaves.CHAIN_ID) + struct.pack(">H", len(alias)) + crypto.str2bytes(alias)
+        aliasWithNetwork = b'\x02' + crypto.str2bytes(str(pywaves.CHAIN_ID)) + struct.pack(">H", len(alias)) + crypto.str2bytes(alias)
         if not self.privateKey:
             logging.error('Private key required')
         else:
@@ -860,7 +831,7 @@ class Address(object):
             sData = b'\x0a' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">H", len(aliasWithNetwork)) + \
-                    crypto.str2bytes(aliasWithNetwork) + \
+                    crypto.str2bytes(str(aliasWithNetwork)) + \
                     struct.pack(">Q", txFee) + \
                     struct.pack(">Q", timestamp)
             signature = crypto.sign(self.privateKey, sData)
@@ -872,3 +843,67 @@ class Address(object):
                 "signature": signature
             })
             return pywaves.wrapper('/alias/broadcast/create', data)
+
+    def sponsorAsset(self, assetId, minimalFeeInAssets, txFee=pywaves.DEFAULT_SPONSOR_FEE, timestamp=0):
+        if not self.privateKey:
+            logging.error('Private key required')
+        else:
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            sData = b'\x0e' + \
+                base58.b58decode(self.publicKey) + \
+                base58.b58decode(assetId) + \
+                struct.pack(">Q", minimalFeeInAssets) + \
+                struct.pack(">Q", txFee) + \
+                struct.pack(">Q", timestamp)
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 14,
+                "version": 1,
+                "senderPublicKey": self.publicKey,
+                "assetId": assetId,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "minSponsoredAssetFee": minimalFeeInAssets,
+                "proofs": [
+                    signature
+                ]
+            })
+
+            return pywaves.wrapper('/transactions/broadcast', data)
+
+    def setScript(self, script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0):
+        if not self.privateKey:
+            logging.error('Private key required')
+        else:
+            rawScript = base58.b58decode(script)
+            scriptLength = len(rawScript)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            sData = b'\x0d' + \
+                b'\1' + \
+                crypto.str2bytes(str(pywaves.CHAIN_ID)) + \
+                base58.b58decode(self.publicKey) + \
+                b'\1' + \
+                struct.pack(">H", scriptLength) + \
+                crypto.str2bytes(str(rawScript)) + \
+                struct.pack(">Q", txFee) + \
+                struct.pack(">Q", timestamp)
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 13,
+                "version": 1,
+                "senderPublicKey": self.publicKey,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "script": script,
+                "proofs": [
+                    signature
+                ]
+            })
+
+            return pywaves.wrapper('/transactions/broadcast', data)
+
+
