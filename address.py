@@ -502,7 +502,7 @@ class Address(object):
 
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def `
+    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
         txFee = 100000 + len(transfers) * 50000
         totalAmount = 0
 
