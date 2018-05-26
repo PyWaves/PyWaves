@@ -83,6 +83,8 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `setScript(script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0)` sets a script for this address
 
+`dataTransaction(data, timestamp=0)` sets data for the account. data should be a json array with entries including type (bool, binary, int, string), key and value
+
 ### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
