@@ -6,8 +6,9 @@ import time
 import struct
 import json
 import base58
+import base64
 import logging
-import math
+import requests
 
 wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
             'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action',
@@ -570,9 +571,9 @@ class Address(object):
                 dataBinary += keyBytes
                 if d['type'] == 'binary':
                     dataBinary += b'\2'
-                    valueAsBytes = base58.b58decode(d['value'])
+                    valueAsBytes = d['value']
                     dataBinary += struct.pack(">H", len(valueAsBytes))
-                    dataBinary += valueAsBytes
+                    dataBinary += crypto.str2bytes(valueAsBytes)
                 elif d['type'] == 'boolean':
                     if d['value']:
                         dataBinary += b'\1\1'
@@ -581,7 +582,10 @@ class Address(object):
                 elif d['type'] == 'integer':
                     dataBinary += b'\0'
                     dataBinary += struct.pack(">Q", d['value'])
-
+                elif d['type'] == 'string':
+                    dataBinary += b'\3'
+                    dataBinary += struct.pack(">H", len(d['value']))
+                    dataBinary += crypto.str2bytes(d['value'])
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
             txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
             dataObject['fee'] = txFee
@@ -594,8 +598,12 @@ class Address(object):
                     struct.pack(">Q", txFee)
 
             dataObject['proofs'] = [ crypto.sign(self.privateKey, sData) ]
-            dataObjectJSON = json.dumps(dataObject)
 
+            for entry in dataObject['data']:
+                if entry['type'] == 'binary':
+                    base64Encoded =  base64.b64encode(crypto.str2bytes(entry['value']))
+                    entry['value'] = 'base64:' + crypto.bytes2str(base64Encoded)
+            dataObjectJSON = json.dumps(dataObject)
             return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
@@ -873,11 +881,12 @@ class Address(object):
 
             return pywaves.wrapper('/transactions/broadcast', data)
 
-    def setScript(self, script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0):
+    def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0):
+        script = pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         if not self.privateKey:
             logging.error('Private key required')
         else:
-            rawScript = base58.b58decode(script)
+            rawScript = base64.b64decode(script)
             scriptLength = len(rawScript)
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
@@ -898,12 +907,11 @@ class Address(object):
                 "senderPublicKey": self.publicKey,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "script": script,
+                "script": 'base64:' + script,
                 "proofs": [
                     signature
                 ]
             })
 
             return pywaves.wrapper('/transactions/broadcast', data)
-
 
