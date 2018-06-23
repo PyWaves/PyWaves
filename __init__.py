@@ -52,13 +52,13 @@ console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
 
 
-class PyWawesException(ValueError):
+class PyWavesException(ValueError):
     pass
 
 
 def throw_error(msg):
     if THROW_EXCEPTION_ON_ERROR:
-        raise PyWawesException(msg)
+        raise PyWavesException(msg)
 
 
 def setThrowOnError(throw=True):
