@@ -21,6 +21,8 @@ DEFAULT_SCRIPT_FEE = 100000
 VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
 MAX_WDF_REQUEST = 100
 
+THROW_EXCEPTION_ON_ERROR = False
+
 import requests
 
 from .address import *
@@ -48,6 +50,20 @@ console.setLevel(logging.ERROR)
 formatter = logging.Formatter('[%(levelname)s] %(message)s')
 console.setFormatter(formatter)
 logging.getLogger('').addHandler(console)
+
+
+class PyWavesException(ValueError):
+    pass
+
+
+def throw_error(msg):
+    if THROW_EXCEPTION_ON_ERROR:
+        raise PyWavesException(msg)
+
+
+def setThrowOnError(throw=True):
+    global THROW_EXCEPTION_ON_ERROR
+    THROW_EXCEPTION_ON_ERROR = throw
 
 
 def setOffline():
