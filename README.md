@@ -111,19 +111,32 @@ __pywaves.AssetPair(asset1, asset2)__ _Creates a new AssetPair object with 2 Ass
 
 #### methods:
 `orderbook()` get order book
-`ticker()` get ticker with 24h ohlcv data
-`last()` get traded price
-`open()` get 24h open price
-`high()` get 24h high price
-`low()` get 24h low price
-`close()` get 24h close price (same as last())
-`vwap()` get 24h vwap price
-`volume()` get 24h volume
-`priceVolume()` get 24h price volume
-`trades(n)` get the last n trades
-`trades(from, to)` get the trades in from/to interval
-`candles(timeframe, n)` get the last n candles in the specified timeframe
-`candles(timeframe, from, to)` get the candles in from/to interval in the specified timeframe
+
+`ticker()` get ticker with 24h ohlcv data  
+
+`last()` get traded price  
+
+`open()` get 24h open price  
+
+`high()` get 24h high price  
+
+`low()` get 24h low price  
+
+`close()` get 24h close price (same as last())  
+
+`vwap()` get 24h vwap price  
+
+`volume()` get 24h volume  
+
+`priceVolume()` get 24h price volume  
+
+`trades(n)` get the last n trades  
+
+`trades(from, to)` get the trades in from/to interval  
+
+`candles(timeframe, n)` get the last n candles in the specified timeframe  
+
+`candles(timeframe, from, to)` get the candles in from/to interval in the specified timeframe 
 
 ### Order Class
 __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
