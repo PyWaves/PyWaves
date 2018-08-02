@@ -753,6 +753,7 @@ class Address(object):
                 "signature": signature
             })
             req = pywaves.wrapper('/leasing/broadcast/lease', data)
+            return req
             if pywaves.OFFLINE:
                 return req
             else:
@@ -859,6 +860,7 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x0e' + \
+                b'\1' + \
                 base58.b58decode(self.publicKey) + \
                 base58.b58decode(assetId) + \
                 struct.pack(">Q", minimalFeeInAssets) + \
