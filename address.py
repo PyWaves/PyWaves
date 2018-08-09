@@ -1,3 +1,4 @@
+import math
 import pywaves
 import axolotl_curve25519 as curve
 import os
@@ -424,7 +425,7 @@ class Address(object):
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
     def massTransferWaves(self, transfers, attachment='', timestamp=0):
-        txFee = 100000 + len(transfers) * 50000
+        txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
         totalAmount = 0
 
         for i in range(0, len(transfers)):
@@ -536,7 +537,8 @@ class Address(object):
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
     def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
-        txFee = 100000 + len(transfers) * 50000
+        txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
+
         totalAmount = 0
 
         if not self.privateKey:
