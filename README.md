@@ -257,7 +257,7 @@ myAddress.sendAsset(recipient = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM'
 ```python
 import pywaves as pw
 
-myToken = myAddress.issueToken( name = "MyToken",
+myToken = myAddress.issueAsset( name = "MyToken",
                                 description = "This is my first token",
                                 quantity = 1000000,
                                 decimals = 2 )
