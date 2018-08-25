@@ -40,7 +40,7 @@ ADDRESS_LENGTH = 1 + 1 + ADDRESS_CHECKSUM_LENGTH + ADDRESS_HASH_LENGTH
 CHAIN = 'mainnet'
 CHAIN_ID = 'W'
 #MATCHER = 'https://nodes.wavesnodes.com'
-MATCHER = 'http://matcher.wavesplatform.com'
+MATCHER = 'http://matcher.wavesnodes.com'
 MATCHER_PUBLICKEY = ''
 
 DATAFEED = 'http://marketdata.wavesplatform.com'
