@@ -806,10 +806,6 @@ class Address(object):
             })
             req = pywaves.wrapper('/leasing/broadcast/lease', data)
             return req
-            if pywaves.OFFLINE:
-                return req
-            else:
-                return req['id']
 
     def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
@@ -946,8 +942,8 @@ class Address(object):
         if not self.privateKey:
             logging.error('Private key required')
         else:
-            rawScript = base64.b64decode(script)
-            scriptLength = len(rawScript)
+            compiledScript = base64.b64decode(script)
+            scriptLength = len(compiledScript)
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x0d' + \
@@ -956,7 +952,7 @@ class Address(object):
                 base58.b58decode(self.publicKey) + \
                 b'\1' + \
                 struct.pack(">H", scriptLength) + \
-                crypto.str2bytes(str(rawScript)) + \
+                compiledScript + \
                 struct.pack(">Q", txFee) + \
                 struct.pack(">Q", timestamp)
             signature = crypto.sign(self.privateKey, sData)
@@ -974,4 +970,3 @@ class Address(object):
             })
 
             return pywaves.wrapper('/transactions/broadcast', data)
-
