@@ -85,6 +85,10 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `dataTransaction(data, timestamp=0)` sets data for the account. data should be a json array with entries including type (bool, binary, int, string), key and value
 
+`setScript(scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0)` issue a smart asset
+
+`setAssetScript(asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0)` set a new script for a smart asset
+
 ### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
@@ -356,7 +360,7 @@ script = 'match tx { \n' + \
 '  case _ => true\n' + \
 '}'
 address = pw.Address(privateKey = '<private key>')
-tx = address.issueSmartAsset('smartTestAsset', 'an asset for testing smart assets', 1000, script, 2)
+tx = address.issueSmartAsset('smartTestAsset', 'an asset for testingsmart assets', 1000, script, 2)
 ```
 
 #### Set a new script for a Smart Asset
