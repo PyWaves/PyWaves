@@ -331,6 +331,48 @@ for address in lines:
 	myAddress.sendAsset(pw.Address(address.strip()), myToken, amount)
 ```
 
+#### Add a script to an account:
+```python
+import pywaves as pw
+import base64
+
+pw.setNode(node='<node>', chain='testnet')
+
+script = 'match tx { \n' + \
+'  case _ => true\n' + \
+'}'
+address = pw.Address(privateKey = "<private key>")
+tx = address.setScript(script, txFee=1000000)
+```
+
+#### Issue a Smart Asset
+```python
+imort pywaves as pw
+import base64
+
+pw.setNode(node='<node>', chain='testnet')
+
+script = 'match tx { \n' + \
+'  case _ => true\n' + \
+'}'
+address = pw.Address(privateKey = '<private key>')
+tx = address.issueSmartAsset('smartTestAsset', 'an asset for testing smart assets', 1000, script, 2)
+```
+
+#### Set a new script for a Smart Asset
+```python
+import pywaves as pw
+import base64
+
+pw.setNode(node='<node>', chain='testnet')
+
+script = 'match tx { \n' + \
+'  case _ => true\n' + \
+'}'
+address = pw.Address(privateKey = '<private key>')
+tx = address.setAssetScript(pw.Asset('<asset id>'), script)
+```
+
 #### Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw

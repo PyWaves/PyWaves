@@ -970,3 +970,92 @@ class Address(object):
             })
 
             return pywaves.wrapper('/transactions/broadcast', data)
+
+    def setAssetScript(self, asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0):
+        script = pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
+        if not self.privateKey:
+            logging.error('Private key required')
+        else:
+            compiledScript = base64.b64decode(script)
+            scriptLength = len(compiledScript)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            sData = b'\x0f' + \
+                b'\1' + \
+                crypto.str2bytes(str(pywaves.CHAIN_ID)) + \
+                base58.b58decode(self.publicKey) + \
+                base58.b58decode(asset.assetId) + \
+                struct.pack(">Q", txFee) + \
+                struct.pack(">Q", timestamp) + \
+                b'\1' + \
+                struct.pack(">H", scriptLength) + \
+                compiledScript
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 15,
+                "version": 1,
+                "assetId": asset.assetId,
+                "senderPublicKey": self.publicKey,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "script": 'base64:' + script,
+                "proofs": [
+                    signature
+                ]
+            })
+            print(data)
+
+            return pywaves.wrapper('/transactions/broadcast', data)
+
+    def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
+        script = pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
+        if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            pywaves.throw_error(msg)
+        elif len(name) < 4 or len(name) > 16:
+            msg = 'Asset name must be between 4 and 16 characters long'
+            logging.error(msg)
+            pywaves.throw_error(msg)
+        else:
+            compiledScript = base64.b64decode(script)
+            scriptLength = len(compiledScript)
+            timestamp = int(time.time() * 1000)
+            sData = b'\3' + \
+                    b'\2' + \
+                    crypto.str2bytes(str(pywaves.CHAIN_ID)) + \
+                    base58.b58decode(self.publicKey) + \
+                    struct.pack(">H", len(name)) + \
+                    crypto.str2bytes(name) + \
+                    struct.pack(">H", len(description)) + \
+                    crypto.str2bytes(description) + \
+                    struct.pack(">Q", quantity) + \
+                    struct.pack(">B", decimals) + \
+                    (b'\1' if reissuable else b'\0') + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp) + \
+                    b'\1' + \
+                    struct.pack(">H", scriptLength) + \
+                    compiledScript
+            signature = crypto.sign(self.privateKey, sData)
+            data = json.dumps({
+                "type": 3,
+                "senderPublicKey": self.publicKey,
+                "name": name,
+                "version": 2,
+                "quantity": quantity,
+                "timestamp": timestamp,
+                "description": description,
+                "decimals": decimals,
+                "reissuable": reissuable,
+                "fee": txFee,
+                "proofs": [ signature ],
+                "script": 'base64:' + script
+            })
+            print(data)
+            req = pywaves.wrapper('/transactions/broadcast', data)
+            if pywaves.OFFLINE:
+                return req
+            else:
+                return req
