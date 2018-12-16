@@ -62,7 +62,6 @@ class AssetPair(object):
         self.asset1.status()
         self.asset2.status()
 
-
     def first(self):
         if len(self.asset1.assetId) < len(self.asset2.assetId):
             return self.asset1
@@ -78,6 +77,9 @@ class AssetPair(object):
             return self.asset2
         else:
             return self.asset1
+
+    def ordered(self):
+        return AssetPair(self.first(), self.second())
 
     def orderbook(self):
         req = pywaves.wrapper('/matcher/orderbook/%s/%s' % (self.a1, self.a2), host=pywaves.MATCHER)
