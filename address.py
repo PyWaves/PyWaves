@@ -660,6 +660,13 @@ class Address(object):
             return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+
+        from decimal import Decimal
+        if not isinstance(amount, Decimal) or not isinstance(price, Decimal):
+            raise Exception('Decimal type expected')
+        amount = int((amount * Decimal((0, (1,), amountAsset.decimals))).to_integral_exact())
+        price = int((price * Decimal((0, (1,), priceAsset.decimals))).to_integral_exact())
+
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
         expiration = timestamp + maxLifetime * 1000
@@ -771,8 +778,7 @@ class Address(object):
 
     def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
-        normPrice = int(pow(10, assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
-        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp)
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, price, maxLifetime, matcherFee, timestamp)
         if pywaves.OFFLINE:
             return id
         elif id != -1:
@@ -780,8 +786,7 @@ class Address(object):
 
     def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
-        normPrice = int(pow(10, assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
-        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, price, maxLifetime, matcherFee, timestamp)
         if pywaves.OFFLINE:
             return id
         elif id!=-1:

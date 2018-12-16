@@ -26,7 +26,7 @@ class Asset(object):
     __repr__ = __str__
 
     def status(self):
-        if self.assetId!='WAVES':
+        if self.assetId!='':
             try:
                 req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
                 if req['type'] == 3:

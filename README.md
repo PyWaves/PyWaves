@@ -394,6 +394,7 @@ tx = address.setAssetScript(pw.Asset('<asset id>'), script)
 #### Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw
+from decimal import Decimal
 
 # set Matcher node to use
 pw.setMatcher(node = 'http://127.0.0.1:6886')
@@ -402,18 +403,18 @@ pw.setMatcher(node = 'http://127.0.0.1:6886')
 BTC = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 USD = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 BTC_USD = pw.AssetPair(BTC, USD)
-myOrder = myAddress.buy(assetPair = BTC_USD, amount = 15e8, price = 95075)
+myOrder = myAddress.buy(assetPair = BTC_USD, amount = Decimal('15'), price = Decimal('950.75'))
 
 # post a sell order
 WCT = pw.Asset('6wuo2hTaDyPQVceETj1fc5p4WoMVCGMYNASN8ym4BGiL')
 Incent = pw.Asset('FLbGXzrpqkvucZqsHDcNxePTkh2ChmEi4GdBfDRRJVof')
 WCT_Incent = pw.AssetPair(WCT, Incent)
-myOrder = myAddress.sell(assetPair = WCT_Incent, amount = 100e8, price = 25e8)
+myOrder = myAddress.sell(assetPair = WCT_Incent, amount = Decimal('100'), price = Decimal('25'))
 
 # post a buy order using Waves as price asset
 BTC = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
 BTC_WAVES = pw.AssetPair(BTC, pw.WAVES)
-myOrder = myAddress.buy(assetPair = BTC_WAVES, amount = 1e8, price = 50e8)
+myOrder = myAddress.buy(assetPair = BTC_WAVES, amount = Decimal('1'), price = Decimal('50'))
 
 # cancel an order
 myOrder.cancel()
@@ -520,7 +521,7 @@ reissuable = False
 
 #### Post an order and check its status:
 ```
->>> myOrder = myAddress.buy(pw.AssetPair(token1, token2), 1, 25)
+>>> myOrder = myAddress.buy(pw.AssetPair(token1, token2), Decimal('1'), Decimal('25'))
 >>> myOrder
 status = Accepted
 id = ARZdYgfXz3ksRMvhnGeLLJnn3CQnz7RCa7U6dVw3zert
