@@ -753,6 +753,17 @@ class Address(object):
                 logging.info('Order Cancelled - ID: %s' % id)
             return id
 
+    def deleteOrderByID(self, assetPair, orderId):
+        sData = base58.b58decode(bytes(self.publicKey)) + \
+                base58.b58decode(bytes(orderId))
+        signature = crypto.sign(self.privateKey, sData)
+        data = json.dumps({
+            "sender": self.publicKey,
+            "orderId": orderId,
+            "signature": signature
+        })
+        pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
+
     def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
         normPrice = int(pow(10, assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
