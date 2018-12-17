@@ -509,6 +509,10 @@ class Address(object):
             logging.error(msg)
             pywaves.throw_error(msg)
         else:
+            if feeAsset:
+                feeInfos = pywaves.wrapper('/assets/details/' + feeAsset.assetId)
+                if feeInfos['minSponsoredAssetFee']:
+                    txFee = feeInfos['minSponsoredAssetFee']
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\4' + \
