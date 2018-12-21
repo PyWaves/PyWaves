@@ -16,7 +16,8 @@ try:
 except:
     bytes = str
 
-wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
+def _generate_seed(count=15, allow_dups=True):
+    wordList = ('abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
             'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action',
             'actor', 'actress', 'actual', 'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance',
             'advice', 'aerobic', 'affair', 'afford', 'afraid', 'again', 'age', 'agent', 'agree', 'ahead', 'aim', 'air',
@@ -200,7 +201,20 @@ wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 
             'window', 'wine', 'wing', 'wink', 'winner', 'winter', 'wire', 'wisdom', 'wise', 'wish', 'witness', 'wolf',
             'woman', 'wonder', 'wood', 'wool', 'word', 'work', 'world', 'worry', 'worth', 'wrap', 'wreck', 'wrestle',
             'wrist', 'write', 'wrong', 'yard', 'year', 'yellow', 'you', 'young', 'youth', 'zebra', 'zero', 'zone',
-            'zoo']
+            'zoo')
+
+    from random import SystemRandom
+    sysrandom = SystemRandom()
+    if not allow_dups:
+        return sysrandom.sample(wordList, count)
+    try:
+        return sysrandom.choices(wordList, count) # available from python3.6
+    except:
+        pass
+    return [sysrandom.choice(wordList) for i in range(count)]
+
+def generate_seed(count=15, allow_dups=True):
+    return ' '.join(_generate_seed(count, allow_dups))
 
 class Address(object):
     def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
@@ -273,18 +287,7 @@ class Address(object):
         self.seed = seed
         self.nonce = nonce
         if not publicKey and not privateKey and not seed:
-            wordCount = 2048
-            words = []
-            for i in range(5):
-                r = crypto.bytes2str(os.urandom(4))
-                x = (ord(r[3])) + (ord(r[2]) << 8) + (ord(r[1]) << 16) + (ord(r[0]) << 24)
-                w1 = x % wordCount
-                w2 = ((int(x / wordCount) >> 0) + w1) % wordCount
-                w3 = ((int((int(x / wordCount) >> 0) / wordCount) >> 0) + w2) % wordCount
-                words.append(wordList[w1])
-                words.append(wordList[w2])
-                words.append(wordList[w3])
-            self.seed = ' '.join(words)
+            self.seed = generate_seed()
         if publicKey:
             pubKey = base58.b58decode(bytes(publicKey))
             privKey = ""
