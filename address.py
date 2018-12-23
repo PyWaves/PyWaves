@@ -201,6 +201,8 @@ class Address(object):
     def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
         if nonce<0 or nonce>4294967295:
             raise ValueError('Nonce must be between 0 and 4294967295')
+        if privateKey == '':
+            raise ValueError('Empty private key not allowed')
         if seed:
             self._generate(seed=seed, nonce=nonce)
         elif privateKey:
