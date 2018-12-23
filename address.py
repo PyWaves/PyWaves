@@ -201,12 +201,8 @@ class Address(object):
     def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
         if nonce<0 or nonce>4294967295:
             raise ValueError('Nonce must be between 0 and 4294967295')
-        if privateKey == '':
-            raise ValueError('Empty private key not allowed')
         if seed:
             self._generate(seed=seed, nonce=nonce)
-        elif privateKey:
-            self._generate(privateKey=privateKey)
         elif publicKey:
             self._generate(publicKey=publicKey)
         elif address:
@@ -224,6 +220,12 @@ class Address(object):
             self.privateKey = ''
             self.seed = ''
             self.nonce = 0
+        elif privateKey == '' or privateKey:
+            print('started with private key')
+            if len(privateKey) == 0:
+                raise ValueError('Empty private key not allowed')
+            else:
+                self._generate(privateKey=privateKey)
         else:
             self._generate(nonce=nonce)
         if not pywaves.OFFLINE:
