@@ -673,8 +673,7 @@ class Address(object):
         elif pair.asset1 is sell_asset and pair.asset2 is buy_asset:
             amount = sell_amount
             price = buy_amount/sell_amount
-            order = self.sell(pair, amount, price, maxLifetime, matcherFee, timestamp)
-            return order.orderId
+            return self.sell(pair, amount, price, maxLifetime, matcherFee, timestamp)
         else:
             raise Exception('internal error, it\'s should not happened')
 
