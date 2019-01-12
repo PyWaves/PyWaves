@@ -668,8 +668,7 @@ class Address(object):
         if pair.asset1 is buy_asset and pair.asset2 is sell_asset:
             amount = buy_amount
             price = sell_amount/buy_amount
-            order = self.buy(pair, amount, price, maxLifetime, matcherFee, timestamp)
-            return order.orderId
+            return self.buy(pair, amount, price, maxLifetime, matcherFee, timestamp)
         elif pair.asset1 is sell_asset and pair.asset2 is buy_asset:
             amount = sell_amount
             price = buy_amount/sell_amount
