@@ -40,6 +40,13 @@ class Asset(object):
             except:
                 pass
 
+    def isSmart(self):
+        req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
+        if (req['script']):
+            return True
+        else:
+            return False
+
 class AssetPair(object):
     def __init__(self, asset1, asset2):
         self.asset1 = asset1
