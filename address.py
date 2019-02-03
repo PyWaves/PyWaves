@@ -221,7 +221,6 @@ class Address(object):
             self.seed = ''
             self.nonce = 0
         elif privateKey == '' or privateKey:
-            print('started with private key')
             if len(privateKey) == 0:
                 raise ValueError('Empty private key not allowed')
             else:
@@ -547,6 +546,9 @@ class Address(object):
     def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
         txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
 
+        if (asset.isSmart()):
+            txFee += 400000
+
         totalAmount = 0
 
         if not self.privateKey:
@@ -686,6 +688,7 @@ class Address(object):
             "signature": signature
         })
         req = pywaves.wrapper('/matcher/orderbook', data, host=pywaves.MATCHER)
+        print(req)
         id = -1
         if 'status' in req:
             if req['status'] == 'OrderRejected':
