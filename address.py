@@ -899,6 +899,10 @@ class Address(object):
             "Signature": signature
         }
         req = pywaves.wrapper('/matcher/orderbook/%s/%s/publicKey/%s' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId, self.publicKey), headers=data, host=pywaves.MATCHER)
+        if 'buy' not in req and 'sell' not in req:
+            msg = req['message']
+            logging.error(msg)
+            pywaves.throw_error(msg)
         return req
 
     def cancelOpenOrders(self, assetPair):
