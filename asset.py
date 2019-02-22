@@ -42,7 +42,8 @@ class Asset(object):
 
     def isSmart(self):
         req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
-        if (req['script']):
+
+        if ('script' in req and req['script']):
             return True
         else:
             return False
