@@ -22,7 +22,7 @@ DEFAULT_ASSET_SCRIPT_FEE = 100000000
 VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
 MAX_WDF_REQUEST = 100
 
-THROW_EXCEPTION_ON_ERROR = False
+THROW_EXCEPTION_ON_ERROR = True
 
 import requests
 
@@ -106,12 +106,9 @@ def getNode():
 
 def setMatcher(node = MATCHER):
     global MATCHER, MATCHER_PUBLICKEY
-    try:
-        MATCHER_PUBLICKEY = wrapper('/matcher', host = node)
-        MATCHER = node
-        logging.info('Setting matcher %s %s' % (MATCHER, MATCHER_PUBLICKEY))
-    except:
-        MATCHER_PUBLICKEY = ''
+    MATCHER_PUBLICKEY = wrapper('/matcher', host = node)
+    MTCHER = node
+    logging.info('Setting matcher %s %s' % (MATCHER, MATCHER_PUBLICKEY))
 
 def setDatafeed(wdf = DATAFEED):
     global DATAFEED
