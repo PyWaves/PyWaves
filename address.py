@@ -218,7 +218,13 @@ def generate_seed(count=15, allow_dups=True):
 
 class Address(object):
     def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
-        if nonce<0 or nonce>4294967295:
+        self.address = ''
+        self.publicKey = ''
+        self.privateKey = ''
+        self.seed = ''
+        self.nonce = 0
+
+        if nonce < 0 or nonce > 4294967295:
             raise ValueError('Nonce must be between 0 and 4294967295')
         if seed:
             self._generate(seed=seed, nonce=nonce)
@@ -235,15 +241,6 @@ class Address(object):
                 self.nonce = nonce
         elif alias and not pywaves.OFFLINE:
             self.address = pywaves.wrapper('/alias/by-alias/%s' % alias).get("address", "")
-            self.publicKey = ''
-            self.privateKey = ''
-            self.seed = ''
-            self.nonce = 0
-        elif privateKey == '' or privateKey:
-            if len(privateKey) == 0:
-                raise ValueError('Empty private key not allowed')
-            else:
-                self._generate(privateKey=privateKey)
         else:
             self._generate(nonce=nonce)
         if not pywaves.OFFLINE:
