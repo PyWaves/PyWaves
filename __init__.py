@@ -115,7 +115,7 @@ def setDatafeed(wdf = DATAFEED):
     DATAFEED = wdf
     logging.info('Setting datafeed %s ' % (DATAFEED))
 
-def wrapper(api, postData='', host='', headers='', timeout=5):
+def wrapper(api, postData='', host='', headers='', timeout=10):
     global OFFLINE
     if OFFLINE:
         offlineTx = {}
