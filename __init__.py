@@ -180,5 +180,6 @@ def validateAddress(address):
 WAVES = Asset('')
 BTC = Asset('8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS')
 USD = Asset('Ft8X1v1LTa1ABafufpaCWyVj8KkaxUWE6xBhW6sNFJck')
+LTC = Asset('HZk1mbfuJpmxU1Fs4AX5MWLVYtctsNcg6e2C6VKqK8zk')
 
 
