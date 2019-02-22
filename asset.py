@@ -63,7 +63,11 @@ class AssetPair(object):
         self.asset2.status()
 
     def first(self):
-        if len(self.asset1.assetId) < len(self.asset2.assetId):
+        if pywaves.getAssetPriority(self.asset1.assetId) < pywaves.getAssetPriority(self.asset2.assetId):
+            return self.asset1
+        elif pywaves.getAssetPriority(self.asset1.assetId) > pywaves.getAssetPriority(self.asset2.assetId):
+            return self.asset2
+        elif len(self.asset1.assetId) < len(self.asset2.assetId):
             return self.asset1
         elif self.asset1.assetId < self.asset2.assetId:
             return self.asset1
@@ -71,7 +75,11 @@ class AssetPair(object):
             return self.asset2
 
     def second(self):
-        if len(self.asset1.assetId) < len(self.asset2.assetId):
+        if pywaves.getAssetPriority(self.asset1.assetId) < pywaves.getAssetPriority(self.asset2.assetId):
+            return self.asset2
+        elif pywaves.getAssetPriority(self.asset1.assetId) > pywaves.getAssetPriority(self.asset2.assetId):
+            return self.asset1
+        elif len(self.asset1.assetId) < len(self.asset2.assetId):
             return self.asset2
         if self.asset1.assetId < self.asset2.assetId:
             return self.asset2

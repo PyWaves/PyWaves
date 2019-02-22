@@ -104,11 +104,27 @@ def setNode(node = NODE, chain = CHAIN, chain_id = None):
 def getNode():
     return NODE
 
+MATCHER_ASSET_PRIORITY = {}
+
+def getMatcherSettings():
+    return wrapper('/matcher/settings', host=MATCHER, headers={'Accept': 'application/json'})
+
+def getAssetPriority(asseId):
+    if asseId in MATCHER_ASSET_PRIORITY:
+        return MATCHER_ASSET_PRIORITY[asseId]
+    return 0
+
 def setMatcher(node = MATCHER):
-    global MATCHER, MATCHER_PUBLICKEY
+    global MATCHER, MATCHER_PUBLICKEY, MATCHER_ASSET_PRIORITY
     MATCHER_PUBLICKEY = wrapper('/matcher', host = node)
     MTCHER = node
     logging.info('Setting matcher %s %s' % (MATCHER, MATCHER_PUBLICKEY))
+    priceAssets = getMatcherSettings()['priceAssets']
+    priceAssets.reverse()
+    for i, asset in enumerate(priceAssets):
+        MATCHER_ASSET_PRIORITY[asset] = i+1
+        if asset == 'WAVES':
+            MATCHER_ASSET_PRIORITY[''] = MATCHER_ASSET_PRIORITY[asset]
 
 def setDatafeed(wdf = DATAFEED):
     global DATAFEED
