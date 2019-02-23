@@ -269,3 +269,32 @@ def sign(privateKey, message):
 
 def id(message):
     return base58.b58encode(hashlib.sha256(message).digest())
+
+def privkey_from_seed(seed, nonce=0):
+    import struct
+    seedHash = hashChain(struct.pack(">L", nonce) + str2bytes(seed))
+    accountSeedHash = sha256(seedHash)
+    private_key = base58.b58encode(curve.generatePrivateKey(accountSeedHash))
+    return private_key
+
+def pubkey_from_privkey(private_key):
+    privKey = base58.b58decode(bytes(private_key))
+    public_key = base58.b58encode(curve.generatePublicKey(privKey))
+    return public_key
+
+def address_from_pubkey(public_key):
+    from pywaves import CHAIN_ID
+    pubKey = base58.b58decode(bytes(public_key))
+    unhashedAddress = chr(1) + bytes(CHAIN_ID) + hashChain(pubKey)[0:20]
+    addressHash = hashChain(str2bytes(unhashedAddress))[0:4]
+    address = base58.b58encode(str2bytes(unhashedAddress + addressHash))
+    return address
+
+def generate_key(address=None, public_key=None, private_key=None, seed=None, nonce=0):
+    if seed:
+        private_key = privkey_from_seed(seed, nonce)
+    if private_key:
+        public_key = pubkey_from_privkey(private_key)
+    if public_key:
+        address = address_from_pubkey(public_key)
+    return address, public_key, private_key
