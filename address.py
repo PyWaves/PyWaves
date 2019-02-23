@@ -659,16 +659,16 @@ class Address(object):
             dataObjectJSON = json.dumps(dataObject)
             return pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
 
-    def exchange(self, sell_asset, buy_asset, sell_amount, buy_amount, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+    def exchange(self, spend_asset, receive_asset, spend_amount, receive_amount, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         from asset import AssetPair
-        pair = AssetPair(buy_asset, sell_asset).ordered()
-        if pair.asset1 is buy_asset and pair.asset2 is sell_asset:
-            amount = buy_amount
-            price = sell_amount/buy_amount
+        pair = AssetPair(receive_asset, spend_asset).ordered()
+        if pair.asset1 is receive_asset and pair.asset2 is spend_asset:
+            amount = receive_amount
+            price = spend_amount/receive_amount
             return self.buy(pair, amount, price, maxLifetime, matcherFee, timestamp)
-        elif pair.asset1 is sell_asset and pair.asset2 is buy_asset:
-            amount = sell_amount
-            price = buy_amount/sell_amount
+        elif pair.asset1 is spend_asset and pair.asset2 is receive_asset:
+            amount = spend_amount
+            price = receive_amount/spend_amount
             return self.sell(pair, amount, price, maxLifetime, matcherFee, timestamp)
         else:
             raise Exception('internal error, it\'s should not happened')
