@@ -503,7 +503,9 @@ class Address(object):
             "signature": signature
         })
         req = pywaves.wrapper('/matcher/orderbook', data, host=pywaves.MATCHER)
-        print(req)
+        """
+        {u'status': u'OrderAccepted', u'message': {u'assetPair': {u'priceAsset': u'Ft8X1v1LTa1ABafufpaCWyVj8KkaxUWE6xBhW6sNFJck', u'amountAsset': None}, u'orderType': u'buy', u'price': 268, u'signature': u'4LzSfA4CDLbznAsykB8fHXtvLP6ZvaUYkSowrn6KXgouatSskHRQ1chiPdq6Hyo7yXi9cdfYdTZo6NFVk8APBXuz', u'matcherFee': 300000, u'senderPublicKey': u'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', u'amount': 387444879, u'version': 1, u'expiration': 1553609813760, u'timestamp': 1551017813760, u'proofs': [u'4LzSfA4CDLbznAsykB8fHXtvLP6ZvaUYkSowrn6KXgouatSskHRQ1chiPdq6Hyo7yXi9cdfYdTZo6NFVk8APBXuz'], u'id': u'CGchfxnGKsySb36SPziRXo7AoijPUPvYReuXN9KczRwT', u'matcherPublicKey': u'7kPFrHDiGw1rCm7LPszuECwWYL3dMf6iMifLRDJQZMzy', u'sender': u'3XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'}}
+        """
         id = -1
         if 'status' in req:
             if req['status'] == 'OrderRejected':
