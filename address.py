@@ -38,8 +38,7 @@ class Address(object):
         if self.address:
             ab = []
             try:
-                assets_balances = pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
-                for a in assets_balances:
+                for a in self.balances():
                     if a['balance'] > 0:
                         ab.append("  %s (%s) = %d" % (a['assetId'], a['issueTransaction']['name'].encode('ascii', 'ignore'), a['balance']))
             except:
@@ -47,6 +46,9 @@ class Address(object):
             return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nnonce = %d\nbalances:\n  Waves = %d%s' % (self.address, self.publicKey, self.privateKey, self.seed, self.nonce, self.balance(), '\n'+'\n'.join(ab) if ab else '')
 
     __repr__ = __str__
+
+    def balances(self):
+        return pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
 
     def balance(self, assetId='', confirmations=0):
         try:
