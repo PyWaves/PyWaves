@@ -3,50 +3,66 @@ import logging
 
 class Asset(object):
     def __init__(self, assetId):
-        self.assetId='' if assetId == 'WAVES' else assetId
-        self.issuer = self.name = self.description = ''
-        self.quantity = self.decimals = 0
-        self.reissuable = False
-        if self.assetId=='':
-            self.quantity=100000000e8
-            self.decimals=8
-        else:
-            self.status()
+        self.assetId = '' if assetId == 'WAVES' else assetId
+        self._quantity = None
+        self._decimals = None
+        self._issuer = None
+        self._name = None
+        self._description = None
+        self._reissuable = None
+        self._script = None
 
     def __str__(self):
-        return 'status = %s\n' \
-               'assetId = %s\n' \
+        return 'assetId = %s\n' \
                'issuer = %s\n' \
                'name = %s\n' \
                'description = %s\n' \
                'quantity = %d\n' \
                'decimals = %d\n' \
-               'reissuable = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
+               'reissuable = %s' % (self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
 
     __repr__ = __str__
 
-    def status(self):
-        if self.assetId!='':
-            try:
-                req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
-                if req['type'] == 3:
-                    self.issuer = req['sender']
-                    self.quantity = req['quantity']
-                    self.decimals = req['decimals']
-                    self.reissuable = req['reissuable']
-                    self.name = req['name'].encode('ascii', 'ignore')
-                    self.description = req['description'].encode('ascii', 'ignore')
-                    return 'Issued'
-            except:
-                pass
+    def update(self):
+        if self.assetId == '':
+            self._quantity=100000000e8
+            self._decimals=8
+            self._issuer = ''
+            self._name = ''
+            self._description = ''
+            self._reissuable = False
+            self._script = ''
+            return
+
+        req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
+        if req['type'] != 3:
+            raise Exception('Invalid asset id')
+        self._quantity = req['quantity']
+        self._decimals = req['decimals']
+        self._issuer = req['sender']
+        self._name = req['name'].encode('ascii', 'ignore')
+        self._description = req['description'].encode('ascii', 'ignore')
+        self._reissuable = req['reissuable']
+        self._script = req['script'] if 'script' in req else ''
 
     def isSmart(self):
-        req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
+        return True if self.script else False
 
-        if ('script' in req and req['script']):
-            return True
-        else:
-            return False
+
+def get_getter(name):
+    def getter(self):
+        value = getattr(self, '_' + name)
+        if value is None:
+            self.update()
+            return getattr(self, '_' + name)
+        return value
+    return getter
+
+
+fields = ['quantity', 'decimals', 'issuer', 'name', 'description', 'reissuable', 'script']
+for field in fields:
+    setattr(Asset, field, property(get_getter(field)))
+
 
 class AssetPair(object):
     def __init__(self, asset1, asset2):
