@@ -75,8 +75,8 @@ class AssetPair(object):
         return 'asset1 = %s\nasset2 = %s' % (self.asset1.assetId, self.asset2.assetId)
 
     def refresh(self):
-        self.asset1.status()
-        self.asset2.status()
+        self.asset1.update()
+        self.asset2.update()
 
     def first(self):
         if pywaves.getAssetPriority(self.asset1.assetId) < pywaves.getAssetPriority(self.asset2.assetId):
