@@ -416,13 +416,15 @@ class Address(object):
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
+                "version": 2,
                 "senderPublicKey": self.publicKey,
                 "recipient": recipient.address,
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature
+                "signature": signature,
+                "proofs": [ signature ]
             })
 
             return pywaves.wrapper('/assets/broadcast/transfer', data)
@@ -530,6 +532,7 @@ class Address(object):
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
+                "version": 2,
                 "assetId": (asset.assetId if asset else ""),
                 "feeAssetId": (feeAsset.assetId if feeAsset else ""),
                 "senderPublicKey": self.publicKey,
@@ -538,7 +541,8 @@ class Address(object):
                 "fee": txFee,
                 "timestamp": timestamp,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature
+                "signature": signature,
+                "proofs": [ signature ]
             })
 
             return pywaves.wrapper('/assets/broadcast/transfer', data)
