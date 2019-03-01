@@ -584,7 +584,6 @@ class Address(object):
         pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
 
     def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
-        assetPair.refresh()
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, price, maxLifetime, matcherFee, timestamp)
         if pywaves.OFFLINE:
             return id
@@ -592,7 +591,6 @@ class Address(object):
             return pywaves.Order(id, assetPair, self)
 
     def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
-        assetPair.refresh()
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, price, maxLifetime, matcherFee, timestamp)
         if pywaves.OFFLINE:
             return id
