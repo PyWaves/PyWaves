@@ -567,7 +567,7 @@ class Address(object):
             raise Exception(req['message'])
         if req['status'] == 'OrderCanceled':
             logging.info('Order Cancelled - ID: %s' % orderId)
-            break
+            return
         raise Exception('Order was not canceled')
 
     def deleteOrderByID(self, assetPair, orderId):
