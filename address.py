@@ -563,14 +563,12 @@ class Address(object):
             "signature": signature
         })
         req = pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=pywaves.MATCHER)
-        if pywaves.OFFLINE:
-            return req
-        else:
-            id = -1
-            if req['status'] == 'OrderCanceled':
-                id = req['orderId']
-                logging.info('Order Cancelled - ID: %s' % id)
-            return id
+        if 'message' in req:
+            raise Exception(req['message'])
+        if req['status'] == 'OrderCanceled':
+            logging.info('Order Cancelled - ID: %s' % orderId)
+            break
+        raise Exception('Order was not canceled')
 
     def deleteOrderByID(self, assetPair, orderId):
         sData = base58.b58decode(bytes(self.publicKey)) + \
