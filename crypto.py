@@ -262,9 +262,9 @@ def hashChain(s):
     b=keccak256.digest(a)
     return b
 
-def sign(privateKey, message):
-    random64 = os.urandom(64)
-
+def sign(privateKey, message, random64=None):
+    if random64 is None:
+        random64 = os.urandom(64)
     return base58.b58encode(curve.calculateSignature(random64, base58.b58decode(privateKey), message))
 
 def id(message):
