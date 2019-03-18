@@ -406,6 +406,7 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\4' + \
+                    b'\2' + \
                     base58.b58decode(self.publicKey) + \
                     b'\0\0' + \
                     struct.pack(">Q", timestamp) + \
@@ -416,6 +417,7 @@ class Address(object):
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
+                "type": 4,
                 "version": 2,
                 "senderPublicKey": self.publicKey,
                 "recipient": recipient.address,
@@ -427,7 +429,7 @@ class Address(object):
                 "proofs": [ signature ]
             })
 
-            return pywaves.wrapper('/assets/broadcast/transfer', data)
+            return pywaves.wrapper('/transactions/broadcast', data)
 
     def massTransferWaves(self, transfers, attachment='', timestamp=0):
         txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
@@ -521,6 +523,7 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\4' + \
+                    b'\2' + \
                     base58.b58decode(self.publicKey) + \
                     (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
                     (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
