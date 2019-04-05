@@ -4,22 +4,23 @@ import logging
 class Asset(object):
     def __init__(self, assetId):
         self.assetId = '' if assetId == 'WAVES' else assetId
+        self._name = None
+        self._description = None
         self._quantity = None
         self._decimals = None
         self._issuer = None
-        self._name = None
-        self._description = None
         self._reissuable = None
-        self._script = None
+        self._scripted = None
 
     def __str__(self):
         return 'assetId = %s\n' \
-               'issuer = %s\n' \
                'name = %s\n' \
                'description = %s\n' \
                'quantity = %d\n' \
                'decimals = %d\n' \
-               'reissuable = %s' % (self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
+               'issuer = %s\n' \
+               'reissuable = %s\n' \
+               'scripted = %s' % (self.assetId, self.name, self.description, self.quantity, self.decimals, self.issuer, self.reissuable, self.scripted)
 
     __repr__ = __str__
 
@@ -34,19 +35,14 @@ class Asset(object):
             self._script = ''
             return
 
-        req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
-        if req['type'] != 3:
-            raise Exception('Invalid asset id')
-        self._quantity = req['quantity']
-        self._decimals = req['decimals']
-        self._issuer = req['sender']
+        req = pywaves.wrapper('/assets/details/%s' % self.assetId)
         self._name = req['name'].encode('ascii', 'ignore')
         self._description = req['description'].encode('ascii', 'ignore')
+        self._quantity = req['quantity']
+        self._decimals = req['decimals']
+        self._issuer = req['issuer']
         self._reissuable = req['reissuable']
-        self._script = req['script'] if 'script' in req else ''
-
-    def isSmart(self):
-        return True if self.script else False
+        self._scripted = req['scripted']
 
 
 def get_getter(name):

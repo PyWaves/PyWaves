@@ -342,7 +342,7 @@ class Address(object):
     def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
         txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
 
-        if (asset.isSmart()):
+        if (asset.scripted):
             txFee += 400000
 
         totalAmount = 0
