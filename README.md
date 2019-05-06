@@ -89,6 +89,8 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `setAssetScript(asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0)` set a new script for a smart asset
 
+`invokeScript(dappAddress, functionName, params, feeAsset = None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE)` invoke a script on a given dapp address
+
 ### Asset Class
 __pywaves.Asset(assetId)__ _Creates a new Asset object_
 
@@ -375,6 +377,16 @@ script = 'match tx { \n' + \
 '}'
 address = pw.Address(privateKey = '<private key>')
 tx = address.setAssetScript(pw.Asset('<asset id>'), script)
+```
+
+#### Invoking a script on a dapp address
+```python
+import pywaves as pw
+
+pw.setNode(node='<node>', chain='testnet')
+
+address = pw.Address(privateKey = '<private key>')
+tx = address.invokeScript('3N5Wq22bLSf3gt5VwHTCRbRnETeSwpuT8kK', 'fundRecipient', [{"type": "integer", "value": 100, }, { "type": "string", "value": "test" }, { "type": "boolean", "value": True }])
 ```
 
 #### Playing with Waves Matcher node (DEX):
