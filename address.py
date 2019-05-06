@@ -695,7 +695,6 @@ class Address(object):
             "signature": signature
         })
         req = pywaves.wrapper('/matcher/orderbook', data, host=pywaves.MATCHER)
-        print(req)
         id = -1
         if 'status' in req:
             if req['status'] == 'OrderRejected':
