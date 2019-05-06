@@ -770,7 +770,7 @@ class Address(object):
 
     def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
-        normPrice = int(pow(10, assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
+        normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if pywaves.OFFLINE:
             return id
@@ -1071,6 +1071,83 @@ class Address(object):
                 "script": 'base64:' + script
             })
             print(data)
+            req = pywaves.wrapper('/transactions/broadcast', data)
+            if pywaves.OFFLINE:
+                return req
+            else:
+                return req
+
+#    def invokeScript(self, dappAddress, functionName, params, payments, feeAsset = None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
+    def invokeScript(self, dappAddress, functionName, params, feeAsset=None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
+        # nasty workaround until the bug in the node is fixed
+        payments = []
+        if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            pywaves.throw_error(msg)
+        else:
+            timestamp = int(time.time() * 1000)
+            parameterBytes = b''
+            for param in params:
+                if param['type'] == 'integer':
+                    parameterBytes += b'\0' + struct.pack(">Q", param['value'])
+                elif param['type'] == 'binary':
+                    parameterBytes += b'\1' + struct.pack(">I", len(param['value'])) + crypto.str2bytes(param['value'])
+                elif param['type'] == 'string':
+                    parameterBytes += b'\2' + struct.pack(">I", len(crypto.str2bytes(param['value']))) + crypto.str2bytes(param['value'])
+                elif param['type'] == 'boolean':
+                    if param['value'] == True:
+                        parameterBytes += b'\6'
+                    else:
+                        parameterBytes += b'\7'
+            paymentBytes = b''
+            for payment in payments:
+                currentPaymentBytes = b''
+                if ('assetId' in payment and payment['assetId'] != None and payment['assetId'] != ''):
+                    currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x01' + base58.b58decode(payment['assetId'])
+                else:
+                    currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x00'
+                paymentBytes += struct.pack(">H", len(currentPaymentBytes)) + currentPaymentBytes
+            assetIdBytes = b''
+            if (feeAsset):
+                assetIdBytes += b'\x01' + base58.b58decode(feeAsset)
+            else:
+                assetIdBytes += b'\x00'
+
+            sData = b'\x10' + \
+                    b'\x01' + \
+                    crypto.str2bytes(str(pywaves.CHAIN_ID)) + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(dappAddress) + \
+                    b'\x09' + \
+                    b'\x01' + \
+                    struct.pack(">L", len(crypto.str2bytes(functionName))) +\
+                    crypto.str2bytes(functionName) + \
+                    struct.pack(">I", len(params)) + \
+                    parameterBytes + \
+                    struct.pack(">H", len(payments)) + \
+                    paymentBytes + \
+                    struct.pack(">Q", txFee) + \
+                    assetIdBytes + \
+                    struct.pack(">Q", timestamp)
+
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 16,
+                "senderPublicKey": self.publicKey,
+                "version": 1,
+                "timestamp": timestamp,
+                "fee": txFee,
+                "proofs": [ signature ],
+                "feeAssetId": feeAsset,
+                "dappAddress": dappAddress,
+                "call": {
+                    "function": functionName,
+                    "args": params
+                },
+                "payment": payments
+            })
             req = pywaves.wrapper('/transactions/broadcast', data)
             if pywaves.OFFLINE:
                 return req
