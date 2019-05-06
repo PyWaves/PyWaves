@@ -263,7 +263,7 @@ myAddress.sendAsset(recipient = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM'
 ```python
 import pywaves as pw
 
-myToken = myAddress.issueToken( name = "MyToken",
+myToken = myAddress.issueAsset( name = "MyToken",
                                 description = "This is my first token",
                                 quantity = 1000000,
                                 decimals = 2 )
@@ -322,7 +322,21 @@ transfers = [
 address = pw.Address(privateKey = "CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S")
 address.massTransferAssets(transfers, pw.Asset('9DtBNdyBCyViLZHptyF1HbQk73F6s7nQ5dXhNHubtBhd'))
 ```
+#### Data Transaction: 
+```python
+import pywaves as py
 
+myAddress = py.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
+
+data = [{
+        'type':'string', 
+        'key': 'test', 
+        'value':'testval'
+        }]
+
+myAddress.dataTransaction(data)
+
+```
 #### Token airdrop:
 ```python
 import pywaves as pw
