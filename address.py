@@ -1079,10 +1079,7 @@ class Address(object):
             else:
                 return req
 
-#    def invokeScript(self, dappAddress, functionName, params, payments, feeAsset = None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
-    def invokeScript(self, dappAddress, functionName, params, feeAsset=None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
-        # nasty workaround until the bug in the node is fixed
-        payments = []
+    def invokeScript(self, dappAddress, functionName, params, payments, feeAsset = None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1121,6 +1118,7 @@ class Address(object):
                     crypto.str2bytes(str(pywaves.CHAIN_ID)) + \
                     base58.b58decode(self.publicKey) + \
                     base58.b58decode(dappAddress) + \
+                    b'\x01' + \
                     b'\x09' + \
                     b'\x01' + \
                     struct.pack(">L", len(crypto.str2bytes(functionName))) +\
@@ -1134,16 +1132,15 @@ class Address(object):
                     struct.pack(">Q", timestamp)
 
             signature = crypto.sign(self.privateKey, sData)
-
             data = json.dumps({
                 "type": 16,
                 "senderPublicKey": self.publicKey,
                 "version": 1,
                 "timestamp": timestamp,
                 "fee": txFee,
-                "proofs": [ signature ],
+                "proofs": [signature],
                 "feeAssetId": feeAsset,
-                "dappAddress": dappAddress,
+                "dApp": dappAddress,
                 "call": {
                     "function": functionName,
                     "args": params
