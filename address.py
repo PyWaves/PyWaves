@@ -642,7 +642,8 @@ class Address(object):
                     dataBinary += struct.pack(">H", len(d['value']))
                     dataBinary += crypto.str2bytes(d['value'])
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
-            txFee = (int(( (len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
+            txFee = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
+            txFee = max(txFee, 500000)
             dataObject['fee'] = txFee
             sData = b'\x0c' + \
                     b'\1' + \
@@ -762,7 +763,7 @@ class Address(object):
 
     def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         assetPair.refresh()
-        normPrice = int(pow(10, assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
+        normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if pywaves.OFFLINE:
             return id
@@ -909,19 +910,27 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\x0a' + \
+            '''sData = b'\x0a' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">H", len(aliasWithNetwork)) + \
                     crypto.str2bytes(str(aliasWithNetwork)) + \
                     struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp)'''
+            sData = b'\x0a' + \
+                    base58.b58decode(self.publicKey) + \
+                    struct.pack(">H", len(aliasWithNetwork)) + \
+                    aliasWithNetwork + \
+                    struct.pack(">Q", txFee) + \
                     struct.pack(">Q", timestamp)
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
+                "type": 10,
                 "alias": alias,
                 "senderPublicKey": self.publicKey,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "signature": signature
+                "signature": signature,
+                "version": 1
             })
             return pywaves.wrapper('/alias/broadcast/create', data)
 
@@ -956,6 +965,7 @@ class Address(object):
             return pywaves.wrapper('/transactions/broadcast', data)
 
     def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0):
+        print(pywaves.wrapper('/utils/script/compile', scriptSource));
         script = pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         if not self.privateKey:
             logging.error('Private key required')
