@@ -12,6 +12,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 DEFAULT_TX_FEE = 100000
+DEFAULT_BASE_FEE = DEFAULT_TX_FEE
+DEFAULT_SMART_FEE = 400000
 DEFAULT_ASSET_FEE = 100000000
 DEFAULT_MATCHER_FEE = 300000
 DEFAULT_LEASE_FEE = 100000
