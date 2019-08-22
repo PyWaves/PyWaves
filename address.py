@@ -1,3 +1,4 @@
+import sys
 import math
 import pywaves
 import axolotl_curve25519 as curve
@@ -220,7 +221,8 @@ class Address(object):
             self.privateKey = ''
             self.seed = ''
             self.nonce = 0
-        elif privateKey == '' or privateKey:
+#        elif privateKey == '' or privateKey:
+        elif privateKey:
             if len(privateKey) == 0:
                 raise ValueError('Empty private key not allowed')
             else:
@@ -293,10 +295,21 @@ class Address(object):
             pubKey = curve.generatePublicKey(privKey)
         unhashedAddress = chr(1) + str(pywaves.CHAIN_ID) + crypto.hashChain(pubKey)[0:20]
         addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
-        self.address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
-        self.publicKey = base58.b58encode(pubKey)
+        if sys.version_info.major > 2:
+            # Python 3 returns a bytearray instead of a string.
+            self.address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash)).decode()
+            self.publicKey = base58.b58encode(pubKey).decode()
+        else:
+            self.address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
+            self.publicKey = base58.b58encode(pubKey)
         if privKey != "":
-            self.privateKey = base58.b58encode(privKey)
+            if sys.version_info.major > 2:
+                # Python 3 returns a bytearray instead of a string.
+                self.privateKey = base58.b58encode(privKey).decode()
+            else:
+                self.privateKey = base58.b58encode(privKey)
+        else:
+            self.privateKey = ""
 
     def issueAsset(self, name, description, quantity, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
         if not self.privateKey:
