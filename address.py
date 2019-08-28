@@ -550,8 +550,11 @@ class Address(object):
 
             return pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0,baseFee=pywaves.DEFAULT_BASE_FEE,smartFee=pywaves.DEFAULT_SMART_FEE):
-        txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
+    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0, scripted=False):
+        if scripted is True:
+            txFee = 500000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
+        else:
+            txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
 
         if (asset.isSmart()):
             txFee += smartFee
