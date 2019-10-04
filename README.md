@@ -403,6 +403,16 @@ address = pw.Address(privateKey = '<private key>')
 tx = address.invokeScript('3N5Wq22bLSf3gt5VwHTCRbRnETeSwpuT8kK', 'fundRecipient', [{"type": "integer", "value": 100, }, { "type": "string", "value": "test" }, { "type": "boolean", "value": True }], [ { "amount": 100, "assetId": "BGNVLgPKLwiBiZ7vWLcy3r92MzpPCU2DuUb4tv9W6gMi" } ])
 ```
 
+#### Working with contracts
+```python
+import pywaves as pw
+
+pw.setNode(node = '<node>', 'T')
+
+contract = pw.Contract('3N7XfieeJ8dHyMJfs7amukzxKB1PfMXzHzi', '<seed>')
+contract.faucet()
+```
+
 #### Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw
