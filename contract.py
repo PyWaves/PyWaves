@@ -5,7 +5,6 @@ class Contract(object):
 
     def __init__(self, contractAddress, seed):
         self.contractAddress = contractAddress
-        self.node = pywaves.NODE
 
         metaInfo = self.parseContractAddress()
         extractedMethods = metaInfo.keys()
@@ -16,7 +15,7 @@ class Contract(object):
 
 
     def parseContractAddress(self):
-        metaInfo = requests.get(self.node + '/addresses/scriptInfo/' + self.contractAddress + '/meta').json()
+        metaInfo = requests.get(pw.NODE + '/addresses/scriptInfo/' + self.contractAddress + '/meta').json()
 
         return metaInfo['meta']['callableFuncTypes']
 
