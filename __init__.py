@@ -33,6 +33,7 @@ import requests
 from .address import *
 from .asset import *
 from .order import *
+from .contract import *
 
 OFFLINE = False
 NODE = 'https://nodes.wavesnodes.com'
