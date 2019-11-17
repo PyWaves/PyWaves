@@ -3,7 +3,7 @@ import logging
 
 class Asset(object):
     def __init__(self, assetId):
-        self.assetId='' if assetId == DEFAULT_CURRENCY else assetId
+        self.assetId='' if assetId == pywaves.DEFAULT_CURRENCY else assetId
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
@@ -26,7 +26,7 @@ class Asset(object):
     __repr__ = __str__
 
     def status(self):
-        if self.assetId!=DEFAULT_CURRENCY:
+        if self.assetId!=pywaves.DEFAULT_CURRENCY:
             try:
                 req = pywaves.wrapper('/transactions/info/%s' % self.assetId)
                 if req['type'] == 3:
@@ -52,8 +52,8 @@ class AssetPair(object):
     def __init__(self, asset1, asset2):
         self.asset1 = asset1
         self.asset2 = asset2
-        self.a1 = DEFAULT_CURRENCY if self.asset1.assetId == '' else self.asset1.assetId
-        self.a2 = DEFAULT_CURRENCY if self.asset2.assetId == '' else self.asset2.assetId
+        self.a1 = pywaves.DEFAULT_CURRENCY if self.asset1.assetId == '' else self.asset1.assetId
+        self.a2 = pywaves.DEFAULT_CURRENCY if self.asset2.assetId == '' else self.asset2.assetId
 
     def __str__(self):
         return 'asset1 = %s\nasset2 = %s' % (self.asset1.assetId, self.asset2.assetId)
