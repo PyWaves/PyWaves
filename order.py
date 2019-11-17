@@ -19,7 +19,7 @@ class Order(object):
 
     def status(self):
         try:
-            req = pywaves.wrapper('/matcher/orderbook/%s/%s/%s' % ('WAVES' if self.assetPair.asset1.assetId=='' else self.assetPair.asset1.assetId, 'WAVES' if self.assetPair.asset2.assetId=='' else self.assetPair.asset2.assetId, self.orderId), host=self.matcher)
+            req = pywaves.wrapper('/matcher/orderbook/%s/%s/%s' % (DEFAULT_CURRENCY if self.assetPair.asset1.assetId=='' else self.assetPair.asset1.assetId, DEFAULT_CURRENCY if self.assetPair.asset2.assetId=='' else self.assetPair.asset2.assetId, self.orderId), host=self.matcher)
             return req['status']
         except:
             pass
