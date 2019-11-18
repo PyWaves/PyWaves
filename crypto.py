@@ -277,7 +277,7 @@ def verify_signature(pub_key, message, signature):
 def address_from_pubkey(public_key):
     """ public key is expected as a string """
     pubKey = base58.b58decode(public_key)
-    unhashedAddress = chr(1) + str(pw.CHAIN_ID) + pw.crypto.hashChain(pubKey)[0:20]
-    addressHash = pw.crypto.hashChain(pw.crypto.str2bytes(unhashedAddress))[0:4]
-    address = base58.b58encode(pw.crypto.str2bytes(unhashedAddress + addressHash))
+    unhashedAddress = chr(1) + str(pywaves.CHAIN_ID) + crypto.hashChain(pubKey)[0:20]
+    addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
+    address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
     return address
