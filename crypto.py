@@ -273,11 +273,3 @@ def id(message):
 def verify_signature(pub_key, message, signature):
     """ all of the arguments are expected in a string format """
     return curve.verifySignature(base58.b58decode(pub_key), message.encode(), base58.b58decode(signature)) == 0
-
-def address_from_pubkey(public_key):
-    """ public key is expected as a string """
-    pubKey = base58.b58decode(public_key)
-    unhashedAddress = chr(1) + str(pywaves.CHAIN_ID) + crypto.hashChain(pubKey)[0:20]
-    addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
-    address = base58.b58encode(crypto.str2bytes(unhashedAddress + addressHash))
-    return address
