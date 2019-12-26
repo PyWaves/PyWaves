@@ -413,6 +413,29 @@ contract = pw.Contract('3N7XfieeJ8dHyMJfs7amukzxKB1PfMXzHzi', '<seed>')
 contract.faucet()
 ```
 
+#### Working with oracles
+Querrying oracles:
+```python
+import pywaves as pw
+
+oracle = pw.Oracle(oracleAddress = '3P4PCxsJqMzQBALo8zANHtBDZRRquobHQp7')
+# getting all data entries for an oracle
+print(oracle.getData())
+# getting data for a specific key of an oracle
+print(oracle.getData('order_total_EeH5DRjdMnoYDhNbtkLsRNZq95etJUqWtvMDBCXojBoy'))
+# getting all data entries of an oracle filtered by a regular expression
+print(oracle.getData(regex = '^order_total_.*$'))
+```
+Storing data in an oracle:
+```python
+import pywaves as pw
+
+pw.setNode('https://testnode1.wavesnodes.com', 'T')
+
+oracle = pw.Oracle(seed='<your seed here>')
+print(oracle.storeData('oracle_test', 'string', 'test entry from oracle class'))
+```
+
 #### Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw

@@ -1081,7 +1081,6 @@ class Address(object):
                 "proofs": [ signature ],
                 "script": 'base64:' + script
             })
-            print(data)
             req = pywaves.wrapper('/transactions/broadcast', data)
             if pywaves.OFFLINE:
                 return req

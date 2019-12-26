@@ -32,6 +32,7 @@ from .address import *
 from .asset import *
 from .order import *
 from .contract import *
+from .oracle import *
 
 OFFLINE = False
 NODE = 'https://nodes.wavesnodes.com'
