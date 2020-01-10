@@ -1,11 +1,12 @@
 import requests
-import pywaves as pw
+#import pywaves as pw
 
 class Oracle(object):
 
-    def __init__(self, oracleAddress = None, seed = None):
+    def __init__(self, pycwaves, oracleAddress = None, seed = None):
+        self.pycwaves = pycwaves
         if seed != None:
-            self.oracleAddress = pw.Address(seed=seed)
+            self.oracleAddress = self.pycwaves.Address(seed=seed)
         else:
             self.oracleAddress = oracleAddress
 
@@ -20,14 +21,14 @@ class Oracle(object):
         return result
 
     def _getDataWithRegex(self, regex):
-        print(pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex)
-        return requests.get(pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex).json()
+        print(self.pycwaves.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex)
+        return requests.get(self.pycwaves.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex).json()
 
     def _getDataWithoutKey(self):
-        return requests.get(pw.NODE + '/addresses/data/' + self.oracleAddress).json()
+        return requests.get(self.pycwaves.NODE + '/addresses/data/' + self.oracleAddress).json()
 
     def _getDataWithKey(self, key):
-        return requests.get(pw.NODE + '/addresses/data/' + self.oracleAddress + '/' + key).json()['value']
+        return requests.get(self.pycwaves.NODE + '/addresses/data/' + self.oracleAddress + '/' + key).json()['value']
 
     def storeData(self, key, type, dataEntry):
         dataToStore = [{

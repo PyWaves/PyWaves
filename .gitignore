@@ -88,3 +88,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+arbitrage.py
+bot.cfg
+bot.py

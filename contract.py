@@ -1,9 +1,10 @@
 import requests
-import pywaves as pw
+#import pywaves as pw
 
 class Contract(object):
 
-    def __init__(self, contractAddress, seed):
+    def __init__(self, contractAddress, seed, pycwaves):
+        self.pycwaves = pycwaves
         self.contractAddress = contractAddress
 
         metaInfo = self.parseContractAddress()
@@ -15,7 +16,7 @@ class Contract(object):
 
 
     def parseContractAddress(self):
-        metaInfo = requests.get(pw.NODE + '/addresses/scriptInfo/' + self.contractAddress + '/meta').json()
+        metaInfo = requests.get(self.pycwaves.NODE + '/addresses/scriptInfo/' + self.contractAddress + '/meta').json()
 
         return metaInfo['meta']['callableFuncTypes']
 
@@ -37,7 +38,7 @@ class Contract(object):
         if len(parameters.keys()) > 0:
             callParameters = callParameters[0:len(callParameters) - 2] + '\n'
         callParameters += '\t]'
-        call = 'pw.Address(seed = \'' + seed + '\').invokeScript(\'' + self.contractAddress + '\', \'' + method + '\', parameters, [])'
+        call = 'self.pycwaves.Address(seed = \'' + seed + '\').invokeScript(\'' + self.contractAddress + '\', \'' + method + '\', parameters, [])'
 
         code = 'def ' + method + '(' + parameterList[0: len(parameterList) - 2] + '):\n\t' + callParameters + '\n\t' + call
 

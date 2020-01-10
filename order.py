@@ -1,12 +1,13 @@
-import pywaves
+#import pywaves
 
 class Order(object):
-    def __init__(self, orderId, assetPair, address = ''):
+    def __init__(self, pycwaves, orderId, assetPair, address = ''):
+        self.pycwaves = pycwaves
         self.orderId = orderId
         self.assetPair = assetPair
         self.address = address
-        self.matcher = pywaves.MATCHER
-        self.matcherPublicKey = pywaves.MATCHER_PUBLICKEY
+        self.matcher = self.pycwaves.MATCHER
+        self.matcherPublicKey = self.pycwaves.MATCHER_PUBLICKEY
         self.status()
 
     def __str__(self):
@@ -19,7 +20,7 @@ class Order(object):
 
     def status(self):
         try:
-            req = pywaves.wrapper('/matcher/orderbook/%s/%s/%s' % (pywaves.DEFAULT_CURRENCY if self.assetPair.asset1.assetId=='' else self.assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if self.assetPair.asset2.assetId=='' else self.assetPair.asset2.assetId, self.orderId), host=self.matcher)
+            req = self.pycwaves.wrapper('/matcher/orderbook/%s/%s/%s' % (self.pycwaves.DEFAULT_CURRENCY if self.assetPair.asset1.assetId=='' else self.assetPair.asset1.assetId, self.pycwaves.DEFAULT_CURRENCY if self.assetPair.asset2.assetId=='' else self.assetPair.asset2.assetId, self.orderId), host=self.matcher)
             return req['status']
         except:
             pass
