@@ -433,8 +433,8 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def massTransferWaves(self, transfers, attachment='', timestamp=0):
-        txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
+    def massTransferWaves(self, transfers, attachment='', timestamp=0,baseFee=pywaves.DEFAULT_BASE_FEE):
+        txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
         totalAmount = 0
 
         for i in range(0, len(transfers)):
@@ -552,11 +552,11 @@ class Address(object):
 
             return self.pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0):
-        txFee = 100000 + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * 100000
+    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0,baseFee=pywaves.DEFAULT_BASE_FEE,smartFee=pywaves.DEFAULT_SMART_FEE):
+        txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
 
         if (asset.isSmart()):
-            txFee += 400000
+            txFee += smartFee
 
         totalAmount = 0
 
@@ -605,7 +605,7 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def dataTransaction(self, data, timestamp=0):
+    def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
         if not self.privateKey:
             logging.error('Private key required')
         else:
@@ -644,8 +644,8 @@ class Address(object):
                     dataBinary += struct.pack(">H", len(d['value']))
                     dataBinary += crypto.str2bytes(d['value'])
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
-            txFee = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * 100000
-            txFee = max(txFee, 500000)
+            txFee = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * baseFee
+            txFee = max(txFee, minimalFee)
             dataObject['fee'] = txFee
             sData = b'\x0c' + \
                     b'\1' + \
@@ -697,8 +697,7 @@ class Address(object):
             "matcherFee": matcherFee,
             "signature": signature
         })
-        req = self.pywaves.wrapper('/matcher/orderbook', data, host=pywaves.MATCHER)
-        print(req)
+        req = self.pywaves.wrapper('/matcher/orderbook', data, host=self.pywaves.MATCHER)
         id = -1
         if 'status' in req:
             if req['status'] == 'OrderRejected':
@@ -786,8 +785,8 @@ class Address(object):
             req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=self.pywaves.MATCHER)
             if self.pywaves.OFFLINE:
                     return req
-            amountBalance = req['WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
-            priceBalance = req['WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
+            amountBalance = req[pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
+            priceBalance = req[pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
         except:
             amountBalance = 0
             priceBalance = 0

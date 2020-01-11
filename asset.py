@@ -27,7 +27,7 @@ class Asset(object):
     __repr__ = __str__
 
     def status(self):
-        if self.assetId!='WAVES':
+        if self.assetId!=pywaves.DEFAULT_CURRENCY:
             try:
                 req = self.pywaves.wrapper('/transactions/info/%s' % self.assetId)
                 if req['type'] == 3:
@@ -55,8 +55,8 @@ class AssetPair(object):
         self.pywaves = pywaves
         self.asset1 = asset1
         self.asset2 = asset2
-        self.a1 = 'WAVES' if self.asset1.assetId == '' else self.asset1.assetId
-        self.a2 = 'WAVES' if self.asset2.assetId == '' else self.asset2.assetId
+        self.a1 = pywaves.DEFAULT_CURRENCY if self.asset1.assetId == '' else self.asset1.assetId
+        self.a2 = pywaves.DEFAULT_CURRENCY if self.asset2.assetId == '' else self.asset2.assetId
 
     def __str__(self):
         return 'asset1 = %s\nasset2 = %s' % (self.asset1.assetId, self.asset2.assetId)
