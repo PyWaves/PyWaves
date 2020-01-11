@@ -50,7 +50,9 @@ class Asset(object):
             return False
 
 class AssetPair(object):
-    def __init__(self, asset1, asset2):
+    def __init__(self, asset1, asset2, pywaves=pywaves):
+        print(pywaves)
+        self.pywaves = pywaves
         self.asset1 = asset1
         self.asset2 = asset2
         self.a1 = 'WAVES' if self.asset1.assetId == '' else self.asset1.assetId
@@ -81,6 +83,7 @@ class AssetPair(object):
             return self.asset1
 
     def orderbook(self):
+        print(self.pywaves.MATCHER)
         req = self.pywaves.wrapper('/matcher/orderbook/%s/%s' % (self.a1, self.a2), host=self.pywaves.MATCHER)
         return req
 
