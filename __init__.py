@@ -36,6 +36,7 @@ from .asset import *
 from .order import *
 from .contract import *
 from .oracle import *
+from .ParallelPyWaves import *
 
 OFFLINE = False
 NODE = 'https://nodes.wavesnodes.com'

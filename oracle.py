@@ -3,9 +3,10 @@ import pywaves as pw
 
 class Oracle(object):
 
-    def __init__(self, oracleAddress = None, seed = None):
+    def __init__(self, oracleAddress = None, seed = None, pywaves=pw):
+        self.pw = pywaves
         if seed != None:
-            self.oracleAddress = pw.Address(seed=seed)
+            self.oracleAddress = self.pw.Address(seed=seed)
         else:
             self.oracleAddress = oracleAddress
 
@@ -20,14 +21,14 @@ class Oracle(object):
         return result
 
     def _getDataWithRegex(self, regex):
-        print(pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex)
-        return requests.get(pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex).json()
+        print(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex)
+        return requests.get(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex).json()
 
     def _getDataWithoutKey(self):
-        return requests.get(pw.NODE + '/addresses/data/' + self.oracleAddress).json()
+        return requests.get(self.pw.NODE + '/addresses/data/' + self.oracleAddress).json()
 
     def _getDataWithKey(self, key):
-        return requests.get(pw.NODE + '/addresses/data/' + self.oracleAddress + '/' + key).json()['value']
+        return requests.get(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '/' + key).json()['value']
 
     def storeData(self, key, type, dataEntry):
         dataToStore = [{
