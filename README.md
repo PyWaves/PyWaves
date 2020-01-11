@@ -436,6 +436,21 @@ oracle = pw.Oracle(seed='<your seed here>')
 print(oracle.storeData('oracle_test', 'string', 'test entry from oracle class'))
 ```
 
+#### Working with more than one network
+```python
+import pywaves as pw
+
+config = pw.ParallelPyWaves()
+config.setNode('https://testnode1.wavesnodes.com', 'testnet')
+
+tAddress = pw.Address(seed = "test test test", pywaves = config)
+
+address = pw.Address(seed = "test test test")
+print(tAddress.address)
+print(address.address)
+print(tAddress.address)
+```
+
 #### Playing with Waves Matcher node (DEX):
 ```python	
 import pywaves as pw
