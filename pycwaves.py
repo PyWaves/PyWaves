@@ -19,9 +19,13 @@ from oracle import *
 
 class PyCWaves(object):
     def __init__(self):
-        self.Address = object
-        self.Asset = object
-        self.AssetPair = object
+        #self.Address = object
+        #self.Asset = object
+        #self.AssetPair = object
+        #self.Order = object
+        #self.Contract = object
+        #self.Oracle = object
+
         self.DEFAULT_TX_FEE = 100000
         self.DEFAULT_BASE_FEE = self.DEFAULT_TX_FEE
         self.DEFAULT_SMART_FEE = 400000
@@ -64,26 +68,43 @@ class PyCWaves(object):
         console.setFormatter(formatter)
         logging.getLogger('').addHandler(console)
 
-        self.WAVES = Asset('', self)
-        self.BTC = Asset('8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS', self)
-        self.USD = Asset('Ft8X1v1LTa1ABafufpaCWyVj8KkaxUWE6xBhW6sNFJck', self)
+        self.WAVES = pyAsset('', self)
+        self.BTC = pyAsset('8LQW8f7P5d5PZM7GtZEBgaqRPGSzS3DfPuiXrURJ4AJS', self)
+        self.USD = pyAsset('Ft8X1v1LTa1ABafufpaCWyVj8KkaxUWE6xBhW6sNFJck', self)
 
-    def pAddress(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
-        self.Address = Address(self, address, publicKey, privateKey, seed, alias, nonce)
-        return self.Address
+    def Address(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
+        #self.Address = Address(self, address, publicKey, privateKey, seed, alias, nonce)
+        #return self.Address
+        return pyAddress(self, address, publicKey, privateKey, seed, alias, nonce)
 
-    def pAsset(self, assetId):
-        self.Asset = Asset(assetId, self)
-        return self.Asset
+    def Asset(self, assetId):
+        #self.Asset = Asset(assetId, self)
+        #return self.Asset
+        return pyAsset(assetId, self)
 
-    def pAssetPair(self, asset1, asset2):
-        self.AssetPair = AssetPair(asset1, asset2, self)
-        return self.AssetPair
+    def AssetPair(self, asset1, asset2):
+        #self.AssetPair = AssetPair(asset1, asset2, self)
+        #return self.AssetPair
+        return pyAssetPair(asset1, asset2, self)
+
+    def Order(self, orderId, assetPair, address = ''):
+        #self.Order = Order(self, orderId, assetPair, address)
+        #return self.Order
+        return pyOrder(self, orderId, assetPair, address)
+
+    def Contract(self, contractAddress, seed):
+        #self.Contract = Contract(contractAddress, seed, self)
+        #return self.Contract
+        return pyContract(contractAddress, seed, self)
+
+    def Oracle(self, oracleAddress, seed):
+        #self.Oracle = Oracle(self, oracleAddress, seed)
+        #return self.Oracle
+        return pyOracle(self, oracleAddress, seed)
 
     def throw_error(self, msg):
         if self.THROW_EXCEPTION_ON_ERROR:
             raise PyWavesException(msg)
-
 
     def setThrowOnError(self, throw=True):
         #global THROW_EXCEPTION_ON_ERROR

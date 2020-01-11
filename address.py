@@ -198,7 +198,7 @@ wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 
             'wrist', 'write', 'wrong', 'yard', 'year', 'yellow', 'you', 'young', 'youth', 'zebra', 'zero', 'zone',
             'zoo']
 
-class Address(object):
+class pyAddress(object):
     def __init__(self, pycwaves, address='', publicKey='', privateKey='', seed='', alias='', nonce=0):
         self.pycwaves = pycwaves
         if nonce<0 or nonce>4294967295:

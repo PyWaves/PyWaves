@@ -1,6 +1,6 @@
 #import pywaves
 
-class Order(object):
+class pyOrder(object):
     def __init__(self, pycwaves, orderId, assetPair, address = ''):
         self.pycwaves = pycwaves
         self.orderId = orderId

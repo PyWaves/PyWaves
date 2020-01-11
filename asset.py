@@ -1,7 +1,7 @@
 #import pywaves
 import logging
 
-class Asset(object):
+class pyAsset(object):
     def __init__(self, assetId, pycwaves):
         self.pycwaves = pycwaves
         self.assetId='' if assetId == self.pycwaves.DEFAULT_CURRENCY else assetId
@@ -49,7 +49,7 @@ class Asset(object):
         else:
             return False
 
-class AssetPair(object):
+class pyAssetPair(object):
     def __init__(self, asset1, asset2, pycwaves):
         self.pycwaves = pycwaves
         self.asset1 = asset1

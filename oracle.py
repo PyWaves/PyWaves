@@ -1,7 +1,7 @@
 import requests
 #import pywaves as pw
 
-class Oracle(object):
+class pyOracle(object):
 
     def __init__(self, pycwaves, oracleAddress = None, seed = None):
         self.pycwaves = pycwaves

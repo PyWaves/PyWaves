@@ -1,7 +1,7 @@
 import requests
 #import pywaves as pw
 
-class Contract(object):
+class pyContract(object):
 
     def __init__(self, contractAddress, seed, pycwaves):
         self.pycwaves = pycwaves
