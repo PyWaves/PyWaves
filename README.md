@@ -3,11 +3,10 @@ PyCWaves is an object-oriented Python class interface to the Waves blockchain pl
 
 ## Getting Started
 
-<!-- You can install PyWaves using:
+ You can install PyWaves using:
 
-    pip install pywaves -->
+    pip install pycwaves 
 
-Copy the .py files to your script location, there will be a pip install package at a later date
 
 ## Documentation
 
