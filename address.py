@@ -3,7 +3,7 @@ import math
 import axolotl_curve25519 as curve
 import os
 #import pywaves.crypto as crypto
-import crypto
+from .crypto import *
 import time
 import struct
 import json
