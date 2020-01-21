@@ -670,7 +670,8 @@ class Address(object):
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
-        sData = base58.b58decode(self.publicKey) + \
+        sData = b'\2' + \
+                base58.b58decode(self.publicKey) + \
                 base58.b58decode(pywaves.MATCHER_PUBLICKEY) + \
                 asset1 + \
                 asset2 + \
@@ -695,7 +696,8 @@ class Address(object):
             "timestamp": timestamp,
             "expiration": expiration,
             "matcherFee": matcherFee,
-            "signature": signature
+            "signature": signature,
+            "version": 2
         })
         req = self.pywaves.wrapper('/matcher/orderbook', data, host=self.pywaves.MATCHER)
         id = -1
