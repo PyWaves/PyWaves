@@ -447,6 +447,10 @@ class pyAddress(object):
             baseFee = self.pycwaves.DEFAULT_BASE_FEE
 
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
+
+        if (asset.isSmart()):
+            txFee += smartFee
+
         totalAmount = 0
 
         for i in range(0, len(transfers)):
@@ -695,7 +699,8 @@ class pyAddress(object):
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
-        sData = base58.b58decode(self.publicKey) + \
+        sData = b'\2' + \
+                base58.b58decode(self.publicKey) + \
                 base58.b58decode(self.pycwaves.MATCHER_PUBLICKEY) + \
                 asset1 + \
                 asset2 + \
@@ -720,7 +725,8 @@ class pyAddress(object):
             "timestamp": timestamp,
             "expiration": expiration,
             "matcherFee": matcherFee,
-            "signature": signature
+            "signature": signature,
+            "version": 2
         })
         req = self.pycwaves.wrapper('/matcher/orderbook', data, host=self.pycwaves.MATCHER)
         id = -1
