@@ -8,6 +8,7 @@ class Asset(object):
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
+        self.minSponsoredAssetFee = None
         if self.assetId=='':
             self.quantity=100000000e8
             self.decimals=8
