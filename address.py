@@ -797,7 +797,7 @@ class pyAddress(object):
         if matcherFee == 0: 
             matcherFee = self.pycwaves.DEFAULT_MATCHER_FEE
         assetPair.refresh()
-        normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
+        normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if self.pycwaves.OFFLINE:
             return id
@@ -808,7 +808,7 @@ class pyAddress(object):
         if matcherFee == 0: 
             matcherFee = self.pycwaves.DEFAULT_MATCHER_FEE
         assetPair.refresh()
-        normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
+        normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if self.pycwaves.OFFLINE:
             return id

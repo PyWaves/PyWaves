@@ -8,6 +8,7 @@ class pyAsset(object):
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
+        self.minSponsoredAssetFee = None
         if self.assetId=='':
             self.quantity=100000000e8
             self.decimals=8
@@ -22,21 +23,23 @@ class pyAsset(object):
                'description = %s\n' \
                'quantity = %d\n' \
                'decimals = %d\n' \
-               'reissuable = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
+               'reissuable = %s\n' \
+               'minSponsoredAssetFee = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable, self.minSponsoredAssetFee)
 
     __repr__ = __str__
 
     def status(self):
         if self.assetId!=self.pycwaves.DEFAULT_CURRENCY:
             try:
-                req = self.pycwaves.wrapper('/transactions/info/%s' % self.assetId)
-                if req['type'] == 3:
-                    self.issuer = req['sender']
+                req = self.pycwaves.wrapper('/assets/details/%s' % self.assetId)
+                if req['assetId'] != None:
+                    self.issuer = req['issuer']
                     self.quantity = req['quantity']
                     self.decimals = req['decimals']
                     self.reissuable = req['reissuable']
                     self.name = req['name'].encode('ascii', 'ignore')
                     self.description = req['description'].encode('ascii', 'ignore')
+                    self.minSponsoredAssetFee = req['minSponsoredAssetFee']
                     return 'Issued'
             except:
                 pass
