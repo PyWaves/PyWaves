@@ -4,10 +4,11 @@ import logging
 class Asset(object):
     def __init__(self, assetId, pywaves=pywaves):
         self.pywaves = pywaves
-        self.assetId='' if assetId == 'WAVES' else assetId
+        self.assetId='' if assetId == pywaves.DEFAULT_CURRENCY else assetId
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
+        self.minSponsoredAssetFee = None
         if self.assetId=='':
             self.quantity=100000000e8
             self.decimals=8
@@ -22,21 +23,23 @@ class Asset(object):
                'description = %s\n' \
                'quantity = %d\n' \
                'decimals = %d\n' \
-               'reissuable = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
+               'reissuable = %s\n' \
+               'minSponsoredAssetFee = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable, self.minSponsoredAssetFee)
 
     __repr__ = __str__
 
     def status(self):
         if self.assetId!=pywaves.DEFAULT_CURRENCY:
             try:
-                req = self.pywaves.wrapper('/transactions/info/%s' % self.assetId)
-                if req['type'] == 3:
-                    self.issuer = req['sender']
+                req = self.pywaves.wrapper('/assets/details/%s' % self.assetId)
+                if req['assetId'] != None:
+                    self.issuer = req['issuer']
                     self.quantity = req['quantity']
                     self.decimals = req['decimals']
                     self.reissuable = req['reissuable']
                     self.name = req['name'].encode('ascii', 'ignore')
                     self.description = req['description'].encode('ascii', 'ignore')
+                    self.minSponsoredAssetFee = req['minSponsoredAssetFee']
                     return 'Issued'
             except:
                 pass
