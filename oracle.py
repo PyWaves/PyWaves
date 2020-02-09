@@ -21,7 +21,6 @@ class Oracle(object):
         return result
 
     def _getDataWithRegex(self, regex):
-        print(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex)
         return requests.get(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '?matches=' + regex).json()
 
     def _getDataWithoutKey(self):
