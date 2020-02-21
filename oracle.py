@@ -29,11 +29,11 @@ class Oracle(object):
     def _getDataWithKey(self, key):
         return requests.get(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '/' + key).json()['value']
 
-    def storeData(self, key, type, dataEntry):
+    def storeData(self, key, type, dataEntry, minimalFee=500000):
         dataToStore = [{
             'type': type,
             'key': key,
             'value': dataEntry
         }]
 
-        return self.oracleAddress.dataTransaction(dataToStore)
+        return self.oracleAddress.dataTransaction(dataToStore,minimalFee=minimalFee)
