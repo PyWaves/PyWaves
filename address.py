@@ -251,7 +251,11 @@ class Address(object):
             else:
                 return pywaves.wrapper('/addresses/balance/%s%s' % (self.address, '' if confirmations==0 else '/%d' % confirmations))['balance']
         except:
-            return 0
+            return -1
+    
+    def transactions(self, limit=100, after=''):
+        return pywaves.wrapper('/transactions/address/%s/limit/%d%s' % (self.address, limit, "" if after == "" else "?after={}".format(after)) )
+
 
     def assets(self):
         req = pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
