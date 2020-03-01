@@ -389,12 +389,15 @@ class Address(object):
         else:
             return req.get('id', 'ERROR')
 
-    def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+    def sendWaves(self, recipient, amount, signer="self", attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
-
+        elif signer != "self" and not signer.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
         elif amount <= 0:
             msg = 'Amount must be > 0'
             logging.error(msg)
@@ -403,7 +406,6 @@ class Address(object):
             msg = 'Insufficient Waves balance'
             logging.error(msg)
             self.pywaves.throw_error(msg)
-
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
@@ -417,7 +419,10 @@ class Address(object):
                     base58.b58decode(recipient.address) + \
                     struct.pack(">H", len(attachment)) + \
                     crypto.str2bytes(attachment)
-            signature = crypto.sign(self.privateKey, sData)
+            if signer == "self":
+                signature = crypto.sign(self.privateKey, sData)
+            else:
+                signature = crypto.sign(signer.privateKey, sData)
             data = json.dumps({
                 "type": 4,
                 "version": 2,
@@ -430,7 +435,6 @@ class Address(object):
                 "signature": signature,
                 "proofs": [ signature ]
             })
-
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def massTransferWaves(self, transfers, attachment='', timestamp=0,baseFee=pywaves.DEFAULT_BASE_FEE):
@@ -795,8 +799,12 @@ class Address(object):
         if not self.pywaves.OFFLINE:
             return amountBalance, priceBalance
 
-    def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
+    def lease(self, recipient, amount, signer="self", txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        elif signer != "self" and not signer.privateKey:
             msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
@@ -812,25 +820,35 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x08' + \
+                    b'\2\0' + \
                     base58.b58decode(self.publicKey) + \
                     base58.b58decode(recipient.address) + \
                     struct.pack(">Q", amount) + \
                     struct.pack(">Q", txFee) + \
                     struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
+            if signer == "self":
+                signature = crypto.sign(self.privateKey, sData)
+            else:
+                signature = crypto.sign(signer.privateKey, sData)
             data = json.dumps({
+                "type": 8,
+                "version": 2,
                 "senderPublicKey": self.publicKey,
                 "recipient": recipient.address,
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "signature": signature
+                "proofs": [ signature ],
             })
-            req = self.pywaves.wrapper('/leasing/broadcast/lease', data)
+            req = self.pywaves.wrapper('/transactions/broadcast', data)
             return req
 
-    def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
+    def leaseCancel(self, leaseId, signer="self", txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        elif signer != "self" and not signer.privateKey:
             msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
@@ -841,24 +859,43 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
+            if self.pywaves.CHAIN == 'testnet':
+                bData = b'\x54'
+                chainId = 84
+            elif self.pywaves.CHAIN == 'mainnet':
+                bData = b'\x57'
+                chainId = 87
+            else:
+                bData = b'\x53'
+                chainId = 83
             sData = b'\x09' + \
+                    b'\2' + \
+                    bData + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">Q", txFee) + \
                     struct.pack(">Q", timestamp) + \
                     base58.b58decode(leaseId)
-            signature = crypto.sign(self.privateKey, sData)
+            if signer == "self":
+                signature = crypto.sign(self.privateKey, sData)
+            else:
+                signature = crypto.sign(signer.privateKey, sData)
             data = json.dumps({
+                "type": 9,
+                "version": 2,
                 "senderPublicKey": self.publicKey,
-                "txId": leaseId,
+                "chainId": chainId,
+                "leaseId": leaseId,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "signature": signature
+                "proofs": [ signature ],
             })
-            req = self.pywaves.wrapper('/leasing/broadcast/cancel', data)
+            req = self.pywaves.wrapper('/transactions/broadcast', data)
             if self.pywaves.OFFLINE:
                 return req
             elif 'leaseId' in req:
                 return req['leaseId']
+            else:
+                return req
 
     def getOrderHistory(self, assetPair, timestamp=0):
         if timestamp == 0:
