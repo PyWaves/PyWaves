@@ -447,10 +447,6 @@ class pyAddress(object):
             baseFee = self.pycwaves.DEFAULT_BASE_FEE
 
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
-
-        if (asset.isSmart()):
-            txFee += smartFee
-
         totalAmount = 0
 
         for i in range(0, len(transfers)):
@@ -576,8 +572,6 @@ class pyAddress(object):
         if smartFee == 0: 
             smartFee = self.pycwaves.DEFAULT_SMART_FEE
 
-        if txFee == 0: 
-            txFee = self.pycwaves.DEFAULT_TX_FEE
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
 
         if (asset.isSmart()):
