@@ -53,7 +53,8 @@ CHAIN_ID = 'W'
 MATCHER = 'https://matcher.waves.exchange'
 MATCHER_PUBLICKEY = ''
 
-DATAFEED = 'http://marketdata.wavesplatform.com'
+#DATAFEED = 'http://marketdata.wavesplatform.com'
+DATAFEED = 'https://api.wavesplatform.com'
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 console = logging.StreamHandler()
