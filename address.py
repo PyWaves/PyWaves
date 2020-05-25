@@ -10,6 +10,10 @@ import base58
 import base64
 import logging
 
+from .protobuf import transaction_pb2
+from .protobuf.waves import amount_pb2
+from google.protobuf.json_format import MessageToJson
+
 wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
             'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action',
             'actor', 'actress', 'actual', 'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance',
@@ -1163,3 +1167,40 @@ class Address(object):
                 return req
             else:
                 return req
+
+    def updateAssetInfo(self, assetId, name, description):
+        decodedAssetId = base58.b58decode(assetId)
+        updateInfo = transaction_pb2.UpdateAssetInfoTransactionData()
+        updateInfo.asset_id = decodedAssetId
+        updateInfo.name = name
+        updateInfo.description = description
+
+        timestamp = int(time.time() * 1000)
+
+        txFee = amount_pb2.Amount()
+        txFee.amount = 1000000
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(self.publicKey)
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = timestamp
+        transaction.version = 1
+        transaction.update_asset_info.CopyFrom(updateInfo)
+
+        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
+
+        jsonMessage = json.loads('{}')
+        jsonMessage['type'] = 17
+        jsonMessage['assetId'] = assetId
+        jsonMessage['proofs'] = [ signature ]
+        jsonMessage['senderPublicKey'] = self.publicKey
+        jsonMessage['fee'] = txFee.amount
+        jsonMessage['timestamp'] = timestamp
+        jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
+        jsonMessage['version'] = 1
+        jsonMessage['name'] = name
+        jsonMessage['description'] = description
+
+        req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
+
+        return req
