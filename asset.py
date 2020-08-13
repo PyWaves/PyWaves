@@ -89,31 +89,31 @@ class pyAssetPair(object):
         return req
 
     def ticker(self):
-        return self.pycwaves.wrapper('/api/ticker/%s/%s' % (self.a1, self.a2), host=self.pycwaves.DATAFEED)
+        return self.pycwaves.wrapper('/v0/pairs/%s/%s' % (self.a1, self.a2), host=self.pycwaves.DATAFEED)
 
     def last(self):
-        return str(self.ticker()['24h_close'])
+        return str(self.ticker()['data']['lastPrice'])
 
     def open(self):
-        return str(self.ticker()['24h_open'])
+        return str(self.ticker()['data']['firstPrice'])
 
     def high(self):
-        return str(self.ticker()['24h_high'])
+        return str(self.ticker()['data']['high'])
 
     def low(self):
-        return str(self.ticker()['24h_low'])
+        return str(self.ticker()['data']['low'])
 
     def close(self):
         return self.last()
 
     def vwap(self):
-        return str(self.ticker()['24h_vwap'])
+        return str(self.ticker()['data']['weightedAveragePrice'])
 
     def volume(self):
-        return str(self.ticker()['24h_volume'])
+        return str(self.ticker()['data']['volume'])
 
     def priceVolume(self):
-        return str(self.ticker()['24h_priceVolume'])
+        return str(self.ticker()['data']['quoteVolume'])
 
     def _getMarketData(self, method, params):
         return self.pycwaves.wrapper('%s/%s/%s/%s' % (method, self.a1, self.a2, params), host=self.pycwaves.DATAFEED)
