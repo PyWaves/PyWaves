@@ -542,8 +542,8 @@ class Address(object):
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
                 "version": 2,
-                "assetId": (asset.assetId if asset else ""),
-                "feeAssetId": (feeAsset.assetId if feeAsset else ""),
+                "assetId": (asset.assetId if asset else None),
+                "feeAssetId": (feeAsset.assetId if feeAsset else None),
                 "senderPublicKey": self.publicKey,
                 "recipient": recipient.address,
                 "amount": amount,
