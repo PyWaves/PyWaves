@@ -11,9 +11,6 @@ import base58
 import base64
 import logging
 import requests
-from .protobuf import transaction_pb2
-from .protobuf.waves import amount_pb2
-from google.protobuf.json_format import MessageToJson
 
 wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
             'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action',
