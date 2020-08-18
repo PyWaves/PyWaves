@@ -222,7 +222,7 @@ class Address(object):
             self.nonce = 0
         elif privateKey == '' or privateKey:
             if len(privateKey) == 0:
-                raise ValueError('Empty private key not allowed')
+                self._generate(nonce=nonce)
             else:
                 self._generate(privateKey=privateKey)
         else:
@@ -739,7 +739,7 @@ class Address(object):
             "orderId": order.orderId,
             "signature": signature
         })
-        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % (pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
         if self.pywaves.OFFLINE:
             return req
         else:
@@ -758,7 +758,7 @@ class Address(object):
             "orderId": orderId,
             "signature": signature
         })
-        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % (pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
         if self.pywaves.OFFLINE:
             return req
         else:
@@ -788,7 +788,7 @@ class Address(object):
 
     def tradableBalance(self, assetPair):
         try:
-            req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % (pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=self.pywaves.MATCHER)
+            req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=self.pywaves.MATCHER)
             if self.pywaves.OFFLINE:
                     return req
             amountBalance = req[pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
@@ -800,12 +800,15 @@ class Address(object):
             return amountBalance, priceBalance
 
     def lease(self, recipient, amount, signer="self", txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
-        if not self.privateKey:
-            msg = 'Private key required'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
+        if signer == "self":
+            try:
+                self.privateKey
+            except:
+                msg = 'Account private key required'
+                logging.error(msg)
+                self.pywaves.throw_error(msg)
         elif signer != "self" and not signer.privateKey:
-            msg = 'Private key required'
+            msg = 'Signer private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
         elif amount <= 0:
@@ -844,13 +847,16 @@ class Address(object):
             return req
 
     def leaseCancel(self, leaseId, signer="self", txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
-        if not self.privateKey:
-            msg = 'Private key required'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
+        if signer == "self":
+            try:
+                self.privateKey
+            except:
+                msg = 'Account private key required'
+                logging.error(msg)
+                self.pywaves.throw_error(msg)
         elif signer != "self" and not signer.privateKey:
-            msg = 'Private key required'
-            logging.error(msg)
+            msg = 'Signer private key required'
+            logging.error(msg)  
             self.pywaves.throw_error(msg)
         elif not self.pywaves.OFFLINE and self.balance() < txFee:
             msg = 'Insufficient Waves balance'
@@ -908,7 +914,7 @@ class Address(object):
             "Timestamp": str(timestamp),
             "Signature": signature
         }
-        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/publicKey/%s' % (pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId=='' else assetPair.asset2.assetId, self.publicKey), headers=data, host=self.pywaves.MATCHER)
+        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/publicKey/%s' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId, self.publicKey), headers=data, host=self.pywaves.MATCHER)
         return req
 
     def cancelOpenOrders(self, assetPair):
@@ -925,7 +931,7 @@ class Address(object):
                     "orderId": orderId,
                     "signature": signature
                 })
-                self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % (pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+                self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
 
     def deleteOrderHistory(self, assetPair):
         orders = self.getOrderHistory(assetPair)
@@ -939,7 +945,7 @@ class Address(object):
                 "orderId": orderId,
                 "signature": signature
             })
-            self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % (pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+            self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
 
     def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE, timestamp=0):
         aliasWithNetwork = b'\x02' + crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + struct.pack(">H", len(alias)) + crypto.str2bytes(alias)
