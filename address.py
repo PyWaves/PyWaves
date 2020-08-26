@@ -678,7 +678,7 @@ class Address(object):
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
-        sData = b'\2' + \
+        sData = b'\3' + \
                 base58.b58decode(self.publicKey) + \
                 base58.b58decode(pywaves.MATCHER_PUBLICKEY) + \
                 asset1 + \
@@ -688,7 +688,8 @@ class Address(object):
                 struct.pack(">Q", amount) + \
                 struct.pack(">Q", timestamp) + \
                 struct.pack(">Q", expiration) + \
-                struct.pack(">Q", matcherFee)
+                struct.pack(">Q", matcherFee) + \
+                b'\0'
         signature = crypto.sign(self.privateKey, sData)
         otype = "buy" if orderType==b'\0' else "sell"
         data = json.dumps({
@@ -705,7 +706,7 @@ class Address(object):
             "expiration": expiration,
             "matcherFee": matcherFee,
             "signature": signature,
-            "version": 2
+            "version": 3
         })
         req = self.pywaves.wrapper('/matcher/orderbook', data, host=self.pywaves.MATCHER)
         id = -1
