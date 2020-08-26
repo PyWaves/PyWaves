@@ -3,7 +3,7 @@ import math
 import axolotl_curve25519 as curve
 import os
 #import pywaves.crypto as crypto
-import crypto
+import crypto as crypto
 import time
 import struct
 import json
@@ -253,7 +253,10 @@ class pyAddress(object):
             else:
                 return self.pycwaves.wrapper('/addresses/balance/%s%s' % (self.address, '' if confirmations==0 else '/%d' % confirmations))['balance']
         except:
-            return 0
+            return -1
+
+    def transactions(self, limit=100, after=''):
+        return self.pycwaves.wrapper('/transactions/address/%s/limit/%d%s' % (self.address, limit, "" if after == "" else "?after={}".format(after)) )
 
     def assets(self):
         req = self.pycwaves.wrapper('/assets/balance/%s' % self.address)['balances']
@@ -552,8 +555,8 @@ class pyAddress(object):
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
                 "version": 2,
-                "assetId": (asset.assetId if asset else ""),
-                "feeAssetId": (feeAsset.assetId if feeAsset else ""),
+                "assetId": (asset.assetId if asset else None),
+                "feeAssetId": (feeAsset.assetId if feeAsset else None),
                 "senderPublicKey": self.publicKey,
                 "recipient": recipient.address,
                 "amount": amount,
@@ -572,8 +575,6 @@ class pyAddress(object):
         if smartFee == 0: 
             smartFee = self.pycwaves.DEFAULT_SMART_FEE
 
-        if txFee == 0: 
-            txFee = self.pycwaves.DEFAULT_TX_FEE
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
 
         if (asset.isSmart()):
@@ -695,7 +696,8 @@ class pyAddress(object):
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
-        sData = base58.b58decode(self.publicKey) + \
+        sData = b'\2' + \
+                base58.b58decode(self.publicKey) + \
                 base58.b58decode(self.pycwaves.MATCHER_PUBLICKEY) + \
                 asset1 + \
                 asset2 + \
@@ -720,7 +722,8 @@ class pyAddress(object):
             "timestamp": timestamp,
             "expiration": expiration,
             "matcherFee": matcherFee,
-            "signature": signature
+            "signature": signature,
+            "version": 2
         })
         req = self.pycwaves.wrapper('/matcher/orderbook', data, host=self.pycwaves.MATCHER)
         id = -1
@@ -791,7 +794,7 @@ class pyAddress(object):
         if matcherFee == 0: 
             matcherFee = self.pycwaves.DEFAULT_MATCHER_FEE
         assetPair.refresh()
-        normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
+        normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if self.pycwaves.OFFLINE:
             return id
@@ -802,7 +805,7 @@ class pyAddress(object):
         if matcherFee == 0: 
             matcherFee = self.pycwaves.DEFAULT_MATCHER_FEE
         assetPair.refresh()
-        normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
+        normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if self.pycwaves.OFFLINE:
             return id
@@ -1206,3 +1209,40 @@ class pyAddress(object):
                 return req
             else:
                 return req
+
+    def updateAssetInfo(self, assetId, name, description):
+        decodedAssetId = base58.b58decode(assetId)
+        updateInfo = transaction_pb2.UpdateAssetInfoTransactionData()
+        updateInfo.asset_id = decodedAssetId
+        updateInfo.name = name
+        updateInfo.description = description
+
+        timestamp = int(time.time() * 1000)
+
+        txFee = amount_pb2.Amount()
+        txFee.amount = 1000000
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pycwaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(self.publicKey)
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = timestamp
+        transaction.version = 1
+        transaction.update_asset_info.CopyFrom(updateInfo)
+
+        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
+
+        jsonMessage = json.loads('{}')
+        jsonMessage['type'] = 17
+        jsonMessage['assetId'] = assetId
+        jsonMessage['proofs'] = [ signature ]
+        jsonMessage['senderPublicKey'] = self.publicKey
+        jsonMessage['fee'] = txFee.amount
+        jsonMessage['timestamp'] = timestamp
+        jsonMessage['chainId'] = ord(self.pycwaves.CHAIN_ID)
+        jsonMessage['version'] = 1
+        jsonMessage['name'] = name
+        jsonMessage['description'] = description
+
+        req = self.pycwaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
+
+        return req

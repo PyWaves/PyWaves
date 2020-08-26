@@ -8,6 +8,7 @@ class pyAsset(object):
         self.issuer = self.name = self.description = ''
         self.quantity = self.decimals = 0
         self.reissuable = False
+        self.minSponsoredAssetFee = None
         if self.assetId=='':
             self.quantity=100000000e8
             self.decimals=8
@@ -22,21 +23,23 @@ class pyAsset(object):
                'description = %s\n' \
                'quantity = %d\n' \
                'decimals = %d\n' \
-               'reissuable = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable)
+               'reissuable = %s\n' \
+               'minSponsoredAssetFee = %s' % (self.status(), self.assetId, self.issuer, self.name, self.description, self.quantity, self.decimals, self.reissuable, self.minSponsoredAssetFee)
 
     __repr__ = __str__
 
     def status(self):
         if self.assetId!=self.pycwaves.DEFAULT_CURRENCY:
             try:
-                req = self.pycwaves.wrapper('/transactions/info/%s' % self.assetId)
-                if req['type'] == 3:
-                    self.issuer = req['sender']
+                req = self.pycwaves.wrapper('/assets/details/%s' % self.assetId)
+                if req['assetId'] != None:
+                    self.issuer = req['issuer']
                     self.quantity = req['quantity']
                     self.decimals = req['decimals']
                     self.reissuable = req['reissuable']
                     self.name = req['name'].encode('ascii', 'ignore')
                     self.description = req['description'].encode('ascii', 'ignore')
+                    self.minSponsoredAssetFee = req['minSponsoredAssetFee']
                     return 'Issued'
             except:
                 pass
@@ -86,31 +89,31 @@ class pyAssetPair(object):
         return req
 
     def ticker(self):
-        return self.pycwaves.wrapper('/api/ticker/%s/%s' % (self.a1, self.a2), host=self.pycwaves.DATAFEED)
+        return self.pycwaves.wrapper('/v0/pairs/%s/%s' % (self.a1, self.a2), host=self.pycwaves.DATAFEED)
 
     def last(self):
-        return str(self.ticker()['24h_close'])
+        return str(self.ticker()['data']['lastPrice'])
 
     def open(self):
-        return str(self.ticker()['24h_open'])
+        return str(self.ticker()['data']['firstPrice'])
 
     def high(self):
-        return str(self.ticker()['24h_high'])
+        return str(self.ticker()['data']['high'])
 
     def low(self):
-        return str(self.ticker()['24h_low'])
+        return str(self.ticker()['data']['low'])
 
     def close(self):
         return self.last()
 
     def vwap(self):
-        return str(self.ticker()['24h_vwap'])
+        return str(self.ticker()['data']['weightedAveragePrice'])
 
     def volume(self):
-        return str(self.ticker()['24h_volume'])
+        return str(self.ticker()['data']['volume'])
 
     def priceVolume(self):
-        return str(self.ticker()['24h_priceVolume'])
+        return str(self.ticker()['data']['quoteVolume'])
 
     def _getMarketData(self, method, params):
         return self.pycwaves.wrapper('%s/%s/%s/%s' % (method, self.a1, self.a2, params), host=self.pycwaves.DATAFEED)
