@@ -11,11 +11,11 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from address import *
-from asset import *
-from order import *
-from contract import *
-from oracle import *
+from .address import *
+from .asset import *
+from .order import *
+from .contract import *
+from .oracle import *
 
 class PyCWaves:
     def __init__(self):

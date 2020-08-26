@@ -3,11 +3,10 @@ PyCWaves is an object-oriented Python class interface to the Waves blockchain pl
 
 ## Getting Started
 
-<!-- You can install PyWaves using:
+ You can install PyWaves using:
 
-    pip install pywaves -->
+    pip install pycwaves 
 
-Copy the .py files to your script location, there will be a pip install package at a later date
 
 ## Documentation
 
@@ -22,8 +21,8 @@ The library utilizes classes to represent various Waves data structures:
 
 #### Code Example
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 otherAddress = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM')
@@ -210,8 +209,8 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 #### Playing with addresses:
 
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 # generate a new address
 myAddress = pw.Address()  
@@ -234,8 +233,8 @@ myAddress = pw.Address(seed='seven wrist bargain hope pattern banner plastic map
 
 #### Balances:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 myAddress = pw.Address('3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh')
 
@@ -251,8 +250,8 @@ print("Your asset balance is %18d" % myAddress.balance('DHgwrRvVyqJsepd32YbBqUeD
 
 #### Waves and asset transfers:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 
@@ -269,8 +268,8 @@ myAddress.sendAsset(recipient = pw.Address('3PNTcNiUzppQXDL9RZrK3BcftbujiFqrAfM'
 
 #### Issuing an asset:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 myToken = myAddress.issueAsset( name = "MyToken",
                                 description = "This is my first token",
@@ -280,8 +279,8 @@ myToken = myAddress.issueAsset( name = "MyToken",
 
 #### Create an alias:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
 
@@ -291,8 +290,8 @@ myAddress.createAlias("MYALIAS1")
 
 #### Mass payment:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 recipients =   ['3PBbp6bg2YEnHfdJtYM7jzzXYQeb7sx5oFg',
                 '3P4A27aCd3skNja46pcgrLYEnK36TkSzgUp',
@@ -308,8 +307,8 @@ for address in recipients:
 
 #### Mass transfer of Waves (feature 11)
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 transfers = [
 	{ 'recipient': '3N1xca2DY8AEwqRDAJpzUgY99eq8J9h4rB3', 'amount': 1 },
@@ -323,8 +322,8 @@ address.massTransferWaves(transfers)
 
 #### Mass transfer of Assets (feature 11)
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 transfers = [
 	{ 'recipient': '3N1xca2DY8AEwqRDAJpzUgY99eq8J9h4rB3', 'amount': 1 },
@@ -337,9 +336,10 @@ address.massTransferAssets(transfers, pw.Asset('9DtBNdyBCyViLZHptyF1HbQk73F6s7nQ
 ```
 #### Data Transaction: 
 ```python
-import pywaves as py
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
-myAddress = py.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
+myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
 
 data = [{
         'type':'string', 
@@ -352,8 +352,8 @@ myAddress.dataTransaction(data)
 ```
 #### Token airdrop:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 myAddress = pw.Address(privateKey = '`')
 myToken = pw.Asset('4ZzED8WJXsvuo2MEm2BmZ87Azw8Sx7TVC6ufSUA5LyTV')
@@ -367,8 +367,8 @@ for address in lines:
 
 #### Add a script to an account:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 import base64
 
 pw.setNode(node='<node>', chain='testnet')
@@ -382,7 +382,8 @@ tx = address.setScript(script, txFee=1000000)
 
 #### Issue a Smart Asset
 ```python
-imort pywaves as pw
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 import base64
 
 pw.setNode(node='<node>', chain='testnet')
@@ -396,8 +397,8 @@ tx = address.issueSmartAsset('smartTestAsset', 'an asset for testingsmart assets
 
 #### Set a new script for a Smart Asset
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 import base64
 
 pw.setNode(node='<node>', chain='testnet')
@@ -411,8 +412,8 @@ tx = address.setAssetScript(pw.Asset('<asset id>'), script)
 
 #### Invoking a script on a dapp address
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 pw.setNode(node='<node>', chain='testnet')
 
@@ -422,8 +423,8 @@ tx = address.invokeScript('3N5Wq22bLSf3gt5VwHTCRbRnETeSwpuT8kK', 'fundRecipient'
 
 #### Working with contracts
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 pw.setNode(node = '<node>', 'T')
 
@@ -434,8 +435,8 @@ contract.faucet()
 #### Working with oracles
 Querrying oracles:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 oracle = pw.Oracle(oracleAddress = '3P4PCxsJqMzQBALo8zANHtBDZRRquobHQp7')
 # getting all data entries for an oracle
@@ -447,8 +448,8 @@ print(oracle.getData(regex = '^order_total_.*$'))
 ```
 Storing data in an oracle:
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 pw.setNode('https://testnode1.wavesnodes.com', 'T')
 
@@ -458,8 +459,8 @@ print(oracle.storeData('oracle_test', 'string', 'test entry from oracle class'))
 
 #### Playing with Waves Matcher node (DEX):
 ```python	
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 # set Matcher node to use
 pw.setMatcher(node = 'http://127.0.0.1:6886')
@@ -490,8 +491,8 @@ myAddress.cancelOrder(assetPair, myOrder)
 
 #### Getting Market Data from Waves Data Feed (WDF):
 ```python	
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 # set the asset pair
 WAVES_BTC = pw.AssetPair(pw.WAVES, pw.BTC)
@@ -517,8 +518,8 @@ for t in ohlcv:
 
 #### LPOS
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+import PyCWaves
+pw = PyCWaves.PyCWaves()
 
 # connect to a local testnet node
 pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
@@ -539,8 +540,8 @@ myAddress.leaseCancel(leaseId)
 
 #### Check an address balance:
 ```
->>> from pycwaves import PyCWaves
->>> pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 >>> pw.Address('3P31zvGdh6ai6JK6zZ18TjYzJsa1B83YPoj')
 address = 3P31zvGdh6ai6JK6zZ18TjYzJsa1B83YPoj
 publicKey = 
@@ -562,8 +563,8 @@ balances:
 
 #### Generate a new address:
 ```
->>> from pycwaves import PyCWaves
->>> pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 >>> pw.Address()
 address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
 publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
@@ -576,8 +577,8 @@ balances:
 
 #### Check an asset:
 ```
->>> from pycwaves import PyCWaves
->>> pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 >>> pw.Asset('DHgwrRvVyqJsepd32YbBqUeDH4GJ1N984X8QoekjgH8J')
 status = Issued
 assetId = DHgwrRvVyqJsepd32YbBqUeDH4GJ1N984X8QoekjgH8J
@@ -619,8 +620,8 @@ matcher = http://127.0.0.1:6886
 
 #### Offline signing a future transaction:
 ```
->>> from pycwaves import PyCWaves
->>> pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 >>> pw.setOffline()
 >>> myAddress=pw.Address(privateKey="F2jVbjrKzjUsZ1AQRdnd8MmxFc85NQz5jwvZX4BXswXv")
 >>> recipient=pw.Address("3P8Ya6Ary5gzwnzbBXDp3xjeNG97JEiPcdA")
@@ -640,8 +641,8 @@ matcher = http://127.0.0.1:6886
 
 #### Offline signing time lock/unlock transactions:
 ```
->>> from pycwaves import PyCWaves
->>> pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 >>> pw.setOffline()
 >>> myAddress=pw.Address(privateKey="F2jVbjrKzjUsZ1AQRdnd8MmxFc85NQz5jwvZX4BXswXv")
 # generate a lockbox address
@@ -677,8 +678,8 @@ matcher = http://127.0.0.1:6886
 PyWaves supports both mainnet and testnet chains. By default, PyWaves connects to the mainnet RPC server at https://nodes.wavesnodes.com. It's possible to specify a different server and chain with the setNode() function
 
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 
 # connects to a local testnet node
 pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
@@ -693,8 +694,8 @@ pw.setNode(node = 'http://127.0.0.1:6869', chain = 'mainnet')
 PyCWaves supports both mainnet and testnet chains. By default, PyWaves connects to the mainnet RPC server at https://nodes.wavesnodes.com. It's possible to specify multiple servers and chains by invoking PyCWaves multple times
 
 ```python
-from pycwaves import PyCWaves
-pw = PyCWaves()
+>>> import PyCWaves
+>>> pw = PyCWave.PyCWavess()
 
 # connects to a local testnet node
 pw.setNode(node = 'http://127.0.0.1:6869', chain = 'testnet')
