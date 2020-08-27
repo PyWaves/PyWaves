@@ -39,6 +39,7 @@ class PyCWaves:
         self.DEFAULT_SET_SCRIPT_FEE = 1000000
         self.DEFAULT_INVOKE_SCRIPT_FEE = 500000
         self.DEFAULT_CURRENCY = 'WAVES'
+        self.DEFAULT_MATCHER_FEE_ASSET_ID = self.DEFAULT_CURRENCY
         self.VALID_TIMEFRAMES = (5, 15, 30, 60, 240, 1440)
         self.MAX_WDF_REQUEST = 100
 

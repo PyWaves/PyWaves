@@ -34,6 +34,28 @@ myAddress.sendAsset(otherAddress, myToken, 50)
 
 ```
 
+#### Code Example using a different asset for the matcher fee on a DeX and placing an order
+```python
+import PyCWaves
+pw = PyCWaves.PyCWaves()
+
+pw.setMatcher(node='https://dex.polarity.exchange')
+pw.setDatafeed(wdf='https://api.marketdata.turtlenetwork.eu/')
+pw.setNode('https://node.mortysnode.nl', 'turtlenetwork', 'L')
+pw.DEFAULT_CURRENCY = 'TN'
+pw.DEFAULT_MATCHER_FEE_ASSET_ID = '7RB3BWayeCVPq3kkpkeJZAFv2DYCB5gEwnutEpRofaw4' #USDT is set as the asset for the matcher fee
+pw.DEFAULT_MATCHER_FEE = int(0.01 * pow(10, 6))
+
+myAddress = pw.Address(privateKey='CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S')
+
+amount_asset = pw.Asset('AVJc3uYu8HdjQEx4rroaq6v4Xv4L1etG1tQPeuqs38Sf')
+price_asset = pw.Asset('7RB3BWayeCVPq3kkpkeJZAFv2DYCB5gEwnutEpRofaw4')
+pair = pw.AssetPair(amount_asset, price_asset)
+o = myAddress.sell(assetPair=pair, amount=1000000, price=2354, maxLifetime=86400)
+print(o.orderId)
+
+```
+
 ### Address Class
 __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address object_
 

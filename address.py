@@ -696,35 +696,70 @@ class pyAddress(object):
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
-        sData = b'\2' + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(self.pycwaves.MATCHER_PUBLICKEY) + \
-                asset1 + \
-                asset2 + \
-                orderType + \
-                struct.pack(">Q", price) + \
-                struct.pack(">Q", amount) + \
-                struct.pack(">Q", timestamp) + \
-                struct.pack(">Q", expiration) + \
-                struct.pack(">Q", matcherFee)
-        signature = crypto.sign(self.privateKey, sData)
-        otype = "buy" if orderType==b'\0' else "sell"
-        data = json.dumps({
-            "senderPublicKey": self.publicKey,
-            "matcherPublicKey": self.pycwaves.MATCHER_PUBLICKEY,
-            "assetPair": {
-                "amountAsset": amountAsset.assetId,
-                "priceAsset": priceAsset.assetId,
-                },
-            "orderType": otype,
-            "price": price,
-            "amount": amount,
-            "timestamp": timestamp,
-            "expiration": expiration,
-            "matcherFee": matcherFee,
-            "signature": signature,
-            "version": 2
-        })
+        if self.pycwaves.DEFAULT_MATCHER_FEE_ASSET_ID != self.pycwaves.DEFAULT_CURRENCY: 
+            sData = b'\3' + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(self.pycwaves.MATCHER_PUBLICKEY) + \
+                    asset1 + \
+                    asset2 + \
+                    orderType + \
+                    struct.pack(">Q", price) + \
+                    struct.pack(">Q", amount) + \
+                    struct.pack(">Q", timestamp) + \
+                    struct.pack(">Q", expiration) + \
+                    struct.pack(">Q", matcherFee) + \
+                    b'\1' + \
+                    base58.b58decode(self.pycwaves.DEFAULT_MATCHER_FEE_ASSET_ID)
+            signature = crypto.sign(self.privateKey, sData)
+            otype = "buy" if orderType==b'\0' else "sell"
+            data = json.dumps({
+                "senderPublicKey": self.publicKey,
+                "matcherPublicKey": self.pycwaves.MATCHER_PUBLICKEY,
+                "assetPair": {
+                    "amountAsset": amountAsset.assetId,
+                    "priceAsset": priceAsset.assetId,
+                    },
+                "orderType": otype,
+                "price": price,
+                "amount": amount,
+                "timestamp": timestamp,
+                "expiration": expiration,
+                "matcherFee": matcherFee,
+                "signature": signature,
+                "matcherFeeAssetId" : self.pycwaves.DEFAULT_MATCHER_FEE_ASSET_ID,
+                "version": 3
+            })
+        else:
+            sData = b'\3' + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(self.pycwaves.MATCHER_PUBLICKEY) + \
+                    asset1 + \
+                    asset2 + \
+                    orderType + \
+                    struct.pack(">Q", price) + \
+                    struct.pack(">Q", amount) + \
+                    struct.pack(">Q", timestamp) + \
+                    struct.pack(">Q", expiration) + \
+                    struct.pack(">Q", matcherFee) + \
+                    b'\0'
+            signature = crypto.sign(self.privateKey, sData)
+            otype = "buy" if orderType==b'\0' else "sell"
+            data = json.dumps({
+                "senderPublicKey": self.publicKey,
+                "matcherPublicKey": self.pycwaves.MATCHER_PUBLICKEY,
+                "assetPair": {
+                    "amountAsset": amountAsset.assetId,
+                    "priceAsset": priceAsset.assetId,
+                    },
+                "orderType": otype,
+                "price": price,
+                "amount": amount,
+                "timestamp": timestamp,
+                "expiration": expiration,
+                "matcherFee": matcherFee,
+                "signature": signature,
+                "version": 3
+            })
         req = self.pycwaves.wrapper('/matcher/orderbook', data, host=self.pycwaves.MATCHER)
         id = -1
         if 'status' in req:
