@@ -293,7 +293,13 @@ class Address(object):
             if not privateKey:
                 privKey = curve.generatePrivateKey(accountSeedHash)
             else:
+                # clamping: https://neilmadden.blog/2020/05/28/whats-the-curve25519-clamping-all-about/
                 privKey = base58.b58decode(privateKey)
+                privKeyArray = bytearray(privKey)
+                privKeyArray[0] &= 248;
+                privKeyArray[31] &= 127;
+                privKeyArray[31] |= 64;
+                privKey = bytes(privKeyArray)
             pubKey = curve.generatePublicKey(privKey)
         unhashedAddress = chr(1) + str(self.pywaves.CHAIN_ID) + crypto.hashChain(pubKey)[0:20]
         addressHash = crypto.hashChain(crypto.str2bytes(unhashedAddress))[0:4]
