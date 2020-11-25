@@ -111,7 +111,7 @@ def getChain():
 
 def setNode(node = NODE, chain = CHAIN, chain_id = None):
     global NODE, CHAIN, CHAIN_ID
-    NODE = node
+    NODE = node.rstrip("/")
     setChain(chain, chain_id)
 
 def getNode():
