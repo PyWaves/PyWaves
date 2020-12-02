@@ -823,6 +823,45 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x08' + \
+                    b'\x02' + \
+                    b'\x00' + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(recipient.address) + \
+                    struct.pack(">Q", amount) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp)
+
+            signature = crypto.sign(self.privateKey, sData)
+            data = json.dumps({
+                "type": 8,
+                "senderPublicKey": self.publicKey,
+                "recipient": recipient.address,
+                "amount": amount,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "proofs": [ signature ],
+                "version": 2
+            })
+            req = self.pywaves.wrapper('/transactions/broadcast', data)
+            return req
+
+    '''def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
+        if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        elif amount <= 0:
+            msg = 'Amount must be > 0'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        elif not self.pywaves.OFFLINE and self.balance() < amount + txFee:
+            msg = 'Insufficient Waves balance'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        else:
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+            sData = b'\x08' + \
                     base58.b58decode(self.publicKey) + \
                     base58.b58decode(recipient.address) + \
                     struct.pack(">Q", amount) + \
@@ -838,7 +877,7 @@ class Address(object):
                 "signature": signature
             })
             req = self.pywaves.wrapper('/leasing/broadcast/lease', data)
-            return req
+            return req'''
 
     def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
