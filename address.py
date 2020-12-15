@@ -348,7 +348,6 @@ class Address(object):
                 "signature": signature
             })
             req = self.pywaves.wrapper('/assets/broadcast/issue', data)
-            print(req)
             if self.pywaves.OFFLINE:
                 return req
             else:
@@ -1022,7 +1021,6 @@ class Address(object):
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0):
-        print(self.pywaves.wrapper('/utils/script/compile', scriptSource));
         script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         if not self.privateKey:
             logging.error('Private key required')
@@ -1089,7 +1087,6 @@ class Address(object):
                     signature
                 ]
             })
-            print(data)
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
