@@ -51,7 +51,6 @@ class Asset(object):
 
 class AssetPair(object):
     def __init__(self, asset1, asset2, pywaves=pywaves):
-        print(pywaves)
         self.pywaves = pywaves
         self.asset1 = asset1
         self.asset2 = asset2
@@ -90,8 +89,6 @@ class AssetPair(object):
         return self.pywaves.wrapper('/v0/pairs/%s/%s' % (self.a1, self.a2), host=self.pywaves.DATAFEED)
 
     def last(self):
-        print(self.ticker())
-
         return str(self.ticker()['data']['lastPrice'])
 
     def open(self):
