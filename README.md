@@ -183,6 +183,10 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 
 `pywaves.tx(id)` get transaction details
 
+`pywaves.stateChangeForTx(id):` get the state changes for the given tx by id
+
+`pywaves.stateChangesForAddress(address, limit = 1000):` get the last <limit> (with a default of 1000) state changes for the given address
+
 `pywaves.symbols()` get list of symbol-asset mapping
 
 `pywaves.markets()` get all traded markets with tickers

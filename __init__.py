@@ -156,6 +156,12 @@ def block(n):
 def tx(id):
     return wrapper('/transactions/info/%s' % id)
 
+def stateChangeForTx(id):
+    return wrapper('/debug/stateChanges/info/' + id)
+
+def stateChangesForAddress(address, limit = 1000):
+    return wrapper('/debug/stateChanges/address/' + address + '/limit/' + str(limit))
+
 def getOrderBook(assetPair):
     orderBook = assetPair.orderbook()
     try:
