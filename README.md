@@ -212,7 +212,8 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 import pywaves as pw
 
 # generate a new address
-myAddress = pw.Address()  
+myAddress = pw.Address("<some address>")
+myAddress._generate()
 
 # set an address with an address
 myAddress = pw.Address('3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh')
@@ -558,7 +559,8 @@ balances:
 #### Generate a new address:
 ```
 >>> import pywaves as pw
->>> pw.Address()
+>>> newAddress = pw.Address('<some address>')
+>>> newAddress._generate()
 address = 3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh
 publicKey = EYNuSmW4Adtcc6AMCZyxkiHMPmF2BZ2XxvjpBip3UFZL
 privateKey = CtMQWJZqfc7PRzSWiMKaGmWFm4q2VN5fMcYyKDBPDx6S
@@ -636,7 +638,8 @@ matcher = http://127.0.0.1:6886
 >>> pw.setOffline()
 >>> myAddress=pw.Address(privateKey="F2jVbjrKzjUsZ1AQRdnd8MmxFc85NQz5jwvZX4BXswXv")
 # generate a lockbox address
->>> lockAddress=pw.Address()
+>>> lockAddress=pw.Address('<some address>')
+>>> lockAddress._generate()
 # sign the 'lock' tx to send 100e8 to the lockbox (valid on Nov 1st, 2017)
 >>> myAddress.sendWaves(lockAddress, 100e8, timestamp=1509537600000)
 {'api-endpoint': '/assets/broadcast/transfer',
