@@ -9,7 +9,7 @@ class Asset(object):
         self.quantity = self.decimals = 0
         self.reissuable = False
         if self.assetId=='':
-            self.quantity=100000000e8
+            self.quantity=self.pywaves.wrapper('/blockchain/rewards')['totalWavesAmount']
             self.decimals=8
         else:
             self.status()
@@ -29,15 +29,14 @@ class Asset(object):
     def status(self):
         if self.assetId!=pywaves.DEFAULT_CURRENCY:
             try:
-                req = self.pywaves.wrapper('/transactions/info/%s' % self.assetId)
-                if req['type'] == 3:
-                    self.issuer = req['sender']
-                    self.quantity = req['quantity']
-                    self.decimals = req['decimals']
-                    self.reissuable = req['reissuable']
-                    self.name = req['name'].encode('ascii', 'ignore')
-                    self.description = req['description'].encode('ascii', 'ignore')
-                    return 'Issued'
+                req = self.pywaves.wrapper('/assets/details/%s' % self.assetId)
+                self.issuer = req['issuer']
+                self.quantity = req['quantity']
+                self.decimals = req['decimals']
+                self.reissuable = req['reissuable']
+                self.name = req['name'].encode('ascii', 'ignore')
+                self.description = req['description'].encode('ascii', 'ignore')
+                return 'Issued'
             except:
                 pass
 
