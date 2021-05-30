@@ -358,7 +358,7 @@ class Address(object):
             if self.pywaves.OFFLINE:
                 return req
             else:
-                return self.pywaves.Asset(req['assetId'], self.pywaves)
+                return pywaves.Asset(req['assetId'], self.pywaves)
 
     def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
