@@ -211,9 +211,6 @@ The fees for waves/asset transfers, asset issue/reissue/burn and matcher transac
 ```python
 import pywaves as pw
 
-# generate a new address
-myAddress = pw.Address()  
-
 # set an address with an address
 myAddress = pw.Address('3P6WfA4qYtkgwVAsWiiB6yaea2X8zyXncJh')
 
