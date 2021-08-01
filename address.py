@@ -614,7 +614,7 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
+    '''def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
         if not self.privateKey:
             logging.error('Private key required')
         else:
@@ -671,7 +671,77 @@ class Address(object):
                     base64Encoded =  base64.b64encode(crypto.str2bytes(entry['value']))
                     entry['value'] = 'base64:' + crypto.bytes2str(base64Encoded)
             dataObjectJSON = json.dumps(dataObject)
-            return self.pywaves.wrapper('/transactions/broadcast', dataObjectJSON)
+
+            return self.pywaves.wrapper('/transactions/broadcast', dataObjectJSON)'''
+
+    def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
+        dataTransaction = transaction_pb2.DataTransactionData()
+
+        print(data)
+
+        dataList = []
+        for d in data:
+            entry = transaction_pb2.DataTransactionData.DataEntry()
+            listEntry = {}
+            if d['type'] == 'boolean':
+                entry.key = d['key']
+                entry.bool_value = d['value']
+                listEntry['key'] = d['key']
+                listEntry['value'] = d['value']
+                listEntry['type'] = 'boolean'
+            elif d['type'] == 'string':
+                entry.key = d['key']
+                entry.string_value = d['value']
+                listEntry['key'] = d['key']
+                listEntry['value'] = d['value']
+                listEntry['type'] = 'string'
+                print(listEntry)
+            elif d['type'] == 'integer':
+                entry.key = d['key']
+                entry.int_value = d['value']
+                listEntry['key'] = d['key']
+                listEntry['value'] = d['value']
+                listEntry['type'] = 'integer'
+            elif d['type'] == 'binary':
+                entry.key = d['key']
+                entry.binary_value = crypto.str2bytes(d['value'])
+                listEntry['key'] = d['key']
+                base64Encoded = base64.b64encode(crypto.str2bytes(d['value']))
+                listEntry['value'] = 'base64:' + crypto.bytes2str(base64Encoded)
+                listEntry['type'] = 'binary'
+            dataList.append(listEntry)
+            dataTransaction.data.append(entry)
+
+        timestamp = int(time.time() * 1000)
+
+        txFeeAmount = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64)) / 1000.0) + 1) * baseFee
+        txFeeAmount = max(txFeeAmount, minimalFee)
+
+        txFee = amount_pb2.Amount()
+        txFee.amount = txFeeAmount
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(self.publicKey)
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = timestamp
+        transaction.version = 2
+        transaction.data_transaction.CopyFrom(dataTransaction)
+
+        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
+
+        jsonMessage = json.loads('{}')
+        jsonMessage['type'] = 12
+        jsonMessage['proofs'] = [ signature ]
+        jsonMessage['senderPublicKey'] = self.publicKey
+        jsonMessage['fee'] = txFee.amount
+        jsonMessage['timestamp'] = timestamp
+        jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
+        jsonMessage['version'] = 2
+        jsonMessage['data'] = dataList
+
+        req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
+
+        return req
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         if timestamp == 0:
