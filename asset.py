@@ -10,7 +10,7 @@ class Asset(object):
         self.reissuable = False
         self.minSponsoredAssetFee = None
         if self.assetId=='':
-            self.quantity=100000000e8
+            self.quantity=self.pywaves.wrapper('/blockchain/rewards')['totalWavesAmount']
             self.decimals=8
         else:
             self.status()
