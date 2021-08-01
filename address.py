@@ -200,10 +200,11 @@ wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 
             'wrist', 'write', 'wrong', 'yard', 'year', 'yellow', 'you', 'young', 'youth', 'zebra', 'zero', 'zone',
             'zoo']
 
+
 class Address(object):
-    def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0, pywaves = pywaves):
+    def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0, pywaves=pywaves):
         self.pywaves = pywaves
-        if nonce<0 or nonce>4294967295:
+        if nonce < 0 or nonce > 4294967295:
             raise ValueError('Nonce must be between 0 and 4294967295')
         if seed:
             self._generate(seed=seed, nonce=nonce)
@@ -241,29 +242,38 @@ class Address(object):
                 assets_balances = self.pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
                 for a in assets_balances:
                     if a['balance'] > 0:
-                        ab.append("  %s (%s) = %d" % (a['assetId'], a['issueTransaction']['name'].encode('ascii', 'ignore'), a['balance']))
+                        ab.append("  %s (%s) = %d" % (
+                        a['assetId'], a['issueTransaction']['name'].encode('ascii', 'ignore'), a['balance']))
             except:
                 pass
-            return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nnonce = %d\nbalances:\n  Waves = %d%s' % (self.address, self.publicKey, self.privateKey, self.seed, self.nonce, self.balance(), '\n'+'\n'.join(ab) if ab else '')
+            return 'address = %s\npublicKey = %s\nprivateKey = %s\nseed = %s\nnonce = %d\nbalances:\n  Waves = %d%s' % (
+            self.address, self.publicKey, self.privateKey, self.seed, self.nonce, self.balance(),
+            '\n' + '\n'.join(ab) if ab else '')
 
     __repr__ = __str__
 
     def balance(self, assetId='', confirmations=0):
         try:
             if assetId:
-                return pywaves.wrapper('/assets/balance/%s/%s' % (self.address, assetId))['balance']
+                return self.pywaves.wrapper('/assets/balance/%s/%s' % (self.address, assetId))['balance']
             else:
-                return pywaves.wrapper('/addresses/balance/%s%s' % (self.address, '' if confirmations==0 else '/%d' % confirmations))['balance']
+                return self.pywaves.wrapper(
+                    '/addresses/balance/%s%s' % (self.address, '' if confirmations == 0 else '/%d' % confirmations))[
+                    'balance']
         except:
-            return 0
+            return -1
+
+    def transactions(self, limit=100, after=''):
+        return self.pywaves.wrapper('/transactions/address/%s/limit/%d%s' % (
+        self.address, limit, "" if after == "" else "?after={}".format(after)))
 
     def assets(self):
-        req = pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
+        req = self.pywaves.wrapper('/assets/balance/%s' % self.address)['balances']
         return [r['assetId'] for r in req]
 
     def aliases(self):
-        a = pywaves.wrapper('/alias/by-address/%s' % self.address)
-        if type(a)==list:
+        a = self.pywaves.wrapper('/alias/by-address/%s' % self.address)
+        if type(a) == list:
             for i in range(len(a)):
                 a[i] = a[i][8:]
         return a
@@ -308,7 +318,8 @@ class Address(object):
         if privKey != "":
             self.privateKey = base58.b58encode(privKey)
 
-    def issueAsset(self, name, description, quantity, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
+    def issueAsset(self, name, description, quantity, decimals=0, reissuable=False,
+                   txFee=pywaves.DEFAULT_ASSET_FEE):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -330,7 +341,7 @@ class Address(object):
                     (b'\1' if reissuable else b'\0') + \
                     struct.pack(">Q", txFee) + \
                     struct.pack(">Q", timestamp)
-            signature=crypto.sign(self.privateKey, sData)
+            signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
                 "version": 1,
                 "senderPublicKey": self.publicKey,
@@ -347,7 +358,7 @@ class Address(object):
             if self.pywaves.OFFLINE:
                 return req
             else:
-                return self.pywaves.Asset(req['assetId'], self.pywaves)
+                return pywaves.Asset(req['assetId'], self.pywaves)
 
     def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
         timestamp = int(time.time() * 1000)
@@ -356,7 +367,7 @@ class Address(object):
                 base58.b58decode(Asset.assetId) + \
                 struct.pack(">Q", quantity) + \
                 (b'\1' if reissuable else b'\0') + \
-                struct.pack(">Q",txFee) + \
+                struct.pack(">Q", txFee) + \
                 struct.pack(">Q", timestamp)
         signature = crypto.sign(self.privateKey, sData)
         data = json.dumps({
@@ -437,12 +448,12 @@ class Address(object):
                 "timestamp": timestamp,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature,
-                "proofs": [ signature ]
+                "proofs": [signature]
             })
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def massTransferWaves(self, transfers, attachment='', timestamp=0,baseFee=pywaves.DEFAULT_BASE_FEE):
+    def massTransferWaves(self, transfers, attachment='', timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE):
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
         totalAmount = 0
 
@@ -497,7 +508,8 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+    def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE,
+                  timestamp=0):
         if not self.privateKey:
             msg = 'Asset not issued'
             logging.error(msg)
@@ -556,12 +568,13 @@ class Address(object):
                 "timestamp": timestamp,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature,
-                "proofs": [ signature ]
+                "proofs": [signature]
             })
 
             return self.pywaves.wrapper('/assets/broadcast/transfer', data)
 
-    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0,baseFee=pywaves.DEFAULT_BASE_FEE,smartFee=pywaves.DEFAULT_SMART_FEE):
+    def massTransferAssets(self, transfers, asset, attachment='', timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE,
+                           smartFee=pywaves.DEFAULT_SMART_FEE):
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
 
         if (asset.isSmart()):
@@ -653,7 +666,7 @@ class Address(object):
                     dataBinary += struct.pack(">H", len(d['value']))
                     dataBinary += crypto.str2bytes(d['value'])
             # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
-            txFee = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64 )) / 1000.0) + 1 ) * baseFee
+            txFee = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64)) / 1000.0) + 1) * baseFee
             txFee = max(txFee, minimalFee)
             dataObject['fee'] = txFee
             sData = b'\x0c' + \
@@ -664,11 +677,11 @@ class Address(object):
                     struct.pack(">Q", timestamp) + \
                     struct.pack(">Q", txFee)
 
-            dataObject['proofs'] = [ crypto.sign(self.privateKey, sData) ]
+            dataObject['proofs'] = [crypto.sign(self.privateKey, sData)]
 
             for entry in dataObject['data']:
                 if entry['type'] == 'binary':
-                    base64Encoded =  base64.b64encode(crypto.str2bytes(entry['value']))
+                    base64Encoded = base64.b64encode(crypto.str2bytes(entry['value']))
                     entry['value'] = 'base64:' + crypto.bytes2str(base64Encoded)
             dataObjectJSON = json.dumps(dataObject)
 
@@ -743,15 +756,16 @@ class Address(object):
 
         return req
 
-    def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+    def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30 * 86400,
+                   matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
         expiration = timestamp + maxLifetime * 1000
-        asset1 = b'\0' if amountAsset.assetId=='' else b'\1' + base58.b58decode(amountAsset.assetId)
-        asset2 = b'\0' if priceAsset.assetId=='' else b'\1' + base58.b58decode(priceAsset.assetId)
+        asset1 = b'\0' if amountAsset.assetId == '' else b'\1' + base58.b58decode(amountAsset.assetId)
+        asset2 = b'\0' if priceAsset.assetId == '' else b'\1' + base58.b58decode(priceAsset.assetId)
         sData = b'\3' + \
                 base58.b58decode(self.publicKey) + \
-                base58.b58decode(pywaves.MATCHER_PUBLICKEY) + \
+                base58.b58decode(self.pywaves.MATCHER_PUBLICKEY) + \
                 asset1 + \
                 asset2 + \
                 orderType + \
@@ -762,14 +776,14 @@ class Address(object):
                 struct.pack(">Q", matcherFee) + \
                 b'\0'
         signature = crypto.sign(self.privateKey, sData)
-        otype = "buy" if orderType==b'\0' else "sell"
+        otype = "buy" if orderType == b'\0' else "sell"
         data = json.dumps({
             "senderPublicKey": self.publicKey,
-            "matcherPublicKey": pywaves.MATCHER_PUBLICKEY,
+            "matcherPublicKey": self.pywaves.MATCHER_PUBLICKEY,
             "assetPair": {
                 "amountAsset": amountAsset.assetId,
                 "priceAsset": priceAsset.assetId,
-                },
+            },
             "orderType": otype,
             "price": price,
             "amount": amount,
@@ -815,7 +829,10 @@ class Address(object):
             "orderId": order.orderId,
             "signature": signature
         })
-        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % (
+        self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+        self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
+                                   host=self.pywaves.MATCHER)
         if self.pywaves.OFFLINE:
             return req
         else:
@@ -834,7 +851,10 @@ class Address(object):
             "orderId": orderId,
             "signature": signature
         })
-        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % (
+        self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+        self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
+                                   host=self.pywaves.MATCHER)
         if self.pywaves.OFFLINE:
             return req
         else:
@@ -844,7 +864,8 @@ class Address(object):
                 logging.info('Order Cancelled - ID: %s' % id)
             return id
 
-    def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+    def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE,
+            timestamp=0):
         assetPair.refresh()
         #normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
         normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
@@ -854,23 +875,29 @@ class Address(object):
         elif id != -1:
             return self.pywaves.Order(id, assetPair, self)
 
-    def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+    def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE,
+             timestamp=0):
         assetPair.refresh()
         #normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
         normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
         id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
         if self.pywaves.OFFLINE:
             return id
-        elif id!=-1:
+        elif id != -1:
             return self.pywaves.Order(id, assetPair, self)
 
     def tradableBalance(self, assetPair):
         try:
-            req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.address), host=self.pywaves.MATCHER)
+            req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/tradableBalance/%s' % (
+            self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+            self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId,
+            self.address), host=self.pywaves.MATCHER)
             if self.pywaves.OFFLINE:
-                    return req
-            amountBalance = req[pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
-            priceBalance = req[pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
+                return req
+            amountBalance = req[
+                self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId]
+            priceBalance = req[
+                self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId]
         except:
             amountBalance = 0
             priceBalance = 0
@@ -910,7 +937,7 @@ class Address(object):
                 "amount": amount,
                 "fee": txFee,
                 "timestamp": timestamp,
-                "proofs": [ signature ],
+                "proofs": [signature],
                 "version": 2
             })
             req = self.pywaves.wrapper('/transactions/broadcast', data)
@@ -992,7 +1019,10 @@ class Address(object):
             "Timestamp": str(timestamp),
             "Signature": signature
         }
-        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/publicKey/%s' % ('WAVES' if assetPair.asset1.assetId=='' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId=='' else assetPair.asset2.assetId, self.publicKey), headers=data, host=self.pywaves.MATCHER)
+        req = self.pywaves.wrapper('/matcher/orderbook/%s/%s/publicKey/%s' % (
+        self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+        self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId, self.publicKey),
+                                   headers=data, host=self.pywaves.MATCHER)
         return req
 
     def cancelOpenOrders(self, assetPair):
@@ -1000,7 +1030,7 @@ class Address(object):
         for order in orders:
             status = order['status']
             orderId = order['id']
-            if status=='Accepted' or status=='PartiallyFilled':
+            if status == 'Accepted' or status == 'PartiallyFilled':
                 sData = base58.b58decode(self.publicKey) + \
                         base58.b58decode(orderId)
                 signature = crypto.sign(self.privateKey, sData)
@@ -1009,7 +1039,10 @@ class Address(object):
                     "orderId": orderId,
                     "signature": signature
                 })
-                self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+                self.pywaves.wrapper('/matcher/orderbook/%s/%s/cancel' % (
+                self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+                self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
+                                     host=self.pywaves.MATCHER)
 
     def deleteOrderHistory(self, assetPair):
         orders = self.getOrderHistory(assetPair)
@@ -1023,10 +1056,14 @@ class Address(object):
                 "orderId": orderId,
                 "signature": signature
             })
-            self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % ('WAVES' if assetPair.asset1.assetId == '' else assetPair.asset1.assetId, 'WAVES' if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data, host=self.pywaves.MATCHER)
+            self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % (
+            self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+            self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
+                                 host=self.pywaves.MATCHER)
 
     def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE, timestamp=0):
-        aliasWithNetwork = b'\x02' + crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + struct.pack(">H", len(alias)) + crypto.str2bytes(alias)
+        aliasWithNetwork = b'\x02' + crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + struct.pack(">H", len(
+            alias)) + crypto.str2bytes(alias)
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1065,12 +1102,12 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x0e' + \
-                b'\1' + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(assetId) + \
-                struct.pack(">Q", minimalFeeInAssets) + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp)
+                    b'\1' + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(assetId) + \
+                    struct.pack(">Q", minimalFeeInAssets) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp)
             signature = crypto.sign(self.privateKey, sData)
 
             data = json.dumps({
@@ -1098,14 +1135,14 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x0d' + \
-                b'\1' + \
-                crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                base58.b58decode(self.publicKey) + \
-                b'\1' + \
-                struct.pack(">H", scriptLength) + \
-                compiledScript + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp)
+                    b'\1' + \
+                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
+                    base58.b58decode(self.publicKey) + \
+                    b'\1' + \
+                    struct.pack(">H", scriptLength) + \
+                    compiledScript + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp)
             signature = crypto.sign(self.privateKey, sData)
 
             data = json.dumps({
@@ -1132,15 +1169,15 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
             sData = b'\x0f' + \
-                b'\1' + \
-                crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(asset.assetId) + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp) + \
-                b'\1' + \
-                struct.pack(">H", scriptLength) + \
-                compiledScript
+                    b'\1' + \
+                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
+                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(asset.assetId) + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp) + \
+                    b'\1' + \
+                    struct.pack(">H", scriptLength) + \
+                    compiledScript
             signature = crypto.sign(self.privateKey, sData)
 
             data = json.dumps({
@@ -1158,7 +1195,8 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE):
+    def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False,
+                        txFee=pywaves.DEFAULT_ASSET_FEE):
         script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         if not self.privateKey:
             msg = 'Private key required'
@@ -1200,7 +1238,7 @@ class Address(object):
                 "decimals": decimals,
                 "reissuable": reissuable,
                 "fee": txFee,
-                "proofs": [ signature ],
+                "proofs": [signature],
                 "script": 'base64:' + script
             })
             req = self.pywaves.wrapper('/transactions/broadcast', data)
@@ -1209,7 +1247,8 @@ class Address(object):
             else:
                 return req
 
-    def invokeScript(self, dappAddress, functionName, params, payments, feeAsset = None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
+    def invokeScript(self, dappAddress, functionName, params, payments, feeAsset=None,
+                     txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1223,7 +1262,9 @@ class Address(object):
                 elif param['type'] == 'binary':
                     parameterBytes += b'\1' + struct.pack(">I", len(param['value'])) + crypto.str2bytes(param['value'])
                 elif param['type'] == 'string':
-                    parameterBytes += b'\2' + struct.pack(">I", len(crypto.str2bytes(param['value']))) + crypto.str2bytes(param['value'])
+                    parameterBytes += b'\2' + struct.pack(">I",
+                                                          len(crypto.str2bytes(param['value']))) + crypto.str2bytes(
+                        param['value'])
                 elif param['type'] == 'boolean':
                     if param['value'] == True:
                         parameterBytes += b'\6'
@@ -1233,7 +1274,8 @@ class Address(object):
             for payment in payments:
                 currentPaymentBytes = b''
                 if ('assetId' in payment and payment['assetId'] != None and payment['assetId'] != ''):
-                    currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x01' + base58.b58decode(payment['assetId'])
+                    currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x01' + base58.b58decode(
+                        payment['assetId'])
                 else:
                     currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x00'
                 paymentBytes += struct.pack(">H", len(currentPaymentBytes)) + currentPaymentBytes
@@ -1251,7 +1293,7 @@ class Address(object):
                     b'\x01' + \
                     b'\x09' + \
                     b'\x01' + \
-                    struct.pack(">L", len(crypto.str2bytes(functionName))) +\
+                    struct.pack(">L", len(crypto.str2bytes(functionName))) + \
                     crypto.str2bytes(functionName) + \
                     struct.pack(">I", len(params)) + \
                     parameterBytes + \
@@ -1307,7 +1349,7 @@ class Address(object):
         jsonMessage = json.loads('{}')
         jsonMessage['type'] = 17
         jsonMessage['assetId'] = assetId
-        jsonMessage['proofs'] = [ signature ]
+        jsonMessage['proofs'] = [signature]
         jsonMessage['senderPublicKey'] = self.publicKey
         jsonMessage['fee'] = txFee.amount
         jsonMessage['timestamp'] = timestamp

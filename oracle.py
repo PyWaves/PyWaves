@@ -6,7 +6,8 @@ class Oracle(object):
     def __init__(self, oracleAddress = None, seed = None, pywaves=pw):
         self.pw = pywaves
         if seed != None:
-            self.oracleAddress = self.pw.Address(seed=seed)
+            self.oracleAcc = self.pw.Address(seed=seed)
+            self.oracleAddress =  self.oracleAcc.address
         else:
             self.oracleAddress = oracleAddress
 
@@ -29,11 +30,11 @@ class Oracle(object):
     def _getDataWithKey(self, key):
         return requests.get(self.pw.NODE + '/addresses/data/' + self.oracleAddress + '/' + key).json()['value']
 
-    def storeData(self, key, type, dataEntry):
+    def storeData(self, key, type, dataEntry, minimalFee=500000):
         dataToStore = [{
             'type': type,
             'key': key,
             'value': dataEntry
         }]
 
-        return self.oracleAddress.dataTransaction(dataToStore)
+        return self.oracleAcc.dataTransaction(dataToStore,minimalFee=minimalFee)
