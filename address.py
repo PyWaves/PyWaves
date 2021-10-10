@@ -743,6 +743,48 @@ class Address(object):
 
         return req
 
+    def deleteDataEntry(self, key, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
+        dataTransaction = transaction_pb2.DataTransactionData()
+
+        dataList = []
+        entry = transaction_pb2.DataTransactionData.DataEntry()
+        listEntry = {}
+
+        entry.key = key
+        listEntry['key'] = key
+        listEntry['value'] = None
+        listEntry['type'] = None
+        dataList.append(listEntry)
+        dataTransaction.data.append(entry)
+
+        timestamp = int(time.time() * 1000)
+
+        txFee = amount_pb2.Amount()
+        txFee.amount = minimalFee
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(self.publicKey)
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = timestamp
+        transaction.version = 2
+        transaction.data_transaction.CopyFrom(dataTransaction)
+
+        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
+
+        jsonMessage = json.loads('{}')
+        jsonMessage['type'] = 12
+        jsonMessage['proofs'] = [ signature ]
+        jsonMessage['senderPublicKey'] = self.publicKey
+        jsonMessage['fee'] = txFee.amount
+        jsonMessage['timestamp'] = timestamp
+        jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
+        jsonMessage['version'] = 2
+        jsonMessage['data'] = dataList
+
+        req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
+
+        return req
+
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30*86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
