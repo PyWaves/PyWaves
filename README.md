@@ -85,6 +85,8 @@ __pywaves.Address(address, publicKey, privateKey, seed)__ _Creates a new Address
 
 `dataTransaction(data, timestamp=0)` sets data for the account. data should be a json array with entries including type (bool, binary, int, string), key and value
 
+`deleteDataEntry(key)` deletes a given data entry, identified by key, from the data storage of the account
+
 `setScript(scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0)` issue a smart asset
 
 `setAssetScript(asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0)` set a new script for a smart asset
