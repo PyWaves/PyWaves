@@ -166,14 +166,21 @@ This class is meant to provide the necessary functionality to calculate fees acc
 
 #### Methods:
 `calculateDynamicFee()` calculates the dynamic fee for a trade
+
 `calculateDynamicDiscountFee()` calculates the dynamic discounted fee for a trade
+
 `calculatePercentSellingFee(priceAssetId, amountAssetId, amountToSell)` calculates the percentage selling fee for a trade
+
 `calculatePercentDiscountedSellingFee(priceAssetId, amountAssetId, amountToSell)` calculates the discounted percentage selling fee for a trade
+
 `calculatePercentBuyingFee(priceAssetId, price, amountToBuy)` calculates the percentage buying fee for a trade
+
 `calculatePercentDiscountedBuyingFee(priceAssetId, price, amountToBuy)` calculates the discounted percentage buying fee for a trade
 
+
 #### Example:
-```import pywaves as pw
+```
+import pywaves as pw
 
 config = {
     'amountAsset': 'WAVES',
@@ -191,7 +198,8 @@ price = 5
 amountToBuy = 1000000000
 matcherFee = wxFeeCalculator.calculatePercentDiscountedBuyingFee(config['priceAsset'], price, amountToBuy)
 tx = address.buy(tradingPair, amountToBuy, price, matcherFee = matcherFee, matcherFeeAssetId = 'EMAMLxDnv3xiz8RXg8Btj33jcEw3wLczL3JKYYmuubpc')
-print (tx)```
+print (tx)
+```
 
 ## Other functions
 `pywaves.setNode(node, chain, chain_id)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet', or any other chain, if you also define the chain id)
