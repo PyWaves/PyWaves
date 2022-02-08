@@ -173,7 +173,7 @@ This class is meant to provide the necessary functionality to calculate fees acc
 `calculatePercentDiscountedBuyingFee(priceAssetId, price, amountToBuy)` calculates the discounted percentage buying fee for a trade
 
 #### Example:
-``import pywaves as pw
+```import pywaves as pw
 
 config = {
     'amountAsset': 'WAVES',
