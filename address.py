@@ -1301,7 +1301,7 @@ class Address(object):
             parameterBytes = b''
             for param in params:
                 if param['type'] == 'integer':
-                    parameterBytes += b'\0' + struct.pack(">Q", param['value'])
+                    parameterBytes += b'\0' + struct.pack(">q", param['value'])
                 elif param['type'] == 'binary':
                     parameterBytes += b'\1' + struct.pack(">I", len(param['value'])) + crypto.str2bytes(param['value'])
                 elif param['type'] == 'string':
