@@ -161,6 +161,45 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 `status()` returns current order status
 `cancel()` cancel the order
 
+### WXFeeCalculator Class
+This class is meant to provide the necessary functionality to calculate fees according to the new WX fee structure
+
+#### Methods:
+`calculateDynamicFee()` calculates the dynamic fee for a trade
+
+`calculateDynamicDiscountFee()` calculates the dynamic discounted fee for a trade
+
+`calculatePercentSellingFee(priceAssetId, amountAssetId, amountToSell)` calculates the percentage selling fee for a trade
+
+`calculatePercentDiscountedSellingFee(priceAssetId, amountAssetId, amountToSell)` calculates the discounted percentage selling fee for a trade
+
+`calculatePercentBuyingFee(priceAssetId, price, amountToBuy)` calculates the percentage buying fee for a trade
+
+`calculatePercentDiscountedBuyingFee(priceAssetId, price, amountToBuy)` calculates the discounted percentage buying fee for a trade
+
+
+#### Example:
+```
+import pywaves as pw
+
+config = {
+    'amountAsset': 'WAVES',
+    'priceAsset': '25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT',
+    'privateKey': 'xxx'
+}
+
+pw.setNode('https://nodes-testnet.wavesnodes.com/', chain='testnet')
+pw.setMatcher('http://matcher-testnet.waves.exchange')
+
+wxFeeCalculator = pw.WXFeeCalculator()
+address = pw.Address(privateKey=config['privateKey'])
+tradingPair = pw.AssetPair(pw.Asset(config['amountAsset']), pw.Asset(config['priceAsset']))
+price = 5
+amountToBuy = 1000000000
+matcherFee = wxFeeCalculator.calculatePercentDiscountedBuyingFee(config['priceAsset'], price, amountToBuy)
+tx = address.buy(tradingPair, amountToBuy, price, matcherFee = matcherFee, matcherFeeAssetId = 'EMAMLxDnv3xiz8RXg8Btj33jcEw3wLczL3JKYYmuubpc')
+print (tx)
+```
 
 ## Other functions
 `pywaves.setNode(node, chain, chain_id)`  set node URL ('http://ip-address:port') and chain (either 'mainnet' or 'testnet', or any other chain, if you also define the chain id)

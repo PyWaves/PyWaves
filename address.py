@@ -798,12 +798,13 @@ class Address(object):
 
         return req
 
-    def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0):
+    def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0, matcherFeeAssetId=''):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
         expiration = timestamp + maxLifetime * 1000
         asset1 = b'\0' if amountAsset.assetId == '' else b'\1' + base58.b58decode(amountAsset.assetId)
         asset2 = b'\0' if priceAsset.assetId == '' else b'\1' + base58.b58decode(priceAsset.assetId)
+        matcherFeeAssetIdPart = b'\0' if matcherFeeAssetId == '' else b'\1' + base58.b58decode(matcherFeeAssetId)
         sData = b'\3' + \
                 base58.b58decode(self.publicKey) + \
                 base58.b58decode(self.pywaves.MATCHER_PUBLICKEY) + \
@@ -815,7 +816,7 @@ class Address(object):
                 struct.pack(">Q", timestamp) + \
                 struct.pack(">Q", expiration) + \
                 struct.pack(">Q", matcherFee) + \
-                b'\0'
+                matcherFeeAssetIdPart
         signature = crypto.sign(self.privateKey, sData)
         otype = "buy" if orderType == b'\0' else "sell"
         data = json.dumps({
@@ -832,7 +833,8 @@ class Address(object):
             "expiration": expiration,
             "matcherFee": matcherFee,
             "signature": signature,
-            "version": 3
+            "version": 3,
+            "matcherFeeAssetId": matcherFeeAssetId
         })
         req = self.pywaves.wrapper('/matcher/orderbook', data, host=self.pywaves.MATCHER)
         id = -1
@@ -906,22 +908,22 @@ class Address(object):
             return id
 
     def buy(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE,
-            timestamp=0):
+            timestamp=0, matcherFeeAssetId=''):
         assetPair.refresh()
         #normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
         normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
-        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp)
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\0', amount, normPrice, maxLifetime, matcherFee, timestamp, matcherFeeAssetId)
         if self.pywaves.OFFLINE:
             return id
         elif id != -1:
             return self.pywaves.Order(id, assetPair, self)
 
     def sell(self, assetPair, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE,
-             timestamp=0):
+             timestamp=0, matcherFeeAssetId=''):
         assetPair.refresh()
         #normPrice = int(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price)
         normPrice = int(round(pow(10, 8 + assetPair.asset2.decimals - assetPair.asset1.decimals) * price))
-        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp)
+        id = self._postOrder(assetPair.asset1, assetPair.asset2, b'\1', amount, normPrice, maxLifetime, matcherFee, timestamp, matcherFeeAssetId)
         if self.pywaves.OFFLINE:
             return id
         elif id != -1:
