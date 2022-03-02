@@ -63,12 +63,14 @@ class WXFeeCalculator(object):
         discountAssetRate = self._correctRate(rates[discountAssetId], self.discountAssetDecimals)
         amountAssetDecimals = self._getAssetDecimals(amountAssetId)
         amountAssetRate = self._correctRate(rates[amountAssetId], amountAssetDecimals)
-        calculatedFee = int(amountToSell * minFee / 100 * (discountAssetRate / amountAssetRate) * (100 - discount) / 100) + 1
+        calculatedFee = int(amountToSell * (minFee / 100) * (discountAssetRate / amountAssetRate) * (100 - discount) / 100) + 1
         minFee = self._getMinFeeInDiscountAsset(discountAssetId)
 
         return max(calculatedFee, minFee)
 
     def calculatePercentBuyingFee(self, priceAssetId, price, amountToBuy):
+        priceAssetDecimals = self._getAssetDecimals(priceAssetId)
+        price = price / math.pow(10, priceAssetDecimals)
         calculatedFee = int(amountToBuy * price / math.pow(10, self.priceConstantExp) * self.baseFee / 100) + 1
         minFee = self._getMinFee(priceAssetId)
 
@@ -80,6 +82,7 @@ class WXFeeCalculator(object):
         rates = self.settings['rates']
         discountAssetRate = self._correctRate(rates[discountAssetId], self.discountAssetDecimals)
         priceAssetDecimals = self._getAssetDecimals(priceAssetId)
+        price = price / math.pow(10, priceAssetDecimals)
         priceAssetRate = self._correctRate(rates[priceAssetId], priceAssetDecimals)
         calculatedFee = int(amountToBuy * price / math.pow(10, self.priceConstantExp) * self.baseFee / 100 * (discountAssetRate / priceAssetRate) * (100 - discount) / 100) + 1
         minFee = self._getMinFeeInDiscountAsset(discountAssetId)

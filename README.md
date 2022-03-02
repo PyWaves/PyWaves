@@ -164,6 +164,7 @@ __pywaves.Order(orderId, assetPair, address='')__ Creates a new Order object
 ### WXFeeCalculator Class
 This class is meant to provide the necessary functionality to calculate fees according to the new WX fee structure
 
+All values here for price and amounts of tokens are always in the smallest unit of the token ("satoshis").
 #### Methods:
 `calculateDynamicFee()` calculates the dynamic fee for a trade
 
