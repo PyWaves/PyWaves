@@ -1313,6 +1313,26 @@ class Address(object):
                         parameterBytes += b'\6'
                     else:
                         parameterBytes += b'\7'
+                elif param['type'] == 'list':
+                    parameterBytes += b'\x0b'
+                    parameterBytes += struct.pack(">I", len(param['value']))
+                    for nestedParam in param['value']:
+                        print(nestedParam)
+                        if nestedParam['type'] == 'integer':
+                            parameterBytes += b'\0' + struct.pack(">Q", nestedParam['value'])
+                        elif nestedParam['type'] == 'binary':
+                            parameterBytes += b'\1' + struct.pack(">I", len(nestedParam['value'])) + crypto.str2bytes(
+                                nestedParam['value'])
+                        elif nestedParam['type'] == 'string':
+                            parameterBytes += b'\2' + struct.pack(">I",
+                                                                  len(crypto.str2bytes(
+                                                                      nestedParam['value']))) + crypto.str2bytes(
+                                nestedParam['value'])
+                        elif nestedParam['type'] == 'boolean':
+                            if nestedParam['value'] == True:
+                                parameterBytes += b'\6'
+                            else:
+                                parameterBytes += b'\7'
             paymentBytes = b''
             for payment in payments:
                 currentPaymentBytes = b''
