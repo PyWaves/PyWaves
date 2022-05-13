@@ -690,8 +690,6 @@ class Address(object):
     def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
         dataTransaction = transaction_pb2.DataTransactionData()
 
-        print(data)
-
         dataList = []
         for d in data:
             entry = transaction_pb2.DataTransactionData.DataEntry()
@@ -708,7 +706,6 @@ class Address(object):
                 listEntry['key'] = d['key']
                 listEntry['value'] = d['value']
                 listEntry['type'] = 'string'
-                print(listEntry)
             elif d['type'] == 'integer':
                 entry.key = d['key']
                 entry.int_value = d['value']
@@ -1317,7 +1314,6 @@ class Address(object):
                     parameterBytes += b'\x0b'
                     parameterBytes += struct.pack(">I", len(param['value']))
                     for nestedParam in param['value']:
-                        print(nestedParam)
                         if nestedParam['type'] == 'integer':
                             parameterBytes += b'\0' + struct.pack(">Q", nestedParam['value'])
                         elif nestedParam['type'] == 'binary':
