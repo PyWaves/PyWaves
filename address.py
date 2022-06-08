@@ -260,7 +260,8 @@ class Address(object):
                 return self.pywaves.wrapper(
                     '/addresses/balance/%s%s' % (self.address, '' if confirmations == 0 else '/%d' % confirmations))[
                     'balance']
-        except:
+        except Exception as e:
+            print(e)
             return -1
 
     def transactions(self, limit=100, after=''):
@@ -1288,7 +1289,7 @@ class Address(object):
                 return req
 
     def invokeScript(self, dappAddress, functionName, params, payments, feeAsset=None,
-                     txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE):
+                     txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1344,10 +1345,13 @@ class Address(object):
             else:
                 assetIdBytes += b'\x00'
 
+            if not publicKey:
+                publicKey = self.publicKey
+
             sData = b'\x10' + \
                     b'\x01' + \
                     crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(publicKey) + \
                     base58.b58decode(dappAddress) + \
                     b'\x01' + \
                     b'\x09' + \
@@ -1365,7 +1369,7 @@ class Address(object):
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
                 "type": 16,
-                "senderPublicKey": self.publicKey,
+                "senderPublicKey": publicKey,
                 "version": 1,
                 "timestamp": timestamp,
                 "fee": txFee,
