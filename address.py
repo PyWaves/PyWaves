@@ -1166,7 +1166,7 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0):
+    def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
         script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         if not self.privateKey:
             logging.error('Private key required')
@@ -1175,10 +1175,13 @@ class Address(object):
             scriptLength = len(compiledScript)
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
+
+            if not publicKey:
+                publicKey = self.publicKey
             sData = b'\x0d' + \
                     b'\1' + \
                     crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(self.publicKey) + \
+                    base58.b58decode(publicKey) + \
                     b'\1' + \
                     struct.pack(">H", scriptLength) + \
                     compiledScript + \
@@ -1189,7 +1192,7 @@ class Address(object):
             data = json.dumps({
                 "type": 13,
                 "version": 1,
-                "senderPublicKey": self.publicKey,
+                "senderPublicKey": publicKey,
                 "fee": txFee,
                 "timestamp": timestamp,
                 "script": 'base64:' + script,
