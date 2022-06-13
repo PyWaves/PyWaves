@@ -1,5 +1,5 @@
 import math
-import pywaves
+import pywaves as pywaves
 import axolotl_curve25519 as curve
 import os
 import pywaves.crypto as crypto
@@ -511,8 +511,8 @@ class Address(object):
 
     def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE,
                   timestamp=0):
-        if not self.privateKey:
-            msg = 'Asset not issued'
+        if len(self.privateKey) < 10:
+            msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
         elif not self.pywaves.OFFLINE and asset and not asset.status():
@@ -531,12 +531,12 @@ class Address(object):
             msg = 'Insufficient Waves balance'
             logging.error(msg)
             self.pywaves.throw_error(msg)
-        elif not self.pywaves.OFFLINE and not feeAsset and self.balance() < txFee:
-            msg = 'Insufficient Waves balance'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
+        #elif not self.pywaves.OFFLINE and not feeAsset and self.balance() < txFee:
+        #    msg = 'Insufficient Waves balance'
+        #    logging.error(msg)
+        #    self.pywaves.throw_error(msg)
         elif not self.pywaves.OFFLINE and feeAsset and self.balance(feeAsset.assetId) < txFee:
-            msg = 'Insufficient asset balance'
+            msg = 'Insufficient asset balance for fee'
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
