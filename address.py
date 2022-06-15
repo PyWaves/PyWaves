@@ -261,7 +261,6 @@ class Address(object):
                     '/addresses/balance/%s%s' % (self.address, '' if confirmations == 0 else '/%d' % confirmations))[
                     'balance']
         except Exception as e:
-            print(e)
             return -1
 
     def transactions(self, limit=100, after=''):
@@ -531,10 +530,6 @@ class Address(object):
             msg = 'Insufficient Waves balance'
             logging.error(msg)
             self.pywaves.throw_error(msg)
-        #elif not self.pywaves.OFFLINE and not feeAsset and self.balance() < txFee:
-        #    msg = 'Insufficient Waves balance'
-        #    logging.error(msg)
-        #    self.pywaves.throw_error(msg)
         elif not self.pywaves.OFFLINE and feeAsset and self.balance(feeAsset.assetId) < txFee:
             msg = 'Insufficient asset balance for fee'
             logging.error(msg)
@@ -597,7 +592,6 @@ class Address(object):
             msg = 'Insufficient Waves balance'
             logging.error(msg)
             self.pywaves.throw_error(msg)
-        print(totalAmount)
         if not self.pywaves.OFFLINE and self.balance(assetId=asset.assetId) < totalAmount:
             msg = 'Insufficient %s balance' % asset.name
             logging.error(msg)
@@ -638,66 +632,6 @@ class Address(object):
             })
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
-
-    '''def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
-        if not self.privateKey:
-            logging.error('Private key required')
-        else:
-            if timestamp == 0:
-                timestamp = int(time.time() * 1000)
-            dataObject = {
-                "type": 12,
-                "version": 1,
-                "senderPublicKey": self.publicKey,
-                "data": data,
-                "fee": 0,
-                "timestamp": timestamp,
-                "proofs": ['']
-            }
-            dataBinary = b''
-            for i in range(0, len(data)):
-                d = data[i]
-                keyBytes = crypto.str2bytes(d['key'])
-                dataBinary += struct.pack(">H", len(keyBytes))
-                dataBinary += keyBytes
-                if d['type'] == 'binary':
-                    dataBinary += b'\2'
-                    valueAsBytes = d['value']
-                    dataBinary += struct.pack(">H", len(valueAsBytes))
-                    dataBinary += crypto.str2bytes(valueAsBytes)
-                elif d['type'] == 'boolean':
-                    if d['value']:
-                        dataBinary += b'\1\1'
-                    else:
-                        dataBinary += b'\1\0'
-                elif d['type'] == 'integer':
-                    dataBinary += b'\0'
-                    dataBinary += struct.pack(">Q", d['value'])
-                elif d['type'] == 'string':
-                    dataBinary += b'\3'
-                    dataBinary += struct.pack(">H", len(d['value']))
-                    dataBinary += crypto.str2bytes(d['value'])
-            # check: https://stackoverflow.com/questions/2356501/how-do-you-round-up-a-number-in-python
-            txFee = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64)) / 1000.0) + 1) * baseFee
-            txFee = max(txFee, minimalFee)
-            dataObject['fee'] = txFee
-            sData = b'\x0c' + \
-                    b'\1' + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">H", len(data)) + \
-                    dataBinary + \
-                    struct.pack(">Q", timestamp) + \
-                    struct.pack(">Q", txFee)
-
-            dataObject['proofs'] = [crypto.sign(self.privateKey, sData)]
-
-            for entry in dataObject['data']:
-                if entry['type'] == 'binary':
-                    base64Encoded = base64.b64encode(crypto.str2bytes(entry['value']))
-                    entry['value'] = 'base64:' + crypto.bytes2str(base64Encoded)
-            dataObjectJSON = json.dumps(dataObject)
-
-            return self.pywaves.wrapper('/transactions/broadcast', dataObjectJSON)'''
 
     def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
         dataTransaction = transaction_pb2.DataTransactionData()
@@ -855,9 +789,6 @@ class Address(object):
             elif req['status'] == 'OrderAccepted':
                 id = req['message']['id']
                 logging.info('Order Accepted - ID: %s' % id)
-        elif not self.pywaves.OFFLINE:
-            logging.error(req)
-            self.pywaves.throw_error(req)
         else:
             return req
         return id
@@ -995,40 +926,6 @@ class Address(object):
             req = self.pywaves.wrapper('/transactions/broadcast', data)
             return req
 
-    '''def lease(self, recipient, amount, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
-        if not self.privateKey:
-            msg = 'Private key required'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-        elif amount <= 0:
-            msg = 'Amount must be > 0'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-        elif not self.pywaves.OFFLINE and self.balance() < amount + txFee:
-            msg = 'Insufficient Waves balance'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-        else:
-            if timestamp == 0:
-                timestamp = int(time.time() * 1000)
-            sData = b'\x08' + \
-                    base58.b58decode(self.publicKey) + \
-                    base58.b58decode(recipient.address) + \
-                    struct.pack(">Q", amount) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "senderPublicKey": self.publicKey,
-                "recipient": recipient.address,
-                "amount": amount,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "signature": signature
-            })
-            req = self.pywaves.wrapper('/leasing/broadcast/lease', data)
-            return req'''
-
     def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
@@ -1123,12 +1020,6 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            '''sData = b'\x0a' + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">H", len(aliasWithNetwork)) + \
-                    crypto.str2bytes(str(aliasWithNetwork)) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)'''
             sData = b'\x0a' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">H", len(aliasWithNetwork)) + \

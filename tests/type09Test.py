@@ -25,7 +25,7 @@ def test_CancelWithFeeIsBiggerThanBalance():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Insufficient Waves balance\') tblen=3>'
 
-def test_SuccesfullCancelLeasing():
+def test_succesfullCancelLeasing():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
@@ -38,3 +38,13 @@ def test_SuccesfullCancelLeasing():
     blockchainTx = helpers.waitFor(leaseCancelTransactionId)
 
     assert blockchainTx['id'] == leaseCancelTransactionId
+
+def test_pywavesOffline():
+    helpers = Helpers()
+    pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    pw.setOffline()
+    leaseCancelTransactionId = myAddress.leaseCancel('3sEGi6tL8Ptg4L9wJv8FZRYu1hJxFJrWZGC4tWVrcycS')
+    pw.setOnline()
+
+    assert leaseCancelTransactionId['api-type'] == 'POST'

@@ -44,6 +44,7 @@ def test_succesfullMassTransfer():
     ]
 
     tx = myAddress.massTransferWaves(transfers)
+    print('tx: ' + str(tx))
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']

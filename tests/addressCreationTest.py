@@ -2,6 +2,13 @@ from .. import pywaves as pw
 from .. import address
 import pytest
 
+def test_generateNewTestnetAddress():
+    pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+    addr = address.Address(seed = 'this is just a dummy test seed')
+    addr._generate()
+
+    assert addr.address.startswith('3N') or addr.address.startswith('3M') and addr.address != '3ND9vkY24sB1DFTETtbenEcpXdLdhtbhhtj'
+
 def test_mainnetAddressCreationBySeed():
     pw.setNode('https://nodes.wavesnodes.com', 'W')
     addr = address.Address(seed = 'this is just a dummy test seed')
