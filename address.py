@@ -799,8 +799,7 @@ class Address(object):
                 msg = "Order already filled"
                 logging.error(msg)
                 self.pywaves.throw_error(msg)
-
-            elif not order.status():
+            elif order.status() == 'NotFound':
                 msg = "Order not found"
                 logging.error(msg)
                 self.pywaves.throw_error(msg)
