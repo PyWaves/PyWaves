@@ -17,7 +17,7 @@ def test_issueAssetWithoutPrivateKey():
 
 def test_issueAssetWithTooShortName():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAdress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAdress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
     with pytest.raises(Exception) as error:
        myAdress.issueAsset('Tes','This is just another test asset', 100000, 1)
@@ -26,7 +26,7 @@ def test_issueAssetWithTooShortName():
 
 def test_pywavesOffline():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAdress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAdress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     pw.setOffline()
     tx = myAdress.issueAsset('Test2', 'this is just another test asset',10000,0)
     pw.setOnline()
@@ -35,7 +35,7 @@ def test_pywavesOffline():
 
 def test_issueAssetWithTooLongName():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAdress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAdress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
     with pytest.raises(Exception) as error:
        myAdress.issueAsset('12345678912345678','This is just another test asset', 100000, 1)
@@ -45,9 +45,10 @@ def test_issueAssetWithTooLongName():
 def test_succesfullIssueAsset():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAdress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAdress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
-    asset = myAdress.issueAsset('Test2', 'This is just another Test token', 10000000, 0)
-    blockchainTx = helpers.waitFor(asset.assetId)
+    asset = myAdress.issueAsset('Test', 'This is just a test token', 1000000, 0)
+    id = asset.assetId
+    blockchainTx = helpers.waitFor(id)
 
-    assert blockchainTx['id'] == asset.assetId
+    assert blockchainTx['id'] == id

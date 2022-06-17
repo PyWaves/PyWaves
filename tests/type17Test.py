@@ -7,8 +7,8 @@ pw.setThrowOnError(True)
 
 def test_updateAssetInfo():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = 'fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE'
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = '7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg'
 
     tx = myAddress.updateAssetInfo(myToken, 'jdahdja', 'This is just a test to see a change')
 

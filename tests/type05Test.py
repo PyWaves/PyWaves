@@ -9,8 +9,8 @@ pw.setThrowOnError(True)
 def test_succesfullReissueAsset():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('AFzTeKRwyomQ2wMtzBFriMzwJPG6HEJY3pbc8JrV6Z14')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('226sJnCCEeQXushTBPtwyWY8id44ejHdvET1b9ESSAqy')
 
     txId = myAddress.reissueAsset(myToken, 10, reissuable=True)
     blockchaintx = helpers.waitFor(txId)
@@ -19,8 +19,8 @@ def test_succesfullReissueAsset():
 
 def test_reissueAssetPywavesOffline():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('AzLBsYko4sy5gABTcSVUyRCgv6EHhtP58qY89nqHU2uu')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('226sJnCCEeQXushTBPtwyWY8id44ejHdvET1b9ESSAqy')
     pw.setOffline()
     tx = myAddress.reissueAsset(myToken, 10)
     pw.setOnline()

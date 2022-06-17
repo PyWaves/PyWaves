@@ -35,9 +35,9 @@ def test_sendWavesButWithoutAmount():
 def test_successfulTransfer():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey= '6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey= 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
-    tx = myAddress.sendWaves(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), 1*10*4)
+    tx = myAddress.sendWaves(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), 1*10*4, txFee=500000)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']

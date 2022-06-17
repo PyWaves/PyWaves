@@ -9,7 +9,7 @@ pw.setThrowOnError(True)
 def test_AssetTransactionWithoutPrivateKey():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     with pytest.raises(Exception) as error:
         myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 3)
@@ -18,8 +18,8 @@ def test_AssetTransactionWithoutPrivateKey():
 
 def test_AssetTransactionWithAmountSmallerEqualsZero():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey= '6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myAddress = address.Address(privateKey= 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     with pytest.raises(Exception) as error:
         myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, -1)
@@ -28,7 +28,7 @@ def test_AssetTransactionWithAmountSmallerEqualsZero():
 
 def test_NonExistantAssetTransaction():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     myToken = asset.Asset('Test')
 
     with pytest.raises(Exception) as error:
@@ -38,19 +38,19 @@ def test_NonExistantAssetTransaction():
 
 def test_AssetTransactionButAmountBiggerThanBalance():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     with pytest.raises(Exception) as error:
-        myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 50000)
+        myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5000000000)
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Insufficient asset balance\') tblen=3>'
 
 def test_succesfullAssetTransaction():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey = '6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myAddress = address.Address(privateKey = 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5)
     blockchainTx = helpers.waitFor(tx['id'])
@@ -59,7 +59,7 @@ def test_succesfullAssetTransaction():
 
 def test_transactionWithNotAsset():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
     with pytest.raises(Exception) as error:
         myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), None, 100000000000000000)
@@ -68,21 +68,21 @@ def test_transactionWithNotAsset():
 
 def test_transactionFeeIsBiggerThanSelfBalance():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
 
     with pytest.raises(Exception) as error:
-        myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 50, feeAsset = myToken)
-
+        myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 10, feeAsset=myToken)
     assert str(error) == '<ExceptionInfo PyWavesException(\'Insufficient asset balance for fee\') tblen=3>'
 
 def test_successfulTransactionWithSponsoredFee():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
 
     tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5, feeAsset = myToken, txFee=1)
+    print(tx)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']

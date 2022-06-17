@@ -21,7 +21,7 @@ def test_sellPywavesOffline():
 def test_succesfullSellOrder():
     pw.setMatcher('https://testnet.waves.exchange/api/v1/forward/matcher')
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     USDN_WAVES = asset.AssetPair(pw.WAVES,asset.Asset('25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT'))
 
     order = myAddress.sell(USDN_WAVES, 100, 1000000000, matcherFee=1000000)

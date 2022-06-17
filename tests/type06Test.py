@@ -9,8 +9,8 @@ pw.setThrowOnError(True)
 def test_succesfullBurnAsset():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('9rAYe2FPz2LfLskidVpZcW3w7spHgQXYYyXzczNeJQyu')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('226sJnCCEeQXushTBPtwyWY8id44ejHdvET1b9ESSAqy')
 
     txId = myAddress.burnAsset(myToken, 1)
     blockchaintx = helpers.waitFor(txId)
@@ -19,8 +19,8 @@ def test_succesfullBurnAsset():
 
 def test_pywavesOfflineBurnAsset():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
-    myToken = asset.Asset('9rAYe2FPz2LfLskidVpZcW3w7spHgQXYYyXzczNeJQyu')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('226sJnCCEeQXushTBPtwyWY8id44ejHdvET1b9ESSAqy')
     pw.setOffline()
     tx = myAddress.burnAsset(myToken, 1)
     pw.setOnline()

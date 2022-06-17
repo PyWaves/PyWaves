@@ -10,7 +10,7 @@ def test_AssetMassTransferWithoutPrivateKey():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
     myAddress = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
     transfers = [
         {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 200},
         {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 200}
@@ -24,8 +24,8 @@ def test_AssetMassTransferWithoutPrivateKey():
 def test_AssetMassTransferWithTooMuchRecipients():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
     transfers = [
         {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 100},
@@ -167,7 +167,7 @@ def test_AssetMassTransferWithTooMuchRecipients():
 def test_feeIsBiggerThanAmountMassTransfer():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
     myAddress = address.Address(privateKey='G6aEiT1ih4jwLfgJ89EvULbsziixDuqnEUTpEkvZ76hv')
     transfers = [
         {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 200},
@@ -182,11 +182,11 @@ def test_feeIsBiggerThanAmountMassTransfer():
 def test_amountIsBiggerThanBalanceMassTransfer():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
-    myAddress = address.Address(privateKey='EVXrFCicNRsvhK1CxvDmgkcfVEA16F7g21UQnWAqEWbL')
+    myToken = asset.Asset('JE8G7MGsGAmwMRbnBG9GrdTdHqQ8SFtrJ8As8GjkPoh3')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     transfers = [
-        {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 270},
-        {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 270}
+        {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 5000000},
+        {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 500000000}
     ]
 
     with pytest.raises(Exception) as error:
@@ -198,8 +198,8 @@ def test_SuccesfullAssetMassTransfer():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
     helpers = Helpers()
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     transfers = [
         {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 10},
         {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 10}
@@ -214,7 +214,7 @@ def test_succesfullSmartAssetMassTransfer():
     pw.setOnline()
     helpers = Helpers()
     myToken = asset.Asset('APPVkPEmQE6h7xj2dwKJfrSyxKku4r9GVFwFT5TxJYTb')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     transfers = [
         {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 10},
         {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 10}

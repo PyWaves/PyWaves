@@ -17,7 +17,7 @@ def test_leasingWithoutPrivateKey():
 
 def test_leasingWithAmountSmallerEqualsZero():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey= '6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey= 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     leasinAdress = address.Address('3MrgK5eCdrva5iVvQh1d8yGSrHQGF93Lep7')
 
     with pytest.raises(Exception) as error:
@@ -27,7 +27,7 @@ def test_leasingWithAmountSmallerEqualsZero():
 
 def test_BalanceSmallerThanAmount():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     leasinAdress = address.Address('3MrgK5eCdrva5iVvQh1d8yGSrHQGF93Lep7')
 
     with pytest.raises(Exception) as error:
@@ -38,7 +38,7 @@ def test_BalanceSmallerThanAmount():
 def test_succesfullLeasing():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     leasinAdress = address.Address('3MrgK5eCdrva5iVvQh1d8yGSrHQGF93Lep7')
 
     tx = myAddress.lease(leasinAdress, 1*10**8)

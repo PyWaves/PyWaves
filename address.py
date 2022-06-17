@@ -992,22 +992,22 @@ class Address(object):
                 self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
                                      host=self.pywaves.MATCHER)
 
-    def deleteOrderHistory(self, assetPair):
-        orders = self.getOrderHistory(assetPair)
-        for order in orders:
-            orderId = order['id']
-            sData = base58.b58decode(self.publicKey) + \
-                    base58.b58decode(orderId)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "sender": self.publicKey,
-                "orderId": orderId,
-                "signature": signature
-            })
-            self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % (
-            self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
-            self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
-                                 host=self.pywaves.MATCHER)
+   # def deleteOrderHistory(self, assetPair):
+   #     orders = self.getOrderHistory(assetPair)
+   #     for order in orders:
+   #         orderId = order['id']
+   #         sData = base58.b58decode(self.publicKey) + \
+   #                 base58.b58decode(orderId)
+   #         signature = crypto.sign(self.privateKey, sData)
+   #         data = json.dumps({
+   #             "sender": self.publicKey,
+   #             "orderId": orderId,
+   #             "signature": signature
+   #         })
+   #         tx = self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % (
+   #         self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
+   #         self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
+   #                              host=self.pywaves.MATCHER)
 
     def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE, timestamp=0):
         aliasWithNetwork = b'\x02' + crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + struct.pack(">H", len(
@@ -1039,7 +1039,9 @@ class Address(object):
 
     def sponsorAsset(self, assetId, minimalFeeInAssets, txFee=pywaves.DEFAULT_SPONSOR_FEE, timestamp=0):
         if not self.privateKey:
-            logging.error('Private key required')
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
@@ -1068,9 +1070,11 @@ class Address(object):
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
-        script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
+        script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
         if not self.privateKey:
-            logging.error('Private key required')
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
         else:
             compiledScript = base64.b64decode(script)
             scriptLength = len(compiledScript)
@@ -1101,7 +1105,6 @@ class Address(object):
                     signature
                 ]
             })
-
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def setAssetScript(self, asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0):

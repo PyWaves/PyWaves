@@ -28,7 +28,7 @@ def test_CancelWithFeeIsBiggerThanBalance():
 def test_succesfullCancelLeasing():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     leasingAddress = address.Address('3MrgK5eCdrva5iVvQh1d8yGSrHQGF93Lep7')
 
     leaseTransaction = myAddress.lease(leasingAddress, 1 * 10 ** 8)
@@ -42,7 +42,7 @@ def test_succesfullCancelLeasing():
 def test_pywavesOffline():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='6QLmHwd62jaGs2A4qS3L6iuuDJCnS343EfafhPRt7nBX')
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     pw.setOffline()
     leaseCancelTransactionId = myAddress.leaseCancel('3sEGi6tL8Ptg4L9wJv8FZRYu1hJxFJrWZGC4tWVrcycS')
     pw.setOnline()
