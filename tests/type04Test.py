@@ -50,7 +50,7 @@ def test_succesfullAssetTransaction():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey = 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
-    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
+    myToken = asset.Asset('BFbfYuXy8HdJhMH87PSEXd1w3v9KKJpvCFUgZP9cJKPQ')
 
     tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5)
     blockchainTx = helpers.waitFor(tx['id'])
@@ -68,8 +68,8 @@ def test_transactionWithNotAsset():
 
 def test_transactionFeeIsBiggerThanSelfBalance():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myAddress = address.Address(privateKey='G6aEiT1ih4jwLfgJ89EvULbsziixDuqnEUTpEkvZ76hv')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     with pytest.raises(Exception) as error:
         myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 10, feeAsset=myToken)
@@ -79,7 +79,7 @@ def test_successfulTransactionWithSponsoredFee():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
-    myToken = asset.Asset('fSzvjKJbHXt74GGtoExLtppgXiBXGAf8337exBe4XCE')
+    myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5, feeAsset = myToken, txFee=1)
     print(tx)

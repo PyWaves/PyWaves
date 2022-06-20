@@ -1110,7 +1110,9 @@ class Address(object):
     def setAssetScript(self, asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0):
         script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         if not self.privateKey:
-            logging.error('Private key required')
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
         else:
             compiledScript = base64.b64decode(script)
             scriptLength = len(compiledScript)
@@ -1145,7 +1147,11 @@ class Address(object):
 
     def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False,
                         txFee=pywaves.DEFAULT_ASSET_FEE):
-        script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
+        if self.pywaves.OFFLINE:
+            msg = 'PyWaves currently offline'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1189,11 +1195,7 @@ class Address(object):
                 "proofs": [signature],
                 "script": 'base64:' + script
             })
-            req = self.pywaves.wrapper('/transactions/broadcast', data)
-            if self.pywaves.OFFLINE:
-                return req
-            else:
-                return req
+            return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def invokeScript(self, dappAddress, functionName, params, payments, feeAsset=None,
                      txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None):
@@ -1208,17 +1210,17 @@ class Address(object):
                 if param['type'] == 'integer':
                     parameterBytes += b'\0' + struct.pack(">q", param['value'])
                 elif param['type'] == 'binary':
-                    parameterBytes += b'\1' + struct.pack(">I", len(param['value'])) + crypto.str2bytes(param['value'])
+                    parameterBytes += b'\1' + struct.pack(">L", len(param['value'])) + crypto.str2bytes(param['value'])
                 elif param['type'] == 'string':
                     parameterBytes += b'\2' + struct.pack(">I",
-                                                          len(crypto.str2bytes(param['value']))) + crypto.str2bytes(
-                        param['value'])
+                                                          len(crypto.str2bytes(param['value']))) + crypto.str2bytes(param['value'])
                 elif param['type'] == 'boolean':
                     if param['value'] == True:
                         parameterBytes += b'\6'
                     else:
                         parameterBytes += b'\7'
                 elif param['type'] == 'list':
+                    print(param)
                     parameterBytes += b'\x0b'
                     parameterBytes += struct.pack(">I", len(param['value']))
                     for nestedParam in param['value']:
@@ -1228,10 +1230,7 @@ class Address(object):
                             parameterBytes += b'\1' + struct.pack(">I", len(nestedParam['value'])) + crypto.str2bytes(
                                 nestedParam['value'])
                         elif nestedParam['type'] == 'string':
-                            parameterBytes += b'\2' + struct.pack(">I",
-                                                                  len(crypto.str2bytes(
-                                                                      nestedParam['value']))) + crypto.str2bytes(
-                                nestedParam['value'])
+                            parameterBytes += b'\2' + struct.pack(">I",len(crypto.str2bytes(nestedParam['value']))) + crypto.str2bytes(nestedParam['value'])
                         elif nestedParam['type'] == 'boolean':
                             if nestedParam['value'] == True:
                                 parameterBytes += b'\6'
