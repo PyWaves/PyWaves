@@ -5,7 +5,7 @@ import pytest
 
 pw.setThrowOnError(True)
 
-def test_CancelWithoutPrivateKey():
+def test_cancelWithoutPrivateKey():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')
     leasingID = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')
@@ -15,7 +15,7 @@ def test_CancelWithoutPrivateKey():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=3>'
 
-def test_CancelWithFeeIsBiggerThanBalance():
+def test_cancelWithFeeIsBiggerThanBalance():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='G6aEiT1ih4jwLfgJ89EvULbsziixDuqnEUTpEkvZ76hv')
     leasingID = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')

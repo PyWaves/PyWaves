@@ -1,8 +1,6 @@
 from .. import pywaves as pw
 from .. import address
 from .. import asset
-from .. import order
-import pytest
 import time
 
 pw.setThrowOnError(True)

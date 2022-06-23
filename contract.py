@@ -16,7 +16,7 @@ class Contract(object):
 
 
     def parseContractAddress(self):
-        metaInfo = requests.get(self.pwNODE + '/addresses/scriptInfo/' + self.contractAddress + '/meta').json()
+        metaInfo = requests.get(self.pw.NODE + '/addresses/scriptInfo/' + self.contractAddress + '/meta').json()
 
         return metaInfo['meta']['callableFuncTypes']
 
@@ -38,7 +38,7 @@ class Contract(object):
         if len(parameters.keys()) > 0:
             callParameters = callParameters[0:len(callParameters) - 2] + '\n'
         callParameters += '\t]'
-        call = 'pw.Address(seed = \'' + seed + '\').invokeScript(\'' + self.contractAddress + '\', \'' + method + '\', parameters, [])'
+        call = 'return pw.Address(seed = \'' + seed + '\').invokeScript(\'' + self.contractAddress + '\', \'' + method + '\', parameters, [])'
 
         code = 'def ' + method + '(' + parameterList[0: len(parameterList) - 2] + '):\n\t' + callParameters + '\n\t' + call
 

@@ -1,7 +1,6 @@
 from .helpers import Helpers
 from .. import pywaves as pw
 from .. import address
-from .. import asset
 import random
 import string
 import pytest

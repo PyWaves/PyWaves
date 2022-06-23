@@ -25,7 +25,7 @@ def test_leasingWithAmountSmallerEqualsZero():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Amount must be > 0\') tblen=3>'
 
-def test_BalanceSmallerThanAmount():
+def test_balanceSmallerThanAmount():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     leasinAdress = address.Address('3MrgK5eCdrva5iVvQh1d8yGSrHQGF93Lep7')

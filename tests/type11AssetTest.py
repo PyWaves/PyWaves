@@ -6,7 +6,7 @@ import pytest
 
 pw.setThrowOnError(True)
 
-def test_AssetMassTransferWithoutPrivateKey():
+def test_assetMassTransferWithoutPrivateKey():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
     myAddress = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')
@@ -21,7 +21,7 @@ def test_AssetMassTransferWithoutPrivateKey():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=3>'
 
-def test_AssetMassTransferWithTooMuchRecipients():
+def test_assetMassTransferWithTooMuchRecipients():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
     myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
@@ -194,7 +194,7 @@ def test_amountIsBiggerThanBalanceMassTransfer():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\"Insufficient b\'Test\' balance\") tblen=3>'
 
-def test_SuccesfullAssetMassTransfer():
+def test_succesfullAssetMassTransfer():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     pw.setOnline()
     helpers = Helpers()

@@ -5,7 +5,7 @@ import pytest
 
 pw.setThrowOnError(True)
 
-def test_MassTransferWithoutPrivateKey():
+def test_massTransferWithoutPrivateKey():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address('3MwGH6GPcq7jiGNXgS4K6buynpLZR5LAgQm')
 
@@ -19,7 +19,7 @@ def test_MassTransferWithoutPrivateKey():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=3>'
 
-def test_MassTransferWithoutEnoughWaves():
+def test_massTransferWithoutEnoughWaves():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey= 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
 
