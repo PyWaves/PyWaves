@@ -223,3 +223,18 @@ def test_succesfullSmartAssetMassTransfer():
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']
+
+def test_massTransferAssetsFromAccountThatExceedComplexityThreshold():
+    pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+    pw.setOnline()
+    helpers = Helpers()
+    myToken = asset.Asset('64CxbqQLW67PyJjEdNKNTP566MqArvPmtRXWZUTFwsv7')
+    myAddress = address.Address(privateKey='1sbUjTHo19h8NghyMQJBnwKfeErykku6STdJW8XevhJ')
+    transfers = [
+        {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 1},
+        {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 1}
+    ]
+    tx = myAddress.massTransferAssets(transfers, myToken)
+    blockchainTx = helpers.waitFor(tx['id'])
+
+    assert blockchainTx['id'] == tx['id']

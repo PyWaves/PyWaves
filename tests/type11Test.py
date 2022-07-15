@@ -189,3 +189,19 @@ def test_MassTransferWithTooMuchRecipients():
         myAddress.massTransferWaves(transfers)
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Too many recipients\') tblen=3>'
+
+def test_massTransferWavesFromAccountThatExceedComplexityThreshold():
+    helpers = Helpers()
+    pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+    myAddress = address.Address(privateKey='1sbUjTHo19h8NghyMQJBnwKfeErykku6STdJW8XevhJ')
+
+    transfers = [
+        {'recipient': '3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ', 'amount': 10000},
+        {'recipient': '3MxM7eBUqScwAdnqPzrUmiZEewhkvSqqVJY', 'amount': 10000}
+    ]
+
+    tx = myAddress.massTransferWaves(transfers)
+    print('tx: ' + str(tx))
+    blockchainTx = helpers.waitFor(tx['id'])
+
+    assert blockchainTx['id'] == tx['id']
