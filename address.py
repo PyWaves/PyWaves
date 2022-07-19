@@ -278,6 +278,9 @@ class Address(object):
                 a[i] = a[i][8:]
         return a
 
+    def script(self):
+        return self.pywaves.wrapper('/addresses/scriptInfo/%s' % self.address)
+
     def _generate(self, publicKey='', privateKey='', seed='', nonce=0):
         self.seed = seed
         self.nonce = nonce
@@ -455,6 +458,7 @@ class Address(object):
 
     def massTransferWaves(self, transfers, attachment='', timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE):
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
+        txFee += self.script()['extraFee']
         totalAmount = 0
 
         for i in range(0, len(transfers)):
@@ -575,6 +579,8 @@ class Address(object):
 
         if (asset.isSmart()):
             txFee += smartFee
+
+        txFee += self.script()['extraFee']
 
         totalAmount = 0
 
