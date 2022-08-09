@@ -177,11 +177,14 @@ def getOrderBook(assetPair):
         asks = ''
     return bids, asks
 
-def symbols():
-    return wrapper('/api/symbols', host=DATAFEED)
 
-def markets():
-    return wrapper('/api/markets', host=DATAFEED)
+# Deprecated due to the removal of the endpoint
+# def symbols(self):
+#    return self.wrapper('/api/symbols', host=DATAFEED)
+
+def markets(self):
+    return self.wrapper('/matcher/orderbook', host=MATCHER)
+    # return self.wrapper('/api/markets', host=DATAFEED)
 
 def validateAddress(address):
     addr = crypto.bytes2str(base58.b58decode(address))

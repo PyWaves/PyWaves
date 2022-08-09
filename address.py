@@ -1075,8 +1075,8 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
-        script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
+    def setCompiledScript(self, script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
+        #script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1112,6 +1112,46 @@ class Address(object):
                 ]
             })
             return self.pywaves.wrapper('/transactions/broadcast', data)
+
+    def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
+        script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
+
+        return self.setCompiledScript(script, txFee, timestamp, publicKey)
+        '''if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        else:
+            compiledScript = base64.b64decode(script)
+            scriptLength = len(compiledScript)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+
+            if not publicKey:
+                publicKey = self.publicKey
+            sData = b'\x0d' + \
+                    b'\1' + \
+                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
+                    base58.b58decode(publicKey) + \
+                    b'\1' + \
+                    struct.pack(">H", scriptLength) + \
+                    compiledScript + \
+                    struct.pack(">Q", txFee) + \
+                    struct.pack(">Q", timestamp)
+            signature = crypto.sign(self.privateKey, sData)
+
+            data = json.dumps({
+                "type": 13,
+                "version": 1,
+                "senderPublicKey": publicKey,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "script": 'base64:' + script,
+                "proofs": [
+                    signature
+                ]
+            })
+            return self.pywaves.wrapper('/transactions/broadcast', data)'''
 
     def setAssetScript(self, asset, scriptSource, txFee=pywaves.DEFAULT_ASSET_SCRIPT_FEE, timestamp=0):
         script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]

@@ -169,11 +169,13 @@ class ParallelPyWaves(object):
             asks = ''
         return bids, asks
 
-    def symbols(self):
-        return self.wrapper('/api/symbols', host=self.DATAFEED)
+    # Deprecated due to the removal of the endpoint
+    #def symbols(self):
+    #    return self.wrapper('/api/symbols', host=self.DATAFEED)
 
     def markets(self):
-        return self.wrapper('/api/markets', host=self.DATAFEED)
+        return self.wrapper('/matcher/orderbook', host=self.MATCHER)
+        #return self.wrapper('/api/markets', host=self.DATAFEED)
 
     def validateAddress(self, address):
         addr = crypto.bytes2str(base58.b58decode(address))
