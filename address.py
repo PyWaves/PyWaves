@@ -12,6 +12,8 @@ import logging
 
 from .protobuf import transaction_pb2
 from .protobuf.waves import amount_pb2
+from .protobuf.waves import recipient_pb2
+
 from google.protobuf.json_format import MessageToJson
 
 wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
@@ -430,6 +432,13 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
+
+            '''transferTransaction = transaction_pb2.TransferTransactionData()
+            transferTransaction.recipient.public_key_hash = crypto.str2bytes(recipient.address)
+            transferTransaction.amount.asset_id = b''
+            transferTransaction.amount.amount = amount
+            transferTransaction.attachment.string_value = base58.b58encode(crypto.str2bytes(attachment))'''
+
             sData = b'\4' + \
                     b'\2' + \
                     base58.b58decode(self.publicKey) + \
@@ -441,6 +450,16 @@ class Address(object):
                     struct.pack(">H", len(attachment)) + \
                     crypto.str2bytes(attachment)
             signature = crypto.sign(self.privateKey, sData)
+            '''txFeeEntry = amount_pb2.Amount()
+            txFeeEntry.amount = txFee
+            transaction = transaction_pb2.Transaction()
+            transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+            transaction.sender_public_key = base58.b58decode(self.publicKey)
+            transaction.fee.CopyFrom(txFeeEntry)
+            transaction.timestamp = timestamp
+            transaction.version = 3
+            transaction.transfer.CopyFrom(transferTransaction)
+            signature = crypto.sign(self.privateKey, transaction.SerializeToString())'''
             data = json.dumps({
                 "type": 4,
                 "version": 2,
@@ -450,7 +469,6 @@ class Address(object):
                 "fee": txFee,
                 "timestamp": timestamp,
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature,
                 "proofs": [signature]
             })
 
@@ -956,7 +974,8 @@ class Address(object):
                 "timestamp": timestamp,
                 "signature": signature
             })
-            req = self.pywaves.wrapper('/leasing/broadcast/cancel', data)
+            #req = self.pywaves.wrapper('/leasing/broadcast/cancel', data)
+            req = self.pywaves.wrapper('/transactions/broadcast', data)
             if self.pywaves.OFFLINE:
                 return req
             elif 'leaseId' in req:
