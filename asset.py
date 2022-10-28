@@ -115,14 +115,29 @@ class AssetPair(object):
     def priceVolume(self):
         return str(self.ticker()['data']['quoteVolume'])
 
+    def _getAPIData(self, request):
+        return self.pywaves.wrapper(request, host=self.pywaves.DATAFEED)
+
     def _getMarketData(self, method, params):
         return self.pywaves.wrapper('%s/%s/%s/%s' % (method, self.a1, self.a2, params), host=self.pywaves.DATAFEED)
 
     def trades(self, *args):
+        amountAssetId = ''
+        priceAssetId = ''
+        if self.asset2.assetId == '':
+            amountAssetId = 'WAVES'
+        else:
+            amountAssetId = self.asset2.assetId
+        if self.asset1.assetId == '':
+            priceAssetId = 'WAVES'
+        else:
+            priceAssetId = self.asset1.assetId
+
         if len(args)==1:
             limit = args[0]
             if limit > 0 and limit <= self.pywaves.MAX_WDF_REQUEST:
-                return self._getMarketData('/api/trades/', '%d' % limit)
+                #return self._getMarketData('/api/trades/', '%d' % limit)
+                return self._getAPIData('/v0/transactions/exchange?amountAsset=' + amountAssetId + '&priceAsset=' + priceAssetId + '&limit=' + str(limit))
             else:
                 msg = 'Invalid request. Limit must be >0 and <= 100'
                 self.pywaves.throw_error(msg)
@@ -130,7 +145,8 @@ class AssetPair(object):
         elif len(args)==2:
             fromTimestamp = args[0]
             toTimestamp = args[1]
-            return self._getMarketData('/api/trades', '%d/%d' % (fromTimestamp, toTimestamp))
+            return self._getAPIData('/v0/transactions/exchange?timeStart=' + str(fromTimestamp) + '&timeEnd=' + str(toTimestamp) + '&amountAsset=' + amountAssetId + '&priceAsset=' + priceAssetId)
+            #return self._getMarketData('/api/trades', '%d/%d' % (fromTimestamp, toTimestamp))
 
     def candles(self, *args):
         if len(args)==2:
@@ -141,7 +157,7 @@ class AssetPair(object):
                 self.pywaves.throw_error(msg)
                 return logging.error(msg)
             elif limit > 0 and limit <= self.pywaves.MAX_WDF_REQUEST:
-                return self._getMarketData('/api/candles', '%d/%d' % (timeframe, limit))
+                return self._getMarketData('/candles', '%d/%d' % (timeframe, limit))
             else:
                 msg = 'Invalid request. Limit must be >0 and <= 100'
                 self.pywaves.throw_error(msg)
@@ -155,7 +171,7 @@ class AssetPair(object):
                 self.pywaves.throw_error(msg)
                 return logging.error(msg)
             else:
-                return self._getMarketData('/api/candles', '%d/%d/%d' % (timeframe, fromTimestamp, toTimestamp))
+                return self._getMarketData('/candles', '%d/%d/%d' % (timeframe, fromTimestamp, toTimestamp))
 
     __repr__ = __str__
 

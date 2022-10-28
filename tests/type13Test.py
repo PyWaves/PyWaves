@@ -25,7 +25,7 @@ def test_setScriptWithoutPrivateKey():
     with pytest.raises(Exception) as error:
         myAddress.setScript(scriptSource)
 
-    assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=3>'
+    assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=4>'
 
 def test_succesfullSetScript():
     helpers = Helpers()
@@ -62,6 +62,7 @@ def test_succesfullSetScript():
             '}'
 
     tx = myAddress.setScript(script, txFee=500000)
+    print(tx)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']
