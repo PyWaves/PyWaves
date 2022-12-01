@@ -1117,7 +1117,6 @@ class Address(object):
             transaction.set_script.CopyFrom(setScriptTransaction)
 
             signature = crypto.sign(self.privateKey, transaction.SerializeToString())
-            print(transaction.SerializeToString())
 
             jsonMessage = json.loads('{}')
             jsonMessage['type'] = 13
@@ -1266,13 +1265,14 @@ class Address(object):
             })
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def invokeScript(self, dappAddress, functionName, params, payments, feeAsset=None,
+    def invokeScript(self, dappAddress, functionName, params = [], payments = [], feeAsset=None,
                      txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
+            functionFlag = b'\x01'
             timestamp = int(time.time() * 1000)
             parameterBytes = b''
             for param in params:
@@ -1323,40 +1323,66 @@ class Address(object):
             if not publicKey:
                 publicKey = self.publicKey
 
-            sData = b'\x10' + \
+            if functionName is None:
+                sData = b'\x10' + \
                     b'\x01' + \
                     crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
                     base58.b58decode(publicKey) + \
                     base58.b58decode(dappAddress) + \
-                    b'\x01' + \
-                    b'\x09' + \
-                    b'\x01' + \
-                    struct.pack(">L", len(crypto.str2bytes(functionName))) + \
-                    crypto.str2bytes(functionName) + \
-                    struct.pack(">I", len(params)) + \
-                    parameterBytes + \
+                    b'\x00' + \
                     struct.pack(">H", len(payments)) + \
                     paymentBytes + \
                     struct.pack(">Q", txFee) + \
                     assetIdBytes + \
                     struct.pack(">Q", timestamp)
+                signature = crypto.sign(self.privateKey, sData)
+                data = json.dumps({
+                    "type": 16,
+                    "senderPublicKey": publicKey,
+                    "version": 1,
+                    "timestamp": timestamp,
+                    "fee": txFee,
+                    "proofs": [signature],
+                    "feeAssetId": feeAsset,
+                    "dApp": dappAddress,
+                    "payment": payments
+                })
+                print(data)
+            else:
+                sData = b'\x10' + \
+                        b'\x01' + \
+                        crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
+                        base58.b58decode(publicKey) + \
+                        base58.b58decode(dappAddress) + \
+                        b'\x01' + \
+                        b'\x09' + \
+                        b'\x01' + \
+                        struct.pack(">L", len(crypto.str2bytes(functionName))) + \
+                        crypto.str2bytes(functionName) + \
+                        struct.pack(">I", len(params)) + \
+                        parameterBytes + \
+                        struct.pack(">H", len(payments)) + \
+                        paymentBytes + \
+                        struct.pack(">Q", txFee) + \
+                        assetIdBytes + \
+                        struct.pack(">Q", timestamp)
 
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "type": 16,
-                "senderPublicKey": publicKey,
-                "version": 1,
-                "timestamp": timestamp,
-                "fee": txFee,
-                "proofs": [signature],
-                "feeAssetId": feeAsset,
-                "dApp": dappAddress,
-                "call": {
-                    "function": functionName,
-                    "args": params
-                },
-                "payment": payments
-            })
+                signature = crypto.sign(self.privateKey, sData)
+                data = json.dumps({
+                    "type": 16,
+                    "senderPublicKey": publicKey,
+                    "version": 1,
+                    "timestamp": timestamp,
+                    "fee": txFee,
+                    "proofs": [signature],
+                    "feeAssetId": feeAsset,
+                    "dApp": dappAddress,
+                    "call": {
+                        "function": functionName,
+                        "args": params
+                    },
+                    "payment": payments
+                })
             req = self.pywaves.wrapper('/transactions/broadcast', data)
             if self.pywaves.OFFLINE:
                 return req
