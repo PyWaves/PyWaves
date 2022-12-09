@@ -950,6 +950,7 @@ class Address(object):
                     base58.b58decode(leaseId)
             signature = crypto.sign(self.privateKey, sData)
             data = json.dumps({
+                "type": 9,
                 "senderPublicKey": self.publicKey,
                 "txId": leaseId,
                 "fee": txFee,
