@@ -38,6 +38,8 @@ from .contract import *
 from .oracle import *
 from .ParallelPyWaves import *
 from .WXFeeCalculator import *
+from .txGenerator import *
+from .txSigner import *
 
 OFFLINE = False
 NODE = 'https://nodes.wavesnodes.com'

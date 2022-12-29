@@ -9,6 +9,8 @@ import json
 import base58
 import base64
 import logging
+from .txSigner import TxSigner
+from .txGenerator import TxGenerator
 
 from .protobuf import transaction_pb2
 from .protobuf.waves import amount_pb2
@@ -206,6 +208,8 @@ wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 
 class Address(object):
     def __init__(self, address='', publicKey='', privateKey='', seed='', alias='', nonce=0, pywaves=pywaves):
         self.pywaves = pywaves
+        self.txSigner = TxSigner()
+        self.txGenerator = TxGenerator()
         if nonce < 0 or nonce > 4294967295:
             raise ValueError('Nonce must be between 0 and 4294967295')
         if seed:
@@ -417,6 +421,55 @@ class Address(object):
         else:
             return req.get('id', 'ERROR')
 
+    '''def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+        if not self.privateKey:
+            msg = 'Private key required'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+
+        elif amount <= 0:
+            msg = 'Amount must be > 0'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+        elif not self.pywaves.OFFLINE and self.balance() < amount + txFee:
+            msg = 'Insufficient Waves balance'
+            logging.error(msg)
+            self.pywaves.throw_error(msg)
+
+        else:
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
+
+            sData = b'\4' + \
+                    b'\2' + \
+                    base58.b58decode(self.publicKey) + \
+                    b'\0\0' + \
+                    struct.pack(">Q", timestamp) + \
+                    struct.pack(">Q", amount) + \
+                    struct.pack(">Q", txFee) + \
+                    base58.b58decode(recipient.address) + \
+                    struct.pack(">H", len(attachment)) + \
+                    crypto.str2bytes(attachment)
+            signature = crypto.sign(self.privateKey, sData)
+            data = json.dumps({
+                "type": 4,
+                "version": 2,
+                "senderPublicKey": self.publicKey,
+                "recipient": recipient.address,
+                "amount": amount,
+                "fee": txFee,
+                "timestamp": timestamp,
+                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
+                "proofs": [signature]
+            })
+
+            return self.pywaves.wrapper('/transactions/broadcast', data)'''
+
+    def broadcastTx(self, tx):
+        data = json.dumps(tx)
+
+        return self.pywaves.wrapper('/transactions/broadcast', data)
+
     def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
@@ -436,46 +489,14 @@ class Address(object):
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
 
-            '''transferTransaction = transaction_pb2.TransferTransactionData()
-            transferTransaction.recipient.public_key_hash = crypto.str2bytes(recipient.address)
-            transferTransaction.amount.asset_id = b''
-            transferTransaction.amount.amount = amount
-            transferTransaction.attachment.string_value = base58.b58encode(crypto.str2bytes(attachment))'''
+            tx = self.txGenerator.generateSendWaves(recipient, amount, self.publicKey, attachment, txFee, timestamp)
+            self.signTx(tx)
+            tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
 
-            sData = b'\4' + \
-                    b'\2' + \
-                    base58.b58decode(self.publicKey) + \
-                    b'\0\0' + \
-                    struct.pack(">Q", timestamp) + \
-                    struct.pack(">Q", amount) + \
-                    struct.pack(">Q", txFee) + \
-                    base58.b58decode(recipient.address) + \
-                    struct.pack(">H", len(attachment)) + \
-                    crypto.str2bytes(attachment)
-            signature = crypto.sign(self.privateKey, sData)
-            '''txFeeEntry = amount_pb2.Amount()
-            txFeeEntry.amount = txFee
-            transaction = transaction_pb2.Transaction()
-            transaction.chain_id = ord(self.pywaves.CHAIN_ID)
-            transaction.sender_public_key = base58.b58decode(self.publicKey)
-            transaction.fee.CopyFrom(txFeeEntry)
-            transaction.timestamp = timestamp
-            transaction.version = 3
-            transaction.transfer.CopyFrom(transferTransaction)
-            signature = crypto.sign(self.privateKey, transaction.SerializeToString())'''
-            data = json.dumps({
-                "type": 4,
-                "version": 2,
-                "senderPublicKey": self.publicKey,
-                "recipient": recipient.address,
-                "amount": amount,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "proofs": [signature]
-            })
+            return self.broadcastTx(tx)
 
-            return self.pywaves.wrapper('/transactions/broadcast', data)
+    def signTx(self, tx):
+        self.txSigner.signTx(tx, self.privateKey)
 
     def massTransferWaves(self, transfers, attachment='', timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE):
         txFee = baseFee + (math.ceil((len(transfers) + 1) / 2 - 0.5)) * baseFee
@@ -533,8 +554,7 @@ class Address(object):
 
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE,
-                  timestamp=0):
+    def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if len(self.privateKey) < 10:
             msg = 'Private key required'
             logging.error(msg)
@@ -566,7 +586,7 @@ class Address(object):
                     txFee = feeInfos['minSponsoredAssetFee']
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\4' + \
+            '''sData = b'\4' + \
                     b'\2' + \
                     base58.b58decode(self.publicKey) + \
                     (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
@@ -577,8 +597,8 @@ class Address(object):
                     base58.b58decode(recipient.address) + \
                     struct.pack(">H", len(attachment)) + \
                     crypto.str2bytes(attachment)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
+            signature = crypto.sign(self.privateKey, sData)'''
+            '''data = json.dumps({
                 "version": 2,
                 "assetId": (asset.assetId if asset else None),
                 "feeAssetId": (feeAsset.assetId if feeAsset else None),
@@ -590,9 +610,18 @@ class Address(object):
                 "attachment": base58.b58encode(crypto.str2bytes(attachment)),
                 "signature": signature,
                 "proofs": [signature]
-            })
+            })'''
 
-            return self.pywaves.wrapper('/assets/broadcast/transfer', data)
+            if (feeAsset != ''):
+                tx = self.txGenerator.generateSendAsset(recipient, asset.assetId, amount, self.publicKey, attachment, feeAsset.assetId, txFee, timestamp)
+            else:
+                tx = self.txGenerator.generateSendAsset(recipient, asset.assetId, amount, self.publicKey, attachment, feeAsset=None, txFee=txFee, timestamp=timestamp)
+
+            self.signTx(tx)
+            tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
+
+            return self.broadcastTx(tx)
+            #return self.pywaves.wrapper('/assets/broadcast/transfer', data)
 
     def massTransferAssets(self, transfers, asset, attachment='', timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE,
                            smartFee=pywaves.DEFAULT_SMART_FEE):
