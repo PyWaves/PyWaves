@@ -324,7 +324,7 @@ class Address(object):
             self.privateKey = base58.b58encode(privKey)
 
     def issueAsset(self, name, description, quantity, decimals=0, reissuable=False,
-                   txFee=pywaves.DEFAULT_ASSET_FEE):
+                   txFee=pywaves.DEFAULT_ASSET_FEE, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -334,7 +334,8 @@ class Address(object):
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\3' + \
                     base58.b58decode(self.publicKey) + \
                     struct.pack(">H", len(name)) + \
@@ -365,8 +366,9 @@ class Address(object):
             else:
                 return pywaves.Asset(req['assetId'], self.pywaves)
 
-    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE):
-        timestamp = int(time.time() * 1000)
+    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
         sData = b'\5' + \
                 base58.b58decode(self.publicKey) + \
                 base58.b58decode(Asset.assetId) + \
@@ -390,8 +392,9 @@ class Address(object):
         else:
             return req.get('id', 'ERROR')
 
-    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE):
-        timestamp = int(time.time() * 1000)
+    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
 
         sData = '\6' + \
                 crypto.bytes2str(base58.b58decode(self.publicKey)) + \
@@ -691,8 +694,8 @@ class Address(object):
                 listEntry['type'] = 'binary'
             dataList.append(listEntry)
             dataTransaction.data.append(entry)
-
-        timestamp = int(time.time() * 1000)
+        if timestamp ==0:
+            timestamp = int(time.time() * 1000)
 
         txFeeAmount = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64)) / 1000.0) + 1) * baseFee
         txFeeAmount = max(txFeeAmount, minimalFee)
@@ -737,7 +740,8 @@ class Address(object):
         dataList.append(listEntry)
         dataTransaction.data.append(entry)
 
-        timestamp = int(time.time() * 1000)
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
 
         txFee = amount_pb2.Amount()
         txFee.amount = minimalFee
@@ -1132,44 +1136,6 @@ class Address(object):
 
             return req
 
-    '''def setCompiledScript(self, script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
-        #script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
-        if not self.privateKey:
-            msg = 'Private key required'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-        else:
-            compiledScript = base64.b64decode(script)
-            scriptLength = len(compiledScript)
-            if timestamp == 0:
-                timestamp = int(time.time() * 1000)
-
-            if not publicKey:
-                publicKey = self.publicKey
-            sData = b'\x0d' + \
-                    b'\1' + \
-                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(publicKey) + \
-                    b'\1' + \
-                    struct.pack(">H", scriptLength) + \
-                    compiledScript + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
-
-            data = json.dumps({
-                "type": 13,
-                "version": 1,
-                "senderPublicKey": publicKey,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "script": 'base64:' + script,
-                "proofs": [
-                    signature
-                ]
-            })
-            return self.pywaves.wrapper('/transactions/broadcast', data)'''
-
     def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
         script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
 
@@ -1214,7 +1180,7 @@ class Address(object):
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False,
-                        txFee=pywaves.DEFAULT_ASSET_FEE):
+                        txFee=pywaves.DEFAULT_ASSET_FEE, timestamp=0):
         if self.pywaves.OFFLINE:
             msg = 'PyWaves currently offline'
             logging.error(msg)
@@ -1231,7 +1197,8 @@ class Address(object):
         else:
             compiledScript = base64.b64decode(script)
             scriptLength = len(compiledScript)
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             sData = b'\3' + \
                     b'\2' + \
                     crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
@@ -1266,14 +1233,15 @@ class Address(object):
             return self.pywaves.wrapper('/transactions/broadcast', data)
 
     def invokeScript(self, dappAddress, functionName, params = [], payments = [], feeAsset=None,
-                     txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None):
+                     txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
             functionFlag = b'\x01'
-            timestamp = int(time.time() * 1000)
+            if timestamp == 0:
+                timestamp = int(time.time() * 1000)
             parameterBytes = b''
             for param in params:
                 if param['type'] == 'integer':
@@ -1389,14 +1357,15 @@ class Address(object):
             else:
                 return req
 
-    def updateAssetInfo(self, assetId, name, description):
+    def updateAssetInfo(self, assetId, name, description, timestamp=0):
         decodedAssetId = base58.b58decode(assetId)
         updateInfo = transaction_pb2.UpdateAssetInfoTransactionData()
         updateInfo.asset_id = decodedAssetId
         updateInfo.name = name
         updateInfo.description = description
 
-        timestamp = int(time.time() * 1000)
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
 
         txFee = amount_pb2.Amount()
         txFee.amount = 1000000
