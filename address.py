@@ -613,9 +613,9 @@ class Address(object):
             })'''
 
             if (feeAsset != ''):
-                tx = self.txGenerator.generateSendAsset(recipient, asset.assetId, amount, self.publicKey, attachment, feeAsset.assetId, txFee, timestamp)
+                tx = self.txGenerator.generateSendAsset(recipient, asset, amount, self.publicKey, attachment, feeAsset, txFee, timestamp)
             else:
-                tx = self.txGenerator.generateSendAsset(recipient, asset.assetId, amount, self.publicKey, attachment, feeAsset=None, txFee=txFee, timestamp=timestamp)
+                tx = self.txGenerator.generateSendAsset(recipient, asset, amount, self.publicKey, attachment, feeAsset=None, txFee=txFee, timestamp=timestamp)
 
             self.signTx(tx)
             tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))

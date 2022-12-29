@@ -22,10 +22,13 @@ class TxGenerator:
         print(asset)
         print('feeAsset')
         print(feeAsset)
+        if (feeAsset != '' and feeAsset != None):
+            feeAsset = feeAsset.assetId
+        asset = asset.assetId
         tx = {
             "version": 2,
             "type": 4,
-            "assetId": (asset if asset else None),
+            "assetId": asset,
             "feeAssetId": (feeAsset if feeAsset != '' else None),
             "senderPublicKey": publicKey,
             "recipient": recipient.address,

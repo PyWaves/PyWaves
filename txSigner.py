@@ -31,7 +31,7 @@ class TxSigner:
                 b'\2' + \
                 base58.b58decode(tx['senderPublicKey']) + \
                 b'\1' + base58.b58decode(tx['assetId']) + \
-                (b'\1' + base58.b58decode(tx['feeAssetId']) if 'feeAssetId' in tx and tx['feeAssetId'] != None else b'\0') + \
+                (b'\1' + base58.b58decode(tx['feeAssetId']) if ('feeAssetId' in tx and tx['feeAssetId'] != None and tx['feeAssetId'] != '') else b'\0') + \
                 struct.pack(">Q", tx['timestamp']) + \
                 struct.pack(">Q", tx['amount']) + \
                 struct.pack(">Q", tx['fee']) + \
