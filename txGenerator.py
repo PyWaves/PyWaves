@@ -3,6 +3,9 @@ import pywaves
 class TxGenerator:
 
     def generateSendWaves(self, recipient, amount, publicKey, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
+
         tx = {
             "type": 4,
             "version": 2,
@@ -18,10 +21,9 @@ class TxGenerator:
         return tx
 
     def generateSendAsset(self, recipient, asset, amount, publicKey, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
-        print('asset')
-        print(asset)
-        print('feeAsset')
-        print(feeAsset)
+        if timestamp == 0:
+            timestamp = int(time.time() * 1000)
+
         if (feeAsset != '' and feeAsset != None):
             feeAsset = feeAsset.assetId
         asset = asset.assetId

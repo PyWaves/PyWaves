@@ -9,8 +9,8 @@ import json
 import base58
 import base64
 import logging
-from .txSigner import TxSigner
-from .txGenerator import TxGenerator
+from .txSigner import *
+from .txGenerator import *
 
 from .protobuf import transaction_pb2
 from .protobuf.waves import amount_pb2
