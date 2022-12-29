@@ -1,4 +1,5 @@
 import pywaves
+import time
 
 class TxGenerator:
 
