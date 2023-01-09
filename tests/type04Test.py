@@ -57,6 +57,18 @@ def test_succesfullAssetTransaction():
 
     assert blockchainTx['id'] == tx['id']
 
+def test_succesfullAssetTransactionWithAttachment():
+    helpers = Helpers()
+    pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+    myAddress = address.Address(privateKey = 'BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    myToken = asset.Asset('BFbfYuXy8HdJhMH87PSEXd1w3v9KKJpvCFUgZP9cJKPQ')
+    attachment = 'This is just a test...'
+
+    tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5, attachment = attachment)
+    blockchainTx = helpers.waitFor(tx['id'])
+
+    assert blockchainTx['id'] == tx['id']
+
 def test_transactionWithNotAsset():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')

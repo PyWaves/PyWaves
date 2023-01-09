@@ -1,22 +1,9 @@
 import math
-import pywaves as pywaves
 import axolotl_curve25519 as curve
 import os
-import pywaves.crypto as crypto
-import time
-import struct
-import json
-import base58
-import base64
 import logging
 from .txSigner import *
 from .txGenerator import *
-
-from .protobuf import transaction_pb2
-from .protobuf.waves import amount_pb2
-from .protobuf.waves import recipient_pb2
-
-from google.protobuf.json_format import MessageToJson
 
 wordList = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse', 'access',
             'accident', 'account', 'accuse', 'achieve', 'acid', 'acoustic', 'acquire', 'across', 'act', 'action',
@@ -327,8 +314,7 @@ class Address(object):
         if privKey != "":
             self.privateKey = base58.b58encode(privKey)
 
-    def issueAsset(self, name, description, quantity, decimals=0, reissuable=False,
-                   txFee=pywaves.DEFAULT_ASSET_FEE, timestamp=0):
+    def issueAsset(self, name, description, quantity, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -340,130 +326,37 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\3' + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">H", len(name)) + \
-                    crypto.str2bytes(name) + \
-                    struct.pack(">H", len(description)) + \
-                    crypto.str2bytes(description) + \
-                    struct.pack(">Q", quantity) + \
-                    struct.pack(">B", decimals) + \
-                    (b'\1' if reissuable else b'\0') + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "version": 1,
-                "senderPublicKey": self.publicKey,
-                "name": name,
-                "quantity": quantity,
-                "timestamp": timestamp,
-                "description": description,
-                "decimals": decimals,
-                "reissuable": reissuable,
-                "fee": txFee,
-                "signature": signature
-            })
-            req = self.pywaves.wrapper('/assets/broadcast/issue', data)
+            tx = self.txGenerator.generateIssueAsset(name, description, quantity, self.publicKey, decimals, reissuable, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            req = self.broadcastTx(tx)
             if self.pywaves.OFFLINE:
                 return req
             else:
                 return pywaves.Asset(req['assetId'], self.pywaves)
 
-    def reissueAsset(self, Asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+    def reissueAsset(self, asset, quantity, reissuable=False, txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
-        sData = b'\5' + \
-                base58.b58decode(self.publicKey) + \
-                base58.b58decode(Asset.assetId) + \
-                struct.pack(">Q", quantity) + \
-                (b'\1' if reissuable else b'\0') + \
-                struct.pack(">Q", txFee) + \
-                struct.pack(">Q", timestamp)
-        signature = crypto.sign(self.privateKey, sData)
-        data = json.dumps({
-            "senderPublicKey": self.publicKey,
-            "assetId": Asset.assetId,
-            "quantity": quantity,
-            "timestamp": timestamp,
-            "reissuable": reissuable,
-            "fee": txFee,
-            "signature": signature
-        })
-        req = self.pywaves.wrapper('/assets/broadcast/reissue', data)
+
+        tx = self.txGenerator.generateReissueAsset(asset, quantity, self.publicKey, reissuable, txFee, timestamp)
+        self.txSigner.signTx(tx, self.privateKey)
+        req = self.broadcastTx(tx)
         if self.pywaves.OFFLINE:
             return req
         else:
             return req.get('id', 'ERROR')
 
-    def burnAsset(self, Asset, quantity, txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
+    def burnAsset(self, asset, quantity, txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
 
-        sData = '\6' + \
-                crypto.bytes2str(base58.b58decode(self.publicKey)) + \
-                crypto.bytes2str(base58.b58decode(Asset.assetId)) + \
-                crypto.bytes2str(struct.pack(">Q", quantity)) + \
-                crypto.bytes2str(struct.pack(">Q", txFee)) + \
-                crypto.bytes2str(struct.pack(">Q", timestamp))
-        signature = crypto.sign(self.privateKey, crypto.str2bytes(sData))
-        data = json.dumps({
-            "senderPublicKey": self.publicKey,
-            "assetId": Asset.assetId,
-            "quantity": quantity,
-            "timestamp": timestamp,
-            "fee": txFee,
-            "signature": signature
-        })
-        req = self.pywaves.wrapper('/assets/broadcast/burn', data)
+        tx = self.txGenerator.generateBurnAsset(asset, quantity, self.publicKey, txFee, timestamp)
+        self.txSigner.signTx(tx, self.privateKey)
+        req = self.broadcastTx(tx)
         if self.pywaves.OFFLINE:
             return req
         else:
             return req.get('id', 'ERROR')
-
-    '''def sendWaves(self, recipient, amount, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
-        if not self.privateKey:
-            msg = 'Private key required'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-
-        elif amount <= 0:
-            msg = 'Amount must be > 0'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-        elif not self.pywaves.OFFLINE and self.balance() < amount + txFee:
-            msg = 'Insufficient Waves balance'
-            logging.error(msg)
-            self.pywaves.throw_error(msg)
-
-        else:
-            if timestamp == 0:
-                timestamp = int(time.time() * 1000)
-
-            sData = b'\4' + \
-                    b'\2' + \
-                    base58.b58decode(self.publicKey) + \
-                    b'\0\0' + \
-                    struct.pack(">Q", timestamp) + \
-                    struct.pack(">Q", amount) + \
-                    struct.pack(">Q", txFee) + \
-                    base58.b58decode(recipient.address) + \
-                    struct.pack(">H", len(attachment)) + \
-                    crypto.str2bytes(attachment)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "type": 4,
-                "version": 2,
-                "senderPublicKey": self.publicKey,
-                "recipient": recipient.address,
-                "amount": amount,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "proofs": [signature]
-            })
-
-            return self.pywaves.wrapper('/transactions/broadcast', data)'''
 
     def broadcastTx(self, tx):
         data = json.dumps(tx)
@@ -521,38 +414,12 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            transfersData = b''
-            for i in range(0, len(transfers)):
-                transfersData += base58.b58decode(transfers[i]['recipient']) + struct.pack(">Q", transfers[i]['amount'])
-            sData = b'\x0b' + \
-                    b'\1' + \
-                    base58.b58decode(self.publicKey) + \
-                    b'\0' + \
-                    struct.pack(">H", len(transfers)) + \
-                    transfersData + \
-                    struct.pack(">Q", timestamp) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">H", len(attachment)) + \
-                    crypto.str2bytes(attachment)
 
-            signature = crypto.sign(self.privateKey, sData)
+            tx = self.txGenerator.generateMassTransferWaves(transfers, self.publicKey, attachment, timestamp, txFee)
+            self.txSigner.signTx(tx, self.privateKey)
+            tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
 
-            data = json.dumps({
-                "type": 11,
-                "version": 1,
-                "assetId": "",
-                "senderPublicKey": self.publicKey,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "transfers": transfers,
-                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature,
-                "proofs": [
-                    signature
-                ]
-            })
-
-            return self.pywaves.wrapper('/transactions/broadcast', data)
+            return self.broadcastTx(tx)
 
     def sendAsset(self, recipient, asset, amount, attachment='', feeAsset='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if len(self.privateKey) < 10:
@@ -586,32 +453,6 @@ class Address(object):
                     txFee = feeInfos['minSponsoredAssetFee']
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            '''sData = b'\4' + \
-                    b'\2' + \
-                    base58.b58decode(self.publicKey) + \
-                    (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
-                    (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
-                    struct.pack(">Q", timestamp) + \
-                    struct.pack(">Q", amount) + \
-                    struct.pack(">Q", txFee) + \
-                    base58.b58decode(recipient.address) + \
-                    struct.pack(">H", len(attachment)) + \
-                    crypto.str2bytes(attachment)
-            signature = crypto.sign(self.privateKey, sData)'''
-            '''data = json.dumps({
-                "version": 2,
-                "assetId": (asset.assetId if asset else None),
-                "feeAssetId": (feeAsset.assetId if feeAsset else None),
-                "senderPublicKey": self.publicKey,
-                "recipient": recipient.address,
-                "amount": amount,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature,
-                "proofs": [signature]
-            })'''
-
             if (feeAsset != ''):
                 tx = self.txGenerator.generateSendAsset(recipient, asset, amount, self.publicKey, attachment, feeAsset, txFee, timestamp)
             else:
@@ -621,7 +462,6 @@ class Address(object):
             tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
 
             return self.broadcastTx(tx)
-            #return self.pywaves.wrapper('/assets/broadcast/transfer', data)
 
     def massTransferAssets(self, transfers, asset, attachment='', timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE,
                            smartFee=pywaves.DEFAULT_SMART_FEE):
@@ -655,148 +495,24 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            transfersData = b''
-            for i in range(0, len(transfers)):
-                transfersData += base58.b58decode(transfers[i]['recipient']) + struct.pack(">Q", transfers[i]['amount'])
-            sData = b'\x0b' + \
-                    b'\1' + \
-                    base58.b58decode(self.publicKey) + \
-                    b'\1' + \
-                    base58.b58decode(asset.assetId) + \
-                    struct.pack(">H", len(transfers)) + \
-                    transfersData + \
-                    struct.pack(">Q", timestamp) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">H", len(attachment)) + \
-                    crypto.str2bytes(attachment)
 
-            signature = crypto.sign(self.privateKey, sData)
+            tx = self.txGenerator.generateMassTransferAssets(transfers, asset, self.publicKey, attachment, timestamp, txFee)
+            self.txSigner.signTx(tx, self.privateKey)
+            tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
 
-            data = json.dumps({
-                "type": 11,
-                "version": 1,
-                "assetId": asset.assetId,
-                "senderPublicKey": self.publicKey,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "transfers": transfers,
-                "attachment": base58.b58encode(crypto.str2bytes(attachment)),
-                "signature": signature,
-                "proofs": [
-                    signature
-                ]
-            })
-
-            return self.pywaves.wrapper('/transactions/broadcast', data)
+            return self.broadcastTx(tx)
 
     def dataTransaction(self, data, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
-        dataTransaction = transaction_pb2.DataTransactionData()
+        tx = self.txGenerator.generateDatatransaction(data, self.publicKey, timestamp, baseFee, minimalFee)
+        self.txSigner.signTx(tx, self.privateKey)
 
-        dataList = []
-        for d in data:
-            entry = transaction_pb2.DataTransactionData.DataEntry()
-            listEntry = {}
-            if d['type'] == 'boolean':
-                entry.key = d['key']
-                entry.bool_value = d['value']
-                listEntry['key'] = d['key']
-                listEntry['value'] = d['value']
-                listEntry['type'] = 'boolean'
-            elif d['type'] == 'string':
-                entry.key = d['key']
-                entry.string_value = d['value']
-                listEntry['key'] = d['key']
-                listEntry['value'] = d['value']
-                listEntry['type'] = 'string'
-            elif d['type'] == 'integer':
-                entry.key = d['key']
-                entry.int_value = d['value']
-                listEntry['key'] = d['key']
-                listEntry['value'] = d['value']
-                listEntry['type'] = 'integer'
-            elif d['type'] == 'binary':
-                entry.key = d['key']
-                entry.binary_value = crypto.str2bytes(d['value'])
-                listEntry['key'] = d['key']
-                base64Encoded = base64.b64encode(crypto.str2bytes(d['value']))
-                listEntry['value'] = 'base64:' + crypto.bytes2str(base64Encoded)
-                listEntry['type'] = 'binary'
-            dataList.append(listEntry)
-            dataTransaction.data.append(entry)
-        if timestamp ==0:
-            timestamp = int(time.time() * 1000)
+        return self.broadcastTx(tx)
 
-        txFeeAmount = (int(((len(crypto.str2bytes(json.dumps(data))) + 2 + 64)) / 1000.0) + 1) * baseFee
-        txFeeAmount = max(txFeeAmount, minimalFee)
+    def deleteDataEntry(self, key, timestamp=0, minimalFee=500000):
+        tx = self.txGenerator.generateDeleteDataEntry(key, self.publicKey, timestamp, minimalFee)
+        self.txSigner.signTx(tx, self.privateKey)
 
-        txFee = amount_pb2.Amount()
-        txFee.amount = txFeeAmount
-        transaction = transaction_pb2.Transaction()
-        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
-        transaction.sender_public_key = base58.b58decode(self.publicKey)
-        transaction.fee.CopyFrom(txFee)
-        transaction.timestamp = timestamp
-        transaction.version = 2
-        transaction.data_transaction.CopyFrom(dataTransaction)
-
-        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
-
-        jsonMessage = json.loads('{}')
-        jsonMessage['type'] = 12
-        jsonMessage['proofs'] = [ signature ]
-        jsonMessage['senderPublicKey'] = self.publicKey
-        jsonMessage['fee'] = txFee.amount
-        jsonMessage['timestamp'] = timestamp
-        jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
-        jsonMessage['version'] = 2
-        jsonMessage['data'] = dataList
-
-        req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
-
-        return req
-
-    def deleteDataEntry(self, key, timestamp=0, baseFee=pywaves.DEFAULT_BASE_FEE, minimalFee=500000):
-        dataTransaction = transaction_pb2.DataTransactionData()
-
-        dataList = []
-        entry = transaction_pb2.DataTransactionData.DataEntry()
-        listEntry = {}
-
-        entry.key = key
-        listEntry['key'] = key
-        listEntry['value'] = None
-        listEntry['type'] = None
-        dataList.append(listEntry)
-        dataTransaction.data.append(entry)
-
-        if timestamp == 0:
-            timestamp = int(time.time() * 1000)
-
-        txFee = amount_pb2.Amount()
-        txFee.amount = minimalFee
-        transaction = transaction_pb2.Transaction()
-        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
-        transaction.sender_public_key = base58.b58decode(self.publicKey)
-        transaction.fee.CopyFrom(txFee)
-        transaction.timestamp = timestamp
-        transaction.version = 2
-        transaction.data_transaction.CopyFrom(dataTransaction)
-
-        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
-
-        jsonMessage = json.loads('{}')
-        jsonMessage['type'] = 12
-        jsonMessage['proofs'] = [ signature ]
-        jsonMessage['senderPublicKey'] = self.publicKey
-        jsonMessage['fee'] = txFee.amount
-        jsonMessage['timestamp'] = timestamp
-        jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
-        jsonMessage['version'] = 2
-        jsonMessage['data'] = dataList
-
-        req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
-
-        return req
+        return self.broadcastTx(tx)
 
     def _postOrder(self, amountAsset, priceAsset, orderType, amount, price, maxLifetime=30 * 86400, matcherFee=pywaves.DEFAULT_MATCHER_FEE, timestamp=0, matcherFeeAssetId=''):
         if timestamp == 0:
@@ -959,28 +675,11 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\x08' + \
-                    b'\x02' + \
-                    b'\x00' + \
-                    base58.b58decode(self.publicKey) + \
-                    base58.b58decode(recipient.address) + \
-                    struct.pack(">Q", amount) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
 
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "type": 8,
-                "senderPublicKey": self.publicKey,
-                "recipient": recipient.address,
-                "amount": amount,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "proofs": [signature],
-                "version": 2
-            })
-            req = self.pywaves.wrapper('/transactions/broadcast', data)
-            return req
+            tx = self.txGenerator.generateLease(recipient, amount, self.publicKey, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+
+            return self.broadcastTx(tx)
 
     def leaseCancel(self, leaseId, txFee=pywaves.DEFAULT_LEASE_FEE, timestamp=0):
         if not self.privateKey:
@@ -994,25 +693,15 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\x09' + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp) + \
-                    base58.b58decode(leaseId)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "senderPublicKey": self.publicKey,
-                "txId": leaseId,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "signature": signature
-            })
-            #req = self.pywaves.wrapper('/leasing/broadcast/cancel', data)
-            req = self.pywaves.wrapper('/transactions/broadcast', data)
+
+            tx = self.txGenerator.generateLeaseCancel(leaseId, self.publicKey, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            res = self.broadcastTx(tx)
+
             if self.pywaves.OFFLINE:
-                return req
-            elif 'leaseId' in req:
-                return req['leaseId']
+                return res
+            elif 'leaseId' in res:
+                return res['leaseId']
 
     def getOrderHistory(self, assetPair, timestamp=0):
         if timestamp == 0:
@@ -1050,26 +739,7 @@ class Address(object):
                 self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
                                      host=self.pywaves.MATCHER)
 
-   # def deleteOrderHistory(self, assetPair):
-   #     orders = self.getOrderHistory(assetPair)
-   #     for order in orders:
-   #         orderId = order['id']
-   #         sData = base58.b58decode(self.publicKey) + \
-   #                 base58.b58decode(orderId)
-   #         signature = crypto.sign(self.privateKey, sData)
-   #         data = json.dumps({
-   #             "sender": self.publicKey,
-   #             "orderId": orderId,
-   #             "signature": signature
-   #         })
-   #         tx = self.pywaves.wrapper('/matcher/orderbook/%s/%s/delete' % (
-   #         self.pywaves.DEFAULT_CURRENCY if assetPair.asset1.assetId == '' else assetPair.asset1.assetId,
-   #         self.pywaves.DEFAULT_CURRENCY if assetPair.asset2.assetId == '' else assetPair.asset2.assetId), data,
-   #                              host=self.pywaves.MATCHER)
-
     def createAlias(self, alias, txFee=pywaves.DEFAULT_ALIAS_FEE, timestamp=0):
-        aliasWithNetwork = b'\x02' + crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + struct.pack(">H", len(
-            alias)) + crypto.str2bytes(alias)
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
@@ -1077,23 +747,10 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\x0a' + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">H", len(aliasWithNetwork)) + \
-                    aliasWithNetwork + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "type": 10,
-                "alias": alias,
-                "senderPublicKey": self.publicKey,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "signature": signature,
-                "version": 1
-            })
-            return self.pywaves.wrapper('/alias/broadcast/create', data)
+
+            tx = self.txGenerator.generateAlias(alias, self.publicKey, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            return self.broadcastTx(tx)
 
     def sponsorAsset(self, assetId, minimalFeeInAssets, txFee=pywaves.DEFAULT_SPONSOR_FEE, timestamp=0):
         if not self.privateKey:
@@ -1103,29 +760,10 @@ class Address(object):
         else:
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\x0e' + \
-                    b'\1' + \
-                    base58.b58decode(self.publicKey) + \
-                    base58.b58decode(assetId) + \
-                    struct.pack(">Q", minimalFeeInAssets) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp)
-            signature = crypto.sign(self.privateKey, sData)
 
-            data = json.dumps({
-                "type": 14,
-                "version": 1,
-                "senderPublicKey": self.publicKey,
-                "assetId": assetId,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "minSponsoredAssetFee": minimalFeeInAssets,
-                "proofs": [
-                    signature
-                ]
-            })
-
-            return self.pywaves.wrapper('/transactions/broadcast', data)
+            tx = self.txGenerator.generateSponsorAsset(assetId, minimalFeeInAssets, self.publicKey, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            return self.broadcastTx(tx)
 
     def setCompiledScript(self, script, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
         if not self.privateKey:
@@ -1133,37 +771,12 @@ class Address(object):
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
-            setScriptTransaction = transaction_pb2.SetScriptTransactionData()
-            setScriptTransaction.script = base64.b64decode(script)
-
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
 
-            tx_fee = amount_pb2.Amount()
-            tx_fee.amount = txFee
-            transaction = transaction_pb2.Transaction()
-            transaction.chain_id = ord(self.pywaves.CHAIN_ID)
-            transaction.sender_public_key = base58.b58decode(self.publicKey)
-            transaction.fee.CopyFrom(tx_fee)
-            transaction.timestamp = timestamp
-            transaction.version = 2
-            transaction.set_script.CopyFrom(setScriptTransaction)
-
-            signature = crypto.sign(self.privateKey, transaction.SerializeToString())
-
-            jsonMessage = json.loads('{}')
-            jsonMessage['type'] = 13
-            jsonMessage['proofs'] = [ signature ]
-            jsonMessage['senderPublicKey'] = self.publicKey
-            jsonMessage['fee'] = tx_fee.amount
-            jsonMessage['timestamp'] = timestamp
-            jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
-            jsonMessage['version'] = 2
-            jsonMessage['script'] = script
-
-            req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
-
-            return req
+            tx = self.txGenerator.generateSetScript(script, self.publicKey, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            return self.broadcastTx(tx)
 
     def setScript(self, scriptSource, txFee=pywaves.DEFAULT_SCRIPT_FEE, timestamp=0, publicKey=None):
         script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
@@ -1177,39 +790,17 @@ class Address(object):
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
-            compiledScript = base64.b64decode(script)
-            scriptLength = len(compiledScript)
+            '''compiledScript = base64.b64decode(script)
+            scriptLength = len(compiledScript)'''
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\x0f' + \
-                    b'\1' + \
-                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(self.publicKey) + \
-                    base58.b58decode(asset.assetId) + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp) + \
-                    b'\1' + \
-                    struct.pack(">H", scriptLength) + \
-                    compiledScript
-            signature = crypto.sign(self.privateKey, sData)
 
-            data = json.dumps({
-                "type": 15,
-                "version": 1,
-                "assetId": asset.assetId,
-                "senderPublicKey": self.publicKey,
-                "fee": txFee,
-                "timestamp": timestamp,
-                "script": 'base64:' + script,
-                "proofs": [
-                    signature
-                ]
-            })
+            tx = self.txGenerator.generateSetAssetScript(asset, scriptSource, self.publicKey, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            print(tx)
+            return self.broadcastTx(tx)
 
-            return self.pywaves.wrapper('/transactions/broadcast', data)
-
-    def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False,
-                        txFee=pywaves.DEFAULT_ASSET_FEE, timestamp=0):
+    def issueSmartAsset(self, name, description, quantity, scriptSource, decimals=0, reissuable=False, txFee=pywaves.DEFAULT_ASSET_FEE, timestamp=0):
         if self.pywaves.OFFLINE:
             msg = 'PyWaves currently offline'
             logging.error(msg)
@@ -1224,202 +815,40 @@ class Address(object):
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
-            compiledScript = base64.b64decode(script)
-            scriptLength = len(compiledScript)
+            '''compiledScript = base64.b64decode(script)
+            scriptLength = len(compiledScript)'''
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            sData = b'\3' + \
-                    b'\2' + \
-                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(self.publicKey) + \
-                    struct.pack(">H", len(name)) + \
-                    crypto.str2bytes(name) + \
-                    struct.pack(">H", len(description)) + \
-                    crypto.str2bytes(description) + \
-                    struct.pack(">Q", quantity) + \
-                    struct.pack(">B", decimals) + \
-                    (b'\1' if reissuable else b'\0') + \
-                    struct.pack(">Q", txFee) + \
-                    struct.pack(">Q", timestamp) + \
-                    b'\1' + \
-                    struct.pack(">H", scriptLength) + \
-                    compiledScript
-            signature = crypto.sign(self.privateKey, sData)
-            data = json.dumps({
-                "type": 3,
-                "senderPublicKey": self.publicKey,
-                "name": name,
-                "version": 2,
-                "quantity": quantity,
-                "timestamp": timestamp,
-                "description": description,
-                "decimals": decimals,
-                "reissuable": reissuable,
-                "fee": txFee,
-                "proofs": [signature],
-                "script": 'base64:' + script
-            })
-            return self.pywaves.wrapper('/transactions/broadcast', data)
 
-    def invokeScript(self, dappAddress, functionName, params = [], payments = [], feeAsset=None,
-                     txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None, timestamp=0):
+            tx = self.txGenerator.generateIssueSmartAsset(name, description, quantity, scriptSource, self.publicKey, decimals, reissuable, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+
+            return self.broadcastTx(tx)
+
+    def invokeScript(self, dappAddress, functionName, params = [], payments = [], feeAsset=None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, publicKey=None, timestamp=0):
         if not self.privateKey:
             msg = 'Private key required'
             logging.error(msg)
             self.pywaves.throw_error(msg)
         else:
-            functionFlag = b'\x01'
             if timestamp == 0:
                 timestamp = int(time.time() * 1000)
-            parameterBytes = b''
-            for param in params:
-                if param['type'] == 'integer':
-                    parameterBytes += b'\0' + struct.pack(">q", param['value'])
-                elif param['type'] == 'binary':
-                    parameterBytes += b'\1' + struct.pack(">L", len(param['value'])) + crypto.str2bytes(param['value'])
-                elif param['type'] == 'string':
-                    parameterBytes += b'\2' + struct.pack(">I",
-                                                          len(crypto.str2bytes(param['value']))) + crypto.str2bytes(param['value'])
-                elif param['type'] == 'boolean':
-                    if param['value'] == True:
-                        parameterBytes += b'\6'
-                    else:
-                        parameterBytes += b'\7'
-                elif param['type'] == 'list':
-                    print(param)
-                    parameterBytes += b'\x0b'
-                    parameterBytes += struct.pack(">I", len(param['value']))
-                    for nestedParam in param['value']:
-                        if nestedParam['type'] == 'integer':
-                            parameterBytes += b'\0' + struct.pack(">Q", nestedParam['value'])
-                        elif nestedParam['type'] == 'binary':
-                            parameterBytes += b'\1' + struct.pack(">I", len(nestedParam['value'])) + crypto.str2bytes(
-                                nestedParam['value'])
-                        elif nestedParam['type'] == 'string':
-                            parameterBytes += b'\2' + struct.pack(">I",len(crypto.str2bytes(nestedParam['value']))) + crypto.str2bytes(nestedParam['value'])
-                        elif nestedParam['type'] == 'boolean':
-                            if nestedParam['value'] == True:
-                                parameterBytes += b'\6'
-                            else:
-                                parameterBytes += b'\7'
-            paymentBytes = b''
-            for payment in payments:
-                currentPaymentBytes = b''
-                if ('assetId' in payment and payment['assetId'] != None and payment['assetId'] != ''):
-                    currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x01' + base58.b58decode(
-                        payment['assetId'])
-                else:
-                    currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x00'
-                paymentBytes += struct.pack(">H", len(currentPaymentBytes)) + currentPaymentBytes
-            assetIdBytes = b''
-            if (feeAsset):
-                assetIdBytes += b'\x01' + base58.b58decode(feeAsset)
-            else:
-                assetIdBytes += b'\x00'
 
             if not publicKey:
                 publicKey = self.publicKey
 
-            if functionName is None:
-                sData = b'\x10' + \
-                    b'\x01' + \
-                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(publicKey) + \
-                    base58.b58decode(dappAddress) + \
-                    b'\x00' + \
-                    struct.pack(">H", len(payments)) + \
-                    paymentBytes + \
-                    struct.pack(">Q", txFee) + \
-                    assetIdBytes + \
-                    struct.pack(">Q", timestamp)
-                signature = crypto.sign(self.privateKey, sData)
-                data = json.dumps({
-                    "type": 16,
-                    "senderPublicKey": publicKey,
-                    "version": 1,
-                    "timestamp": timestamp,
-                    "fee": txFee,
-                    "proofs": [signature],
-                    "feeAssetId": feeAsset,
-                    "dApp": dappAddress,
-                    "payment": payments
-                })
-                print(data)
-            else:
-                sData = b'\x10' + \
-                        b'\x01' + \
-                        crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                        base58.b58decode(publicKey) + \
-                        base58.b58decode(dappAddress) + \
-                        b'\x01' + \
-                        b'\x09' + \
-                        b'\x01' + \
-                        struct.pack(">L", len(crypto.str2bytes(functionName))) + \
-                        crypto.str2bytes(functionName) + \
-                        struct.pack(">I", len(params)) + \
-                        parameterBytes + \
-                        struct.pack(">H", len(payments)) + \
-                        paymentBytes + \
-                        struct.pack(">Q", txFee) + \
-                        assetIdBytes + \
-                        struct.pack(">Q", timestamp)
-
-                signature = crypto.sign(self.privateKey, sData)
-                data = json.dumps({
-                    "type": 16,
-                    "senderPublicKey": publicKey,
-                    "version": 1,
-                    "timestamp": timestamp,
-                    "fee": txFee,
-                    "proofs": [signature],
-                    "feeAssetId": feeAsset,
-                    "dApp": dappAddress,
-                    "call": {
-                        "function": functionName,
-                        "args": params
-                    },
-                    "payment": payments
-                })
-            req = self.pywaves.wrapper('/transactions/broadcast', data)
+            tx = self.txGenerator.generateInvokeScript(dappAddress, functionName, publicKey, params, payments, feeAsset, txFee, timestamp)
+            self.txSigner.signTx(tx, self.privateKey)
+            req = self.broadcastTx(tx)
             if self.pywaves.OFFLINE:
                 return req
             else:
                 return req
 
     def updateAssetInfo(self, assetId, name, description, timestamp=0):
-        decodedAssetId = base58.b58decode(assetId)
-        updateInfo = transaction_pb2.UpdateAssetInfoTransactionData()
-        updateInfo.asset_id = decodedAssetId
-        updateInfo.name = name
-        updateInfo.description = description
-
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
 
-        txFee = amount_pb2.Amount()
-        txFee.amount = 1000000
-        transaction = transaction_pb2.Transaction()
-        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
-        transaction.sender_public_key = base58.b58decode(self.publicKey)
-        transaction.fee.CopyFrom(txFee)
-        transaction.timestamp = timestamp
-        transaction.version = 1
-        transaction.update_asset_info.CopyFrom(updateInfo)
-
-        signature = crypto.sign(self.privateKey, transaction.SerializeToString())
-
-        jsonMessage = json.loads('{}')
-        jsonMessage['type'] = 17
-        jsonMessage['assetId'] = assetId
-        jsonMessage['proofs'] = [signature]
-        jsonMessage['senderPublicKey'] = self.publicKey
-        jsonMessage['fee'] = txFee.amount
-        jsonMessage['timestamp'] = timestamp
-        jsonMessage['chainId'] = ord(self.pywaves.CHAIN_ID)
-        jsonMessage['version'] = 1
-        jsonMessage['name'] = name
-        jsonMessage['description'] = description
-
-        req = self.pywaves.wrapper('/transactions/broadcast', json.dumps(jsonMessage))
-
-        return req
+        tx = self.txGenerator.generateUpdateAssetInfo(assetId, name, description, self.publicKey, timestamp)
+        self.txSigner.signTx(tx, self.privateKey)
+        return self.broadcastTx(tx)

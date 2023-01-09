@@ -16,6 +16,19 @@ def test_invokeScriptWithoutPrivateKey():
 
     assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=3>'
 
+# TODO: implement a proper example contract
+'''def test_callToDefaultCallable():
+    helpers = Helpers()
+    pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+    myAddress = address.Address(privateKey='')
+    scriptAcc = ''
+
+    tx = myAddress.invokeScript(scriptAcc, None, txFee=900000)
+    blockchainTx = helpers.waitFor(tx['id'])
+
+    assert blockchainTx['id'] == tx['id']
+    '''
+
 def test_acceptInvokeScriptWithStrAndInt():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')

@@ -573,6 +573,21 @@ myAddress.leaseCancel(leaseId)
 
 ```
 
+#### Doing simple multisig
+Thanks to the new functionality of the TxSigner and TxGenerator classes, new functionality like multisig is possible:
+````python
+pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
+firstAddress = address.Address(seed = 'this is just a simple test seed one')
+secondAddress = address.Address(seed = 'this is just a simple test seed two')
+
+generator = txGenerator.TxGenerator()
+signer = txSigner.TxSigner()
+tx = generator.generateSendWaves(secondAddress, 1, firstAddress.publicKey, txFee=500000)
+signer.signTx(tx, firstAddress.privateKey)
+signer.signTx(tx, secondAddress.privateKey)
+
+res = firstAddress.broadcastTx(tx)
+````
 
 ### Using PyWaves in a Python shell
 
