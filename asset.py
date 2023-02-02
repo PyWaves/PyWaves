@@ -125,11 +125,11 @@ class AssetPair(object):
         amountAssetId = ''
         priceAssetId = ''
         if self.asset2.assetId == '':
-            amountAssetId = 'WAVES'
+            amountAssetId = pywaves.DEFAULT_CURRENCY
         else:
             amountAssetId = self.asset2.assetId
         if self.asset1.assetId == '':
-            priceAssetId = 'WAVES'
+            priceAssetId = pywaves.DEFAULT_CURRENCY
         else:
             priceAssetId = self.asset1.assetId
 
