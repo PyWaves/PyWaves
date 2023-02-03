@@ -10,7 +10,10 @@ class Asset(object):
         self.reissuable = False
         self.minSponsoredAssetFee = None
         if self.assetId=='':
-            self.quantity=self.pywaves.wrapper('/blockchain/rewards')['totalWavesAmount']
+            try:
+                self.quantity=self.pywaves.wrapper('/blockchain/rewards')['totalWavesAmount']
+            except:
+                self.quantity = 10000000000000000
             self.decimals=8
         else:
             self.status()
@@ -124,11 +127,11 @@ class AssetPair(object):
     def trades(self, *args):
         amountAssetId = ''
         priceAssetId = ''
-        if self.asset2.assetId == '':
+        if self.asset1.assetId == '':
             amountAssetId = 'WAVES'
         else:
             amountAssetId = self.asset2.assetId
-        if self.asset1.assetId == '':
+        if self.asset2.assetId == '':
             priceAssetId = 'WAVES'
         else:
             priceAssetId = self.asset1.assetId

@@ -51,6 +51,7 @@ def test_successfulTransferWithAttachment():
     attachment = 'this is just a test'
 
     tx = myAddress.sendWaves(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), 1*10*4, attachment=attachment, txFee=500000)
+    print(tx)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']

@@ -33,8 +33,10 @@ def test_succesfullCancelLeasing():
 
     leaseTransaction = myAddress.lease(leasingAddress, 1 * 10 ** 8)
     helpers.waitFor(leaseTransaction['id'])
+    print(leaseTransaction['id'])
 
     leaseCancelTransactionId = myAddress.leaseCancel(leaseTransaction['id'])
+    print(leaseCancelTransactionId)
     blockchainTx = helpers.waitFor(leaseCancelTransactionId)
 
     assert blockchainTx['id'] == leaseCancelTransactionId

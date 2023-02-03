@@ -7,6 +7,9 @@ import base58
 
 class TxGenerator:
 
+    def __init__(self, pywaves=pywaves):
+        self.pywaves = pywaves
+
     def generateSendWaves(self, recipient, amount, publicKey, attachment='', txFee=pywaves.DEFAULT_TX_FEE, timestamp=0):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
@@ -55,7 +58,7 @@ class TxGenerator:
             timestamp = int(time.time() * 1000)
 
         tx = {
-            "version": 1,
+            "version": 3, #1
             "type": 3,
             "senderPublicKey": publicKey,
             "name": name,
@@ -74,12 +77,12 @@ class TxGenerator:
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
 
-        script = pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
+        script = self.pywaves.wrapper('/utils/script/compileCode', scriptSource)['script'][7:]
         tx = {
             "type": 3,
             "senderPublicKey": publicKey,
             "name": name,
-            "version": 2,
+            "version": 3,
             "quantity": quantity,
             "timestamp": timestamp,
             "description": description,
@@ -104,7 +107,8 @@ class TxGenerator:
             "timestamp": timestamp,
             "reissuable": reissuable,
             "fee": txFee,
-            "proofs": []
+            "proofs": [],
+            "version": 3
         }
 
         return tx
@@ -120,7 +124,8 @@ class TxGenerator:
             "quantity": quantity,
             "timestamp": timestamp,
             "fee": txFee,
-            "proofs": []
+            "proofs": [],
+            "version": 3
         }
 
         return tx
@@ -175,7 +180,7 @@ class TxGenerator:
             "fee": txFee,
             "timestamp": timestamp,
             "proofs": [ ],
-            "version": 2
+            "version": 3 #2
         }
 
         return tx
@@ -190,7 +195,8 @@ class TxGenerator:
             "txId": leaseId,
             "fee": txFee,
             "timestamp": timestamp,
-            "proofs": [ ]
+            "proofs": [ ],
+            "version": 3
         }
 
         return tx
@@ -206,7 +212,7 @@ class TxGenerator:
             "fee": txFee,
             "timestamp": timestamp,
             "proofs": [],
-            "version": 1
+            "version": 3 #1
         }
 
         return tx
@@ -217,7 +223,7 @@ class TxGenerator:
 
         tx = {
             "type": 14,
-            "version": 1,
+            "version": 2, #1
             "senderPublicKey": publicKey,
             "assetId": assetId,
             "fee": txFee,
@@ -238,7 +244,7 @@ class TxGenerator:
             "senderPublicKey": publicKey,
             "fee": txFee,
             "timestamp": timestamp,
-            "chainId": ord(pywaves.CHAIN_ID),
+            "chainId": ord(self.pywaves.CHAIN_ID),
             "version": 2,
             "script": script
         }
@@ -280,7 +286,7 @@ class TxGenerator:
             "senderPublicKey": publicKey,
             "fee": txFeeAmount,
             "timestamp": timestamp,
-            "chainId": ord(pywaves.CHAIN_ID),
+            "chainId": ord(self.pywaves.CHAIN_ID),
             "versoin": 2,
             "data": dataList,
             "version": 2
@@ -306,7 +312,7 @@ class TxGenerator:
             "senderPublicKey": publicKey,
             "fee": minimalFee,
             "timestamp": timestamp,
-            "chainId": ord(pywaves.CHAIN_ID),
+            "chainId": ord(self.pywaves.CHAIN_ID),
             "version": 2,
             "data": dataList
         }
@@ -317,10 +323,10 @@ class TxGenerator:
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
 
-        script = pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
+        script = self.pywaves.wrapper('/utils/script/compile', scriptSource)['script'][7:]
         tx = {
             "type": 15,
-            "version": 1,
+            "version": 2, #1,
             "assetId": asset.assetId,
             "senderPublicKey": publicKey,
             "fee": txFee,
@@ -342,7 +348,7 @@ class TxGenerator:
             'senderPublicKey': publicKey,
             'fee': 1000000,
             'timestamp': timestamp,
-            'chainId': ord(pywaves.CHAIN_ID),
+            'chainId': ord(self.pywaves.CHAIN_ID),
             'version': 1,
             'name': name,
             'description': description

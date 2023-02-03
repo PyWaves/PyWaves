@@ -42,6 +42,7 @@ def test_succesfullLeasing():
     leasinAdress = address.Address('3MrgK5eCdrva5iVvQh1d8yGSrHQGF93Lep7')
 
     tx = myAddress.lease(leasinAdress, 1*10**8)
+    print(tx)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']
