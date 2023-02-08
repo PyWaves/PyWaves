@@ -17,7 +17,7 @@ class TxGenerator:
         attachment = base58.b58encode(crypto.str2bytes(attachment))
         tx = {
             "type": 4,
-            "version": 2,
+            "version": 3,
             "senderPublicKey": publicKey,
             "recipient": recipient.address,
             "amount": amount,
@@ -38,7 +38,7 @@ class TxGenerator:
         asset = asset.assetId
         attachment = base58.b58encode(crypto.str2bytes(attachment))
         tx = {
-            "version": 2,
+            "version": 3,
             "type": 4,
             "assetId": asset,
             "feeAssetId": (feeAsset if feeAsset != '' else None),
@@ -137,7 +137,7 @@ class TxGenerator:
 
         tx = {
             "type": 11,
-            "version": 1,
+            "version": 2,
             "assetId": "",
             "senderPublicKey": publicKey,
             "fee": txFee,
@@ -149,14 +149,14 @@ class TxGenerator:
 
         return tx
 
-    def generateMassTransferAssets(self,transfers, asset, publicKey, attachment='', timestamp=0, txFee=pywaves.DEFAULT_BASE_FEE):
+    def generateMassTransferAssets(self, transfers, asset, publicKey, attachment='', timestamp=0, txFee=pywaves.DEFAULT_BASE_FEE):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
         attachment = base58.b58encode(crypto.str2bytes(attachment))
 
         tx = {
             "type": 11,
-            "version": 1,
+            "version": 2,
             "assetId": asset.assetId,
             "senderPublicKey": publicKey,
             "fee": txFee,
@@ -359,34 +359,22 @@ class TxGenerator:
     def generateInvokeScript(self, dappAddress, functionName, publicKey, params = [], payments = [], feeAsset=None, txFee=pywaves.DEFAULT_INVOKE_SCRIPT_FEE, timestamp=0):
         if timestamp == 0:
             timestamp = int(time.time() * 1000)
+        tx = {
+            "type": 16,
+            "senderPublicKey": publicKey,
+            "version": 2,
+            "timestamp": timestamp,
+            "fee": txFee,
+            "proofs": [],
+            "feeAssetId": feeAsset,
+            "dApp": dappAddress,
+            "payment": payments
+        }
 
-        if functionName is None:
-            tx = {
-                "type": 16,
-                "senderPublicKey": publicKey,
-                "version": 1,
-                "timestamp": timestamp,
-                "fee": txFee,
-                "proofs": [],
-                "feeAssetId": feeAsset,
-                "dApp": dappAddress,
-                "payment": payments
-            }
-        else:
-            tx = {
-                "type": 16,
-                "senderPublicKey": publicKey,
-                "version": 1,
-                "timestamp": timestamp,
-                "fee": txFee,
-                "proofs": [],
-                "feeAssetId": feeAsset,
-                "dApp": dappAddress,
-                "call": {
-                    "function": functionName,
-                    "args": params
-                },
-                "payment": payments
+        if functionName is not None:
+            tx['call'] = {
+                "function": functionName,
+                "args": params
             }
 
         return tx

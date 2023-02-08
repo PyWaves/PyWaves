@@ -458,7 +458,7 @@ class Address(object):
                 tx = self.txGenerator.generateSendAsset(recipient, asset, amount, self.publicKey, attachment, feeAsset=None, txFee=txFee, timestamp=timestamp)
 
             self.signTx(tx)
-            tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
+            #tx['attachment'] = base58.b58encode(crypto.str2bytes(attachment))
 
             return self.broadcastTx(tx)
 

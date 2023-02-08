@@ -65,6 +65,7 @@ def test_succesfullAssetTransactionWithAttachment():
     attachment = 'This is just a test...'
 
     tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5, attachment = attachment)
+    print(tx)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']
@@ -94,7 +95,6 @@ def test_successfulTransactionWithSponsoredFee():
     myToken = asset.Asset('7oSYZxQUvB8aKqPQupqQt2b5nipegxkR1vszFQVH6Gjg')
 
     tx = myAddress.sendAsset(address.Address('3MuqNWyf4RMWz3cqDi4QZRVr9v76LKMjNVZ'), myToken, 5, feeAsset = myToken, txFee=1)
-    print(tx)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']

@@ -15,6 +15,7 @@ def test_tradableBalance():
     dollarBalance = myAddress.balance(assetId='25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT')
     wavesBalance = myAddress.balance()
 
+    print(myAddress)
     assert tradableBalance == (wavesBalance, dollarBalance)
 
 def test_tradableBalanceButPywavesOffline():

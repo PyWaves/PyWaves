@@ -1,12 +1,12 @@
 import base58
 import base64
 import struct
-import pywaves.crypto as crypto
 import pywaves as pw
+import pywaves.crypto as crypto
 
-from .protobuf import transaction_pb2
-from .protobuf.waves import amount_pb2
+from .protobuf.waves import transaction_pb2
 from .protobuf.waves import recipient_pb2
+from .protobuf.waves import amount_pb2
 
 class TxSigner:
 
@@ -52,39 +52,22 @@ class TxSigner:
             self.signType17Tx(tx, privateKey)
 
     def signType04WavesTx(self, tx, privateKey):
-        sData = b'\4' + \
-                b'\2' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                b'\0\0' + \
-                struct.pack(">Q", tx['timestamp']) + \
-                struct.pack(">Q", tx['amount']) + \
-                struct.pack(">Q", tx['fee']) + \
-                base58.b58decode(tx['recipient']) + \
-                struct.pack(">H", len(base58.b58decode(tx['attachment']))) + \
-                base58.b58decode(tx['attachment'])
-
-        proof = crypto.sign(privateKey, sData)
-        print(sData)
-        #sData = sData[1:]
-        tx['proofs'].append(proof)
-        '''transferTx = transaction_pb2.TransferTransactionData()
+        transferTx = transaction_pb2.TransferTransactionData()
 
         recipient = recipient_pb2.Recipient()
         recipient.public_key_hash = base58.b58decode(tx['recipient'])[2:22]
         transferTx.recipient.CopyFrom(recipient)
         amount = amount_pb2.Amount()
         amount.amount = tx['amount']
-        if 'assetId' not in tx or tx['assetId'] == 'null':
-            amount.asset_id = b''
-        else:
+        if not ('assetId' not in tx or tx['assetId'] == 'null'):
             amount.asset_id = base58.b58decode(tx['assetId'])
         transferTx.amount.CopyFrom(amount)
-        attachment = transaction_pb2.Attachment()
-        attachment.string_value = base58.b58decode(tx['attachment'])
-        transferTx.attachment.CopyFrom(attachment)
+        transferTx.attachment = base58.b58decode(tx['attachment'])
 
         txFee = amount_pb2.Amount()
         txFee.amount = tx['fee']
+        if 'feeAssetId' in tx and tx['feeAssetId'] != '' and tx['feeAssetId'] != 'null' and tx['feeAssetId'] != None:
+            txFee.asset_id = base58.b58decode(tx['feeAssetId'])
         transaction = transaction_pb2.Transaction()
         transaction.chain_id = ord(self.pywaves.CHAIN_ID)
         transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
@@ -94,39 +77,39 @@ class TxSigner:
         transaction.transfer.CopyFrom(transferTx)
 
         proof = crypto.sign(privateKey, transaction.SerializeToString())
-        tx['proofs'].append(proof)'''
+        tx['proofs'].append(proof)
 
     def signType04AssetTx(self, tx, privateKey):
-        sData = b'\4' + \
-                b'\2' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                b'\1' + base58.b58decode(tx['assetId']) + \
-                (b'\1' + base58.b58decode(tx['feeAssetId']) if ('feeAssetId' in tx and tx['feeAssetId'] != None and tx['feeAssetId'] != '') else b'\0') + \
-                struct.pack(">Q", tx['timestamp']) + \
-                struct.pack(">Q", tx['amount']) + \
-                struct.pack(">Q", tx['fee']) + \
-                base58.b58decode(tx['recipient']) + \
-                struct.pack(">H", len(base58.b58decode(tx['attachment']))) + \
-                base58.b58decode(tx['attachment'])
+        transferTx = transaction_pb2.TransferTransactionData()
 
-        proof = crypto.sign(privateKey, sData)
+        recipient = recipient_pb2.Recipient()
+        recipient.public_key_hash = base58.b58decode(tx['recipient'])[2:22]
+        transferTx.recipient.CopyFrom(recipient)
+        amount = amount_pb2.Amount()
+        amount.amount = tx['amount']
+        if not ('assetId' not in tx or tx['assetId'] == 'null' or tx['assetId'] == None or tx['assetId'] == ''):
+            amount.asset_id = base58.b58decode(tx['assetId'])
+        transferTx.amount.CopyFrom(amount)
+
+        if 'attachment' in tx and tx['attachment'] != '':
+            transferTx.attachment = base58.b58decode(tx['attachment'])
+
+        txFee = amount_pb2.Amount()
+        txFee.amount = tx['fee']
+        if 'feeAssetId' in tx and tx['feeAssetId'] != '' and tx['feeAssetId'] != 'null' and tx['feeAssetId'] != None:
+            txFee.asset_id = base58.b58decode(tx['feeAssetId'])
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = tx['timestamp']
+        transaction.version = tx['version']
+        transaction.transfer.CopyFrom(transferTx)
+
+        proof = crypto.sign(privateKey, transaction.SerializeToString())
         tx['proofs'].append(proof)
 
     def signType03Tx(self, tx, privateKey):
-        '''sData = b'\3' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                struct.pack(">H", len(tx['name'])) + \
-                crypto.str2bytes(tx['name']) + \
-                struct.pack(">H", len(tx['description'])) + \
-                crypto.str2bytes(tx['description']) + \
-                struct.pack(">Q", tx['quantity']) + \
-                struct.pack(">B", tx['decimals']) + \
-                (b'\1' if tx['reissuable'] else b'\0') + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp'])
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         issueTx = transaction_pb2.IssueTransactionData()
 
         issueTx.name = tx['name']
@@ -151,27 +134,6 @@ class TxSigner:
 
     def signType03SmartTx(self, tx, privateKey):
         compiledScript = base64.b64decode(tx['script'][7:])
-        '''scriptLength = len(compiledScript)
-
-        sData = b'\3' + \
-                b'\2' + \
-                crypto.str2bytes(str(pw.CHAIN_ID)) + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                struct.pack(">H", len(tx['name'])) + \
-                crypto.str2bytes(tx['name']) + \
-                struct.pack(">H", len(tx['description'])) + \
-                crypto.str2bytes(tx['description']) + \
-                struct.pack(">Q", tx['quantity']) + \
-                struct.pack(">B", tx['decimals']) + \
-                (b'\1' if tx['reissuable'] else b'\0') + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp']) + \
-                b'\1' + \
-                struct.pack(">H", scriptLength) + \
-                compiledScript
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         issueTx = transaction_pb2.IssueTransactionData()
 
         issueTx.name = tx['name']
@@ -194,18 +156,7 @@ class TxSigner:
         proof = crypto.sign(privateKey, transaction.SerializeToString())
         tx['proofs'].append(proof)
 
-
     def signType05Tx(self, tx, privateKey):
-        '''sData = b'\5' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                base58.b58decode(tx['assetId']) + \
-                struct.pack(">Q", tx['quantity']) + \
-                (b'\1' if tx['reissuable'] else b'\0') + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp'])
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         reissueTx = transaction_pb2.ReissueTransactionData()
 
         newAssetAmount = amount_pb2.Amount()
@@ -228,15 +179,6 @@ class TxSigner:
         tx['proofs'].append(proof)
 
     def signType06Tx(self, tx, privateKey):
-        '''sData = '\6' + \
-                crypto.bytes2str(base58.b58decode(tx['senderPublicKey'])) + \
-                crypto.bytes2str(base58.b58decode(tx['assetId'])) + \
-                crypto.bytes2str(struct.pack(">Q", tx['quantity'])) + \
-                crypto.bytes2str(struct.pack(">Q", tx['fee'])) + \
-                crypto.bytes2str(struct.pack(">Q", tx['timestamp']))
-
-        proof = crypto.sign(privateKey, crypto.str2bytes(sData))
-        tx['proofs'].append(proof)'''
         burnTx = transaction_pb2.BurnTransactionData()
 
         newAssetAmount = amount_pb2.Amount()
@@ -258,17 +200,6 @@ class TxSigner:
         tx['proofs'].append(proof)
 
     def signType08Tx(self, tx, privateKey):
-        '''sData = b'\x08' + \
-                b'\x02' + \
-                b'\x00' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                base58.b58decode(tx['recipient']) + \
-                struct.pack(">Q", tx['amount']) + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp'])
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         leaseTx = transaction_pb2.LeaseTransactionData()
 
         recipient = recipient_pb2.Recipient()
@@ -290,14 +221,6 @@ class TxSigner:
         tx['proofs'].append(proof)
 
     def signType09Tx(self, tx, privateKey):
-        '''sData = b'\x09' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp']) + \
-                base58.b58decode(tx['txId'])
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         leaseCancelTx = transaction_pb2.LeaseCancelTransactionData()
 
         leaseCancelTx.lease_id = base58.b58decode(tx['txId'])
@@ -318,16 +241,6 @@ class TxSigner:
 
 
     def signType10Tx(self, tx, privateKey):
-        '''aliasWithNetwork = b'\x02' + crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + struct.pack(">H", len(tx['alias'])) + crypto.str2bytes(tx['alias'])
-        sData = b'\x0a' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                struct.pack(">H", len(aliasWithNetwork)) + \
-                aliasWithNetwork + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp'])
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         aliasTx = transaction_pb2.CreateAliasTransactionData()
 
         aliasTx.alias = tx['alias']
@@ -346,43 +259,61 @@ class TxSigner:
         tx['proofs'].append(proof)
 
     def signType11TxWaves(self, tx, privateKey):
-        transfers = tx['transfers']
-        transfersData = b''
-        for i in range(0, len(transfers)):
-            transfersData += base58.b58decode(transfers[i]['recipient']) + struct.pack(">Q", transfers[i]['amount'])
-        sData = b'\x0b' + \
-                b'\1' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                b'\0' + \
-                struct.pack(">H", len(transfers)) + \
-                transfersData + \
-                struct.pack(">Q", tx['timestamp']) + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">H", len(base58.b58decode(tx['attachment']))) + \
-                base58.b58decode(tx['attachment'])
+        massTransferTx = transaction_pb2.MassTransferTransactionData()
+        massTransferTx.asset_id = base58.b58decode(tx['assetId'])
 
-        proof = crypto.sign(privateKey, sData)
+        if 'attachment' in tx and tx['attachment'] != '':
+            attachment = transaction_pb2.Attachment()
+            attachment.string_value = base58.b58decode(tx['attachment'])
+            massTransferTx.attachment.CopyFrom(attachment)
+
+        for transfer in tx['transfers']:
+            recipient = recipient_pb2.Recipient()
+            recipient.public_key_hash = base58.b58decode(transfer['recipient'])[2:22]
+            transferObject = transaction_pb2.MassTransferTransactionData.Transfer()
+            transferObject.recipient.CopyFrom(recipient)
+            transferObject.amount = transfer['amount']
+            massTransferTx.transfers.append(transferObject)
+        txFee = amount_pb2.Amount()
+        txFee.amount = tx['fee']
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = tx['timestamp']
+        transaction.version = tx['version']
+        transaction.mass_transfer.CopyFrom(massTransferTx)
+
+        proof = crypto.sign(privateKey, transaction.SerializeToString())
         tx['proofs'].append(proof)
 
     def signType11TxAssets(self, tx, privateKey):
-        transfers = tx['transfers']
-        transfersData = b''
-        for i in range(0, len(transfers)):
-            transfersData += base58.b58decode(transfers[i]['recipient']) + struct.pack(">Q", transfers[i]['amount'])
+        massTransferTx = transaction_pb2.MassTransferTransactionData()
+        massTransferTx.asset_id = base58.b58decode(tx['assetId'])
 
-        sData = b'\x0b' + \
-            b'\1' + \
-            base58.b58decode(tx['senderPublicKey']) + \
-            b'\1' + \
-            base58.b58decode(tx['assetId']) + \
-            struct.pack(">H", len(tx['transfers'])) + \
-            transfersData + \
-            struct.pack(">Q", tx['timestamp']) + \
-            struct.pack(">Q", tx['fee']) + \
-            struct.pack(">H", len(base58.b58decode(tx['attachment']))) + \
-            base58.b58decode(tx['attachment'])
+        if 'attachment' in tx and tx['attachment'] != '':
+            attachment = transaction_pb2.Attachment()
+            attachment.string_value = base58.b58decode(tx['attachment'])
+            massTransferTx.attachment.CopyFrom(attachment)
 
-        proof = crypto.sign(privateKey, sData)
+        for transfer in tx['transfers']:
+            recipient = recipient_pb2.Recipient()
+            recipient.public_key_hash = base58.b58decode(transfer['recipient'])[2:22]
+            transferObject = transaction_pb2.MassTransferTransactionData.Transfer()
+            transferObject.recipient.CopyFrom(recipient)
+            transferObject.amount = transfer['amount']
+            massTransferTx.transfers.append(transferObject)
+        txFee = amount_pb2.Amount()
+        txFee.amount = tx['fee']
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = tx['timestamp']
+        transaction.version = tx['version']
+        transaction.mass_transfer.CopyFrom(massTransferTx)
+
+        proof = crypto.sign(privateKey, transaction.SerializeToString())
         tx['proofs'].append(proof)
 
     def signType12DeleteTx(self, tx, privateKey):
@@ -439,16 +370,6 @@ class TxSigner:
         tx['proofs'].append(proof)
 
     def signType14Tx(self, tx, privateKey):
-        '''sData = b'\x0e' + \
-                b'\1' + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                base58.b58decode(tx['assetId']) + \
-                struct.pack(">Q", tx['minSponsoredAssetFee']) + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp'])
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         sponsorTx = transaction_pb2.SponsorFeeTransactionData()
 
         minFee = amount_pb2.Amount()
@@ -479,7 +400,7 @@ class TxSigner:
         transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
         transaction.fee.CopyFrom(tx_fee)
         transaction.timestamp = tx['timestamp']
-        transaction.version = 2
+        transaction.version = tx['version']
         transaction.set_script.CopyFrom(setScriptTransaction)
 
         proof = crypto.sign(privateKey, transaction.SerializeToString())
@@ -487,20 +408,6 @@ class TxSigner:
 
     def signType15Tx(self, tx, privateKey):
         compiledScript = base64.b64decode(tx['script'][7:])
-        '''scriptLength = len(compiledScript)
-        sData = b'\x0f' + \
-                b'\1' + \
-                crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                base58.b58decode(tx['senderPublicKey']) + \
-                base58.b58decode(tx['assetId']) + \
-                struct.pack(">Q", tx['fee']) + \
-                struct.pack(">Q", tx['timestamp']) + \
-                b'\1' + \
-                struct.pack(">H", scriptLength) + \
-                compiledScript
-
-        proof = crypto.sign(privateKey, sData)
-        tx['proofs'].append(proof)'''
         setAssetScriptTransaction = transaction_pb2.SetAssetScriptTransactionData()
         setAssetScriptTransaction.script = compiledScript
         setAssetScriptTransaction.asset_id = base58.b58decode(tx['assetId'])
@@ -511,7 +418,7 @@ class TxSigner:
         transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
         transaction.fee.CopyFrom(tx_fee)
         transaction.timestamp = tx['timestamp']
-        transaction.version = 2
+        transaction.version = tx['version']
         transaction.set_asset_script.CopyFrom(setAssetScriptTransaction)
 
         proof = crypto.sign(privateKey, transaction.SerializeToString())
@@ -530,14 +437,13 @@ class TxSigner:
         transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
         transaction.fee.CopyFrom(txFee)
         transaction.timestamp = tx['timestamp']
-        transaction.version = 1
+        transaction.version = tx['version']
         transaction.update_asset_info.CopyFrom(updateInfo)
 
         proof = crypto.sign(privateKey, transaction.SerializeToString())
         tx['proofs'].append(proof)
 
     def signType16Tx(self, tx, privateKey):
-        functionFlag = b'\x01'
         parameterBytes = b''
         for param in tx['call']['args']:
             if param['type'] == 'integer':
@@ -568,51 +474,39 @@ class TxSigner:
                             parameterBytes += b'\6'
                         else:
                             parameterBytes += b'\7'
-        paymentBytes = b''
+        invoke = transaction_pb2.InvokeScriptTransactionData()
         for payment in tx['payment']:
-            currentPaymentBytes = b''
-            if ('assetId' in payment and payment['assetId'] != None and payment['assetId'] != ''):
-                currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x01' + base58.b58decode(
-                    payment['assetId'])
-            else:
-                currentPaymentBytes += struct.pack(">Q", payment['amount']) + b'\x00'
-            paymentBytes += struct.pack(">H", len(currentPaymentBytes)) + currentPaymentBytes
-        assetIdBytes = b''
-        if (tx['feeAssetId']):
-            assetIdBytes += b'\x01' + base58.b58decode(tx['feeAssetId'])
-        else:
-            assetIdBytes += b'\x00'
+            amount = amount_pb2.Amount()
+            amount.amount = payment['amount']
+            if not ('assetId' not in payment or payment['assetId'] == 'null' or payment['assetId'] == None or payment['assetId'] == ''):
+                amount.asset_id = base58.b58decode(payment['assetId'])
+            invoke.payments.append(amount)
 
-        if tx['call']['function'] is None:
-            sData = b'\x10' + \
-                    b'\x01' + \
-                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(tx['senderPublicKey']) + \
-                    base58.b58decode(tx['dApp']) + \
-                    b'\x00' + \
-                    struct.pack(">H", len(tx['payment'])) + \
-                    paymentBytes + \
-                    struct.pack(">Q", tx['fee']) + \
-                    assetIdBytes + \
-                    struct.pack(">Q", tx['timestamp'])
-        else:
-            sData = b'\x10' + \
-                    b'\x01' + \
-                    crypto.str2bytes(str(self.pywaves.CHAIN_ID)) + \
-                    base58.b58decode(tx['senderPublicKey']) + \
-                    base58.b58decode(tx['dApp']) + \
-                    b'\x01' + \
+        dApp = recipient_pb2.Recipient()
+        dApp.public_key_hash = base58.b58decode(tx['dApp'])[2:22]
+        if 'call' in tx:
+            invoke.function_call = b'\x01' + \
                     b'\x09' + \
                     b'\x01' + \
                     struct.pack(">L", len(crypto.str2bytes(tx['call']['function']))) + \
                     crypto.str2bytes(tx['call']['function']) + \
                     struct.pack(">I", len(tx['call']['args'])) + \
-                    parameterBytes + \
-                    struct.pack(">H", len(tx['payment'])) + \
-                    paymentBytes + \
-                    struct.pack(">Q", tx['fee']) + \
-                    assetIdBytes + \
-                    struct.pack(">Q", tx['timestamp'])
+                    parameterBytes
+        else:
+            invoke.function_call = b'\x00'
+        invoke.d_app.CopyFrom(dApp)
 
-        proof = crypto.sign(privateKey, sData)
+        txFee = amount_pb2.Amount()
+        txFee.amount = tx['fee']
+        if 'feeAssetId' in tx and tx['feeAssetId'] != '' and tx['feeAssetId'] != 'null' and tx['feeAssetId'] != None:
+            txFee.asset_id = base58.b58decode(tx['feeAssetId'])
+        transaction = transaction_pb2.Transaction()
+        transaction.chain_id = ord(self.pywaves.CHAIN_ID)
+        transaction.sender_public_key = base58.b58decode(tx['senderPublicKey'])
+        transaction.fee.CopyFrom(txFee)
+        transaction.timestamp = tx['timestamp']
+        transaction.version = tx['version']
+        transaction.invoke_script.CopyFrom(invoke)
+
+        proof = crypto.sign(privateKey, transaction.SerializeToString())
         tx['proofs'].append(proof)

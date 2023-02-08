@@ -11,7 +11,7 @@ def test_pywavesOffline():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     USDN_WAVES = asset.AssetPair(pw.WAVES, asset.Asset('25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT'))
-    order = myAddress.sell(USDN_WAVES, 1000, 250000000000, matcherFee=1000000)
+    order = myAddress.sell(USDN_WAVES, 1000, 250000, matcherFee=1000000)
     OrderId = order.orderId
 
     pw.setOffline()
@@ -26,7 +26,7 @@ def test_succesfullCancelOrderById():
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
     myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
     USDN_WAVES = asset.AssetPair(pw.WAVES, asset.Asset('25FEqEjRkqK6yCkiT7Lz6SAYz7gUFCtxfCChnrVFD5AT'))
-    order = myAddress.sell(USDN_WAVES, 100,250000000000 , matcherFee=1000000)
+    order = myAddress.sell(USDN_WAVES, 100,250000, matcherFee=1000000)
 
     time.sleep(10)
     myAddress.cancelOrderByID(USDN_WAVES, order.orderId)
