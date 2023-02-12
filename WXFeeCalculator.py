@@ -17,7 +17,7 @@ class WXFeeCalculator(object):
         return rate * math.pow(10, (assetDecimals - self.priceConstantExp))
 
     def _getAssetDecimals(self, assetId):
-        if assetId == 'WAVES':
+        if assetId == pywaves.DEFAULT_CURRENCY: #'WAVES':
             return 8
         else:
             assetInfo = requests.get(self.node + '/assets/details/' + assetId).json()
