@@ -6,12 +6,13 @@ class WXFeeCalculator(object):
 
     priceConstantExp = 8
     discountAssetDecimals = 8
-    baseFee = 1000000
+    #baseFee = 1000000
 
     def __init__(self):
         self.settings = requests.get(pywaves.MATCHER + '/matcher/settings').json()
         self.matcher = pywaves.MATCHER
         self.node = pywaves.NODE
+        self.baseFee = self.settings['orderFee']['composite']['default']['dynamic']['baseFee']
 
     def _correctRate(self, rate, assetDecimals):
         return rate * math.pow(10, (assetDecimals - self.priceConstantExp))
@@ -71,11 +72,14 @@ class WXFeeCalculator(object):
     def calculatePercentBuyingFee(self, priceAssetId, price, amountToBuy):
         priceAssetDecimals = self._getAssetDecimals(priceAssetId)
         price = price / math.pow(10, priceAssetDecimals)
-        price = price / math.pow(10, priceAssetDecimals - 8)
+        #price = price / math.pow(10, 8 - priceAssetDecimals)
         calculatedFee = int(amountToBuy * price / math.pow(10, self.priceConstantExp) * self.baseFee / 100) + 1
         minFee = self._getMinFee(priceAssetId)
 
-        return max(calculatedFee, minFee)
+        calculatedFee = calculatedFee / math.pow(10,  8 - priceAssetDecimals)
+        minFee = minFee / math.pow(10, 8 - priceAssetDecimals) + 1
+
+        return int(max(calculatedFee, minFee))
 
     def calculatePercentDiscountedBuyingFee(self, priceAssetId, price, amountToBuy):
         discount = self.settings['orderFee']['composite']['discount']['value']
