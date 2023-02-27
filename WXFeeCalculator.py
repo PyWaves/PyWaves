@@ -69,14 +69,16 @@ class WXFeeCalculator(object):
 
         return max(calculatedFee, minFee)
 
-    def calculatePercentBuyingFee(self, priceAssetId, price, amountToBuy):
+    def calculatePercentBuyingFee(self, amountAssetId, priceAssetId, price, amountToBuy):
+        minFee = self.settings['orderFee']['composite']['custom'][amountAssetId + '-' + priceAssetId]['percent']['minFee']
         priceAssetDecimals = self._getAssetDecimals(priceAssetId)
+        amountAssetDecimals = self._getAssetDecimals(amountAssetId)
         price = price / math.pow(10, priceAssetDecimals)
-        #price = price / math.pow(10, 8 - priceAssetDecimals)
-        calculatedFee = int(amountToBuy * price / math.pow(10, self.priceConstantExp) * self.baseFee / 100) + 1
+        amount = amountToBuy / math.pow(10, amountAssetDecimals)
+        calculatedFee = amount * price * minFee / 100
+        calculatedFee = int(calculatedFee * math.pow(10, priceAssetDecimals))
         minFee = self._getMinFee(priceAssetId)
 
-        calculatedFee = calculatedFee / math.pow(10,  8 - priceAssetDecimals)
         minFee = minFee / math.pow(10, 8 - priceAssetDecimals) + 1
 
         return int(max(calculatedFee, minFee))
