@@ -79,8 +79,6 @@ class WXFeeCalculator(object):
         calculatedFee = int(calculatedFee * math.pow(10, priceAssetDecimals))
         minFee = self._getMinFee(priceAssetId)
 
-        minFee = minFee / math.pow(10, 8 - priceAssetDecimals) + 1
-
         return int(max(calculatedFee, minFee))
 
     def calculatePercentDiscountedBuyingFee(self, priceAssetId, price, amountToBuy):

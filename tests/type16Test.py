@@ -17,17 +17,16 @@ def test_invokeScriptWithoutPrivateKey():
     assert str(error) == '<ExceptionInfo PyWavesException(\'Private key required\') tblen=3>'
 
 # TODO: implement a proper example contract
-'''def test_callToDefaultCallable():
+def test_callToDefaultCallable():
     helpers = Helpers()
     pw.setNode('https://nodes-testnet.wavesnodes.com', 'T')
-    myAddress = address.Address(privateKey='')
-    scriptAcc = ''
+    myAddress = address.Address(privateKey='BGpBRDeUiHskf4bdyWoUAKpP9DSx51haovHcGNqPEy6Q')
+    scriptAcc = '3Myb6G8DkdBb8YcZzhrky65HrmiNuac3kvS' # Neutrino distribution contract in testnet
 
-    tx = myAddress.invokeScript(scriptAcc, None, txFee=900000)
+    tx = myAddress.invokeScript(scriptAcc, None)
     blockchainTx = helpers.waitFor(tx['id'])
 
     assert blockchainTx['id'] == tx['id']
-    '''
 
 def test_acceptInvokeScriptWithStrAndInt():
     helpers = Helpers()

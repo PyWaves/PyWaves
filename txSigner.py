@@ -445,35 +445,36 @@ class TxSigner:
 
     def signType16Tx(self, tx, privateKey):
         parameterBytes = b''
-        for param in tx['call']['args']:
-            if param['type'] == 'integer':
-                parameterBytes += b'\0' + struct.pack(">q", param['value'])
-            elif param['type'] == 'binary':
-                parameterBytes += b'\1' + struct.pack(">L", len(param['value'])) + crypto.str2bytes(param['value'])
-            elif param['type'] == 'string':
-                parameterBytes += b'\2' + struct.pack(">I", len(crypto.str2bytes(param['value']))) + crypto.str2bytes(
-                    param['value'])
-            elif param['type'] == 'boolean':
-                if param['value'] == True:
-                    parameterBytes += b'\6'
-                else:
-                    parameterBytes += b'\7'
-            elif param['type'] == 'list':
-                parameterBytes += b'\x0b'
-                parameterBytes += struct.pack(">I", len(param['value']))
-                for nestedParam in param['value']:
-                    if nestedParam['type'] == 'integer':
-                        parameterBytes += b'\0' + struct.pack(">Q", nestedParam['value'])
-                    elif nestedParam['type'] == 'binary':
-                        parameterBytes += b'\1' + struct.pack(">I", len(nestedParam['value'])) + crypto.str2bytes(nestedParam['value'])
-                    elif nestedParam['type'] == 'string':
-                        parameterBytes += b'\2' + struct.pack(">I", len(crypto.str2bytes(
-                            nestedParam['value']))) + crypto.str2bytes(nestedParam['value'])
-                    elif nestedParam['type'] == 'boolean':
-                        if nestedParam['value'] == True:
-                            parameterBytes += b'\6'
-                        else:
-                            parameterBytes += b'\7'
+        if 'call' in tx:
+            for param in tx['call']['args']:
+                if param['type'] == 'integer':
+                    parameterBytes += b'\0' + struct.pack(">q", param['value'])
+                elif param['type'] == 'binary':
+                    parameterBytes += b'\1' + struct.pack(">L", len(param['value'])) + crypto.str2bytes(param['value'])
+                elif param['type'] == 'string':
+                    parameterBytes += b'\2' + struct.pack(">I", len(crypto.str2bytes(param['value']))) + crypto.str2bytes(
+                        param['value'])
+                elif param['type'] == 'boolean':
+                    if param['value'] == True:
+                        parameterBytes += b'\6'
+                    else:
+                        parameterBytes += b'\7'
+                elif param['type'] == 'list':
+                    parameterBytes += b'\x0b'
+                    parameterBytes += struct.pack(">I", len(param['value']))
+                    for nestedParam in param['value']:
+                        if nestedParam['type'] == 'integer':
+                            parameterBytes += b'\0' + struct.pack(">Q", nestedParam['value'])
+                        elif nestedParam['type'] == 'binary':
+                            parameterBytes += b'\1' + struct.pack(">I", len(nestedParam['value'])) + crypto.str2bytes(nestedParam['value'])
+                        elif nestedParam['type'] == 'string':
+                            parameterBytes += b'\2' + struct.pack(">I", len(crypto.str2bytes(
+                                nestedParam['value']))) + crypto.str2bytes(nestedParam['value'])
+                        elif nestedParam['type'] == 'boolean':
+                            if nestedParam['value'] == True:
+                                parameterBytes += b'\6'
+                            else:
+                                parameterBytes += b'\7'
         invoke = transaction_pb2.InvokeScriptTransactionData()
         for payment in tx['payment']:
             amount = amount_pb2.Amount()
