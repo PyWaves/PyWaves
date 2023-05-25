@@ -1,5 +1,7 @@
 # PyWaves
-PyWaves is an object-oriented Python interface to the Waves blockchain platform.
+PyWaves is an object-oriented Python interface to the Waves blockchain platform. You can see the documentation [here](https://docs.contour.so/PyWaves/PyWaves/manual-2uakq9k0xu80000000000).
+
+
 
 ## Getting Started
 
