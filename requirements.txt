@@ -1,7 +1,7 @@
 requests
 python-axolotl-curve25519
 base58==0.2.5
-protobuf==3.19.6
+protobuf==4.25.8
 google-api-python-client
 pytest
 pytest-cov
